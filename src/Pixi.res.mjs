@@ -3,6 +3,8 @@
 
 let Rectangle = {};
 
+let ObservablePoint = {};
+
 let Container = {};
 
 let Ticker = {};
@@ -13,18 +15,16 @@ let Texture = {};
 
 let Assets = {};
 
-let ObservablePoint = {};
-
 let Sprite = {};
 
 export {
   Rectangle,
+  ObservablePoint,
   Container,
   Ticker,
   Application,
   Texture,
   Assets,
-  ObservablePoint,
   Sprite,
 }
 /* No side effect */
