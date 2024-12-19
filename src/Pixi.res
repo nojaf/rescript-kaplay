@@ -20,9 +20,50 @@ module ObservablePoint = {
   external set: (t, float, float) => unit = "set"
 }
 
+@unboxed
+type blendMode =
+  | @as("inherit") Inherit
+  | @as("normal") Normal
+  | @as("multiply") Multiply
+//   'inherit'
+// | 'normal'
+// | 'add'
+// | 'multiply'
+// | 'screen'
+// | 'darken'
+// | 'lighten'
+// | 'erase'
+// | 'color-dodge'
+// | 'color-burn'
+// | 'linear-burn'
+// | 'linear-dodge'
+// | 'linear-light'
+// | 'hard-light'
+// | 'soft-light'
+// | 'pin-light'
+// | 'difference'
+// | 'exclusion'
+// | 'overlay'
+// // | 'hue'
+// | 'saturation'
+// | 'color'
+// | 'luminosity'
+// | 'normal-npm'
+// | 'add-npm'
+// | 'screen-npm'
+// | 'none'
+// | 'subtract'
+// | 'divide'
+// | 'vivid-light'
+// | 'hard-mix'
+// | 'negation'
+// | 'min'
+// | 'max';
+
 /// https://pixijs.download/release/docs/scene.Container.html
 module Container = {
   type rec t = {
+    mutable blendMode: blendMode,
     mutable x: float,
     mutable y: float,
     mutable rotation: float,
@@ -78,6 +119,9 @@ module Application = {
 
 module Texture = {
   type t
+
+  @module("pixi.js") @scope("Texture")
+  external from: string => t = "from"
 }
 
 /// https://pixijs.download/release/docs/assets.Assets.html
@@ -108,4 +152,19 @@ module Sprite = {
   external from: string => t = "from"
 
   external asContainer: t => Container.t = "%identity"
+}
+
+/// https://pixijs.download/release/docs/assets.Spritesheet.html
+module Spritesheet = {
+  type t = {
+    textures: dict<Texture.t>
+  }
+
+  type json
+
+  @module("pixi.js") @new
+  external make: (Texture.t, json) => t = "Spritesheet"
+
+  @send
+  external parse: t => promise<unit> = "parse"
 }

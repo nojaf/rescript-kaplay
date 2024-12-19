@@ -2,8 +2,8 @@
 
 import * as Keys from "./Keys.res.mjs";
 import * as Rxjs from "rxjs";
-import * as Bunny from "./Bunny.res.mjs";
 import * as PixiJs from "pixi.js";
+import * as Squirtle from "./Squirtle.res.mjs";
 import * as AddFishes from "./AddFishes.res.mjs";
 import * as AddBackground from "./AddBackground.res.mjs";
 import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
@@ -53,8 +53,8 @@ async function preload() {
       src: "https://pixijs.com/assets/tutorials/fish-pond/displacement_map.png"
     },
     {
-      alias: "bunny",
-      src: "https://pixijs.com/assets/bunny.png"
+      alias: "sprites/squirte-sheet.png",
+      src: "/sprites/squirte-sheet.png"
     }
   ];
   await PixiJs.Assets.load(assets);
@@ -65,7 +65,7 @@ async function main() {
   await preload();
   AddBackground.addBackground(app);
   AddFishes.addFishes(app);
-  let bunny = Bunny.addBunny(app);
+  let squirtle = await Squirtle.make(app);
   let fishContainer = app.stage.children.find(c => c.label === "fish_container");
   let fishes = fishContainer !== undefined ? fishContainer.children.map(prim => prim) : [];
   app.ticker.add(time => AddFishes.animateFishes(app, fishes, time));
@@ -76,7 +76,7 @@ async function main() {
       app.ticker.remove(tick);
     };
   });
-  let bunnyPositionObservable = Rxjs.combineLatest(Keys.keyMapObservable, tickerObservable).pipe(Rxjs.scan((param, param$1) => {
+  let squirtlePositionObservable = Rxjs.combineLatest(Keys.keyMapObservable, tickerObservable).pipe(Rxjs.scan((param, param$1) => {
     let tick = param$1[1];
     let keys = param$1[0];
     let hasKey = key => {
@@ -93,12 +93,12 @@ async function main() {
       nextY
     ];
   }, [
-    bunny.x,
-    bunny.y
+    squirtle.x,
+    squirtle.y
   ]));
-  return bunnyPositionObservable.subscribe(param => {
-    bunny.x = param[0];
-    bunny.y = param[1];
+  return squirtlePositionObservable.subscribe(param => {
+    squirtle.x = param[0];
+    squirtle.y = param[1];
   });
 }
 

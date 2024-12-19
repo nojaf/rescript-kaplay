@@ -34,9 +34,9 @@ let preload = async () => {
       src: "https://pixijs.com/assets/tutorials/fish-pond/displacement_map.png",
     },
     {
-      alias: "bunny",
-      src: "https://pixijs.com/assets/bunny.png",
-    },
+      alias: "sprites/squirte-sheet.png",
+      src: "/sprites/squirte-sheet.png"
+    }
   ]
   let _ = await Assets.loadMany(assets)
 }
@@ -47,7 +47,7 @@ let main = async () => {
 
   AddBackground.addBackground(app)
   AddFishes.addFishes(app)
-  let bunny = Bunny.addBunny(app)
+  let squirtle = await Squirtle.make(app)
 
   let fishes = {
     let fishContainer = app.stage.children->Array.find(c => c.label == "fish_container")
@@ -67,7 +67,7 @@ let main = async () => {
 
   let speed = 5.
 
-  let bunnyPositionObservable = {
+  let squirtlePositionObservable = {
     open Rxjs
 
     combineLatest(Keys.keyMapObservable, tickerObservable)->pipe(
@@ -76,13 +76,13 @@ let main = async () => {
         let nextX = x + hasKey("ArrowRight") - hasKey("ArrowLeft")
         let nextY = y + hasKey("ArrowDown") - hasKey("ArrowUp")
         (nextX, nextY)
-      }, (bunny.x, bunny.y)),
+      }, (squirtle.x, squirtle.y)),
     )
   }
 
-  bunnyPositionObservable->Rxjs.Observable.subscribe(((x, y)) => {
-    bunny.x = x
-    bunny.y = y
+  squirtlePositionObservable->Rxjs.Observable.subscribe(((x, y)) => {
+    squirtle.x = x
+    squirtle.y = y
   })
 }
 

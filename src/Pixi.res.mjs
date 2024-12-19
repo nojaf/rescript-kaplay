@@ -17,6 +17,8 @@ let Assets = {};
 
 let Sprite = {};
 
+let Spritesheet = {};
+
 export {
   Rectangle,
   ObservablePoint,
@@ -26,5 +28,6 @@ export {
   Texture,
   Assets,
   Sprite,
+  Spritesheet,
 }
 /* No side effect */
