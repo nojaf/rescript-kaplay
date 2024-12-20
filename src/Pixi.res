@@ -20,50 +20,9 @@ module ObservablePoint = {
   external set: (t, float, float) => unit = "set"
 }
 
-@unboxed
-type blendMode =
-  | @as("inherit") Inherit
-  | @as("normal") Normal
-  | @as("multiply") Multiply
-//   'inherit'
-// | 'normal'
-// | 'add'
-// | 'multiply'
-// | 'screen'
-// | 'darken'
-// | 'lighten'
-// | 'erase'
-// | 'color-dodge'
-// | 'color-burn'
-// | 'linear-burn'
-// | 'linear-dodge'
-// | 'linear-light'
-// | 'hard-light'
-// | 'soft-light'
-// | 'pin-light'
-// | 'difference'
-// | 'exclusion'
-// | 'overlay'
-// // | 'hue'
-// | 'saturation'
-// | 'color'
-// | 'luminosity'
-// | 'normal-npm'
-// | 'add-npm'
-// | 'screen-npm'
-// | 'none'
-// | 'subtract'
-// | 'divide'
-// | 'vivid-light'
-// | 'hard-mix'
-// | 'negation'
-// | 'min'
-// | 'max';
-
 /// https://pixijs.download/release/docs/scene.Container.html
 module Container = {
   type rec t = {
-    mutable blendMode: blendMode,
     mutable x: float,
     mutable y: float,
     mutable rotation: float,
