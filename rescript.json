@@ -13,11 +13,6 @@
     }
   ],
   "suffix": ".res.mjs",
-  "bs-dependencies": [
-    "@rescript/react"
-  ],
-  "bsc-flags": [],
-  "jsx": {
-    "version": 4
-  }
+  "bs-dependencies": [],
+  "bsc-flags": []
 }

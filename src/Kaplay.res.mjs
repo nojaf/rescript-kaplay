@@ -3,19 +3,25 @@
 
 let Debug = {};
 
-let GameObj = {};
-
 let Vec2 = {};
 
-let SpriteComp = {};
+let Shape = {};
 
-let PosComp = {};
+let $$Math = {
+  Shape: Shape
+};
+
+let mathRect = (function (k, pos, width, height) {
+    return new k.Rect(pos, width, height);
+});
+
+let GameObj = {};
 
 export {
   Debug,
-  GameObj,
   Vec2,
-  SpriteComp,
-  PosComp,
+  $$Math,
+  mathRect,
+  GameObj,
 }
 /* No side effect */
