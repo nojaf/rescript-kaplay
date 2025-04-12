@@ -20,9 +20,16 @@ k.setGravity(250);
 
 k.debug.inspect = true;
 
+let squirtleSpritesheetDimensions = {
+  width: 167,
+  height: 39
+};
+
+function mkSquirtleQuad(x, y, w, h) {
+  return k.quad(x / squirtleSpritesheetDimensions.width, y / squirtleSpritesheetDimensions.height, w / squirtleSpritesheetDimensions.width, h / squirtleSpritesheetDimensions.height);
+}
+
 k.loadSprite("squirtle", "sprites/squirtle.png", {
-  sliceX: 5,
-  sliceY: 1,
   anims: {
     idle: {
       frames: [0]
@@ -41,7 +48,14 @@ k.loadSprite("squirtle", "sprites/squirtle.png", {
       loop: false,
       frames: [4]
     }
-  }
+  },
+  frames: [
+    mkSquirtleQuad(0, 0, 34, 39),
+    mkSquirtleQuad(35, 1, 33, 37),
+    mkSquirtleQuad(70, 0, 32, 38),
+    mkSquirtleQuad(104, 1, 32, 36),
+    mkSquirtleQuad(137, 0, 30, 39)
+  ]
 });
 
 let ground = k.add([
@@ -63,6 +77,8 @@ let squirtle = k.add([
   k.body(),
   "squirtle"
 ]);
+
+k.debug.log(squirtle.numFrames().toString());
 
 squirtle.play("idle");
 
@@ -145,6 +161,8 @@ let speed = 200;
 export {
   screen,
   k,
+  squirtleSpritesheetDimensions,
+  mkSquirtleQuad,
   ground,
   squirtle,
   speed,

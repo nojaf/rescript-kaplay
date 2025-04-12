@@ -9,7 +9,8 @@
     "res:dev": "rescript -w",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fmt": "rescript format -all"
   },
   "dependencies": {
     "kaplay": "3001.0.10",

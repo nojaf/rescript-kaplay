@@ -18,19 +18,30 @@ let k = kaplay(
 k->setGravity(250.)
 k.debug->Debug.setInspect(true)
 
+let squirtleSpritesheetDimensions = {
+  "width": 167.,
+  "height": 39.,
+}
+
+let mkSquirtleQuad = (x: float, y: float, w: float, h: float) =>
+  k->quad(
+    x / squirtleSpritesheetDimensions["width"],
+    y / squirtleSpritesheetDimensions["height"],
+    w / squirtleSpritesheetDimensions["width"],
+    h / squirtleSpritesheetDimensions["height"],
+  )
+
 k->loadSprite(
   "squirtle",
   "sprites/squirtle.png",
   ~options={
-    sliceX: 5,
-    sliceY: 1,
-    // frames: [
-    //   k->quad(0, 0, 34, 39),
-    //   k->quad(35, 1, 33, 37),
-    //   k->quad(70, 0, 32, 38),
-    //   k->quad(104, 1, 32, 36),
-    //   k->quad(137, 0, 30, 39),
-    // ],
+    frames: [
+      mkSquirtleQuad(0., 0., 34., 39.),
+      mkSquirtleQuad(35., 1., 33., 37.),
+      mkSquirtleQuad(70., 0., 32., 38.),
+      mkSquirtleQuad(104., 1., 32., 36.),
+      mkSquirtleQuad(137., 0., 30., 39.),
+    ],
     anims: dict{
       "idle": ({frames: [0]}: loadSpriteAnimation),
       "walk": {frames: [1, 2, 3, 2], loop: true, speed: 12.},
@@ -66,6 +77,8 @@ let squirtle = k->add([
   k->body,
   tag("squirtle"),
 ])
+
+k.debug->Debug.log(squirtle->GameObj.numFrames->Int.toString)
 
 squirtle->GameObj.play("idle")
 

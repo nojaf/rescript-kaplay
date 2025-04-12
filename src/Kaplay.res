@@ -35,7 +35,7 @@ type loadSpriteAnimation = {
 type quad
 
 @send
-external quad: (t, int, int, int, int) => quad = "quad"
+external quad: (t, float, float, float, float) => quad = "quad"
 
 type loadSpriteOptions = {
   sliceX?: int,
