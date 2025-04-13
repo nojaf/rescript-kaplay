@@ -17,6 +17,30 @@ let cameraBounds = {
   }
 };
 
+let zeroVector = KaplayContext.k.vec2(0, 0);
+
+let cameraVelocity = {
+  contents: zeroVector
+};
+
+let lastTouchStart = {
+  contents: zeroVector
+};
+
+let isDragging = {
+  contents: false
+};
+
+function updateCamera(result) {
+  let currentCamPos = KaplayContext.k.getCamPos();
+  let result$1 = currentCamPos.add(result);
+  result$1.x = KaplayContext.k.clamp(result$1.x, cameraBounds.x.min, cameraBounds.x.max);
+  result$1.y = KaplayContext.k.clamp(result$1.y, cameraBounds.y.min, cameraBounds.y.max);
+  KaplayContext.k.tween(currentCamPos, result$1, 0.100, v => {
+    KaplayContext.k.setCamPos(v);
+  }, KaplayContext.k.easings.linear);
+}
+
 function scene() {
   KaplayContext.k.loadSprite("bg", "middle-earth.webp");
   let map = KaplayContext.k.add([
@@ -27,18 +51,46 @@ function scene() {
     }),
     KaplayContext.k.area()
   ]);
-  return map.onKeyDown(key => {
+  KaplayContext.k.onTouchStart((pos, _touch) => {
+    lastTouchStart.contents = pos;
+    isDragging.contents = true;
+    cameraVelocity.contents = zeroVector;
+  });
+  KaplayContext.k.onTouchMove((pos, _touch) => {
+    if (!isDragging.contents) {
+      return;
+    }
+    let delta = pos.sub(lastTouchStart.contents);
+    cameraVelocity.contents = delta.scale(KaplayContext.k.vec2(-150, -100));
+    lastTouchStart.contents = pos;
+  });
+  KaplayContext.k.onTouchEnd((param, _touch) => {
+    isDragging.contents = false;
+  });
+  KaplayContext.k.onUpdate(() => {
+    if (isDragging.contents) {
+      return;
+    }
+    let currentVelocity = cameraVelocity.contents;
+    if (currentVelocity.len() > 0.1) {
+      updateCamera(currentVelocity);
+      cameraVelocity.contents = currentVelocity.scale(KaplayContext.k.vec2(0.9, 0.9));
+      return;
+    }
+    
+  });
+  map.onKeyDown(key => {
     let currentCamPos = KaplayContext.k.getCamPos();
     let move;
     switch (key) {
       case "left" :
-        move = KaplayContext.k.vec2(-10, 0);
+        move = KaplayContext.k.vec2(- 10, 0);
         break;
       case "right" :
         move = KaplayContext.k.vec2(10, 0);
         break;
       case "up" :
-        move = KaplayContext.k.vec2(0, -10);
+        move = KaplayContext.k.vec2(0, - 10);
         break;
       case "down" :
         move = KaplayContext.k.vec2(0, 10);
@@ -68,6 +120,11 @@ export {
   gameWidth,
   gameHeight,
   cameraBounds,
+  zeroVector,
+  cameraVelocity,
+  lastTouchStart,
+  isDragging,
+  updateCamera,
   scene,
 }
 /* gameWidth Not a pure module */

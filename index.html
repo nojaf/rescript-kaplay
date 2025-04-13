@@ -1,27 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ReScript + Vite + React</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ReScript + Vite + React</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+      html,
+      body,
+      canvas {
+        height: 100%;
+        overflow: clip;
+      }
+    </style>
+  </head>
 
-    html, body {
-      height: 100%;
-      overflow: clip;
-    }
-  </style>
-</head>
+  <body>
+    <script type="module">
+      const abortController = new AbortController();
+      const { signal } = abortController;
 
-<body>
-  <script type="module" src="/src/Main.res.mjs"></script>
-</body>
+      addEventListener("click", loadGame, { signal });
+      addEventListener("touchstart", loadGame, { signal });
 
+      async function loadGame() {
+        await document.documentElement.requestFullscreen();
+        await import("/src/Main.res.mjs");
+        abortController.abort();
+      }
+    </script>
+    <!-- <script type="module" src="/src/Main.res.mjs"></script> -->
+  </body>
 </html>

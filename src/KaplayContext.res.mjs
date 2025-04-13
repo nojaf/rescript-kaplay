@@ -2,21 +2,16 @@
 
 import Kaplay from "kaplay";
 
-let screen = {
-  width: 720,
-  height: 280
-};
-
 let k = Kaplay({
-  width: screen.width,
-  height: screen.height,
+  width: 720,
+  height: 320,
   global: false,
   background: "#6495ED",
-  scale: 1
+  scale: 1,
+  letterbox: true
 });
 
 export {
-  screen,
   k,
 }
 /* k Not a pure module */

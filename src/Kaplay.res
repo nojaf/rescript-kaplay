@@ -8,7 +8,10 @@ module Debug = {
   external setInspect: (t, bool) => unit = "inspect"
 }
 
-type t = {debug: Debug.t}
+type easeFunc = float => float
+type easingMap = {linear: easeFunc}
+
+type t = {debug: Debug.t, easings: easingMap}
 
 type kaplayOptions = {
   width?: int,
@@ -16,6 +19,7 @@ type kaplayOptions = {
   global?: bool,
   background?: string,
   scale?: float,
+  letterbox?: bool,
 }
 
 @module("kaplay")
@@ -55,10 +59,19 @@ module Vec2 = {
 
   @send
   external add: (t, t) => t = "add"
+
+  @send
+  external sub: (t, t) => t = "sub"
+
+  @send
+  external scale: (t, t) => t = "scale"
+
+  @send
+  external len: t => float = "len"
 }
 
 @send
-external vec2: (t, int, int) => Vec2.t = "vec2"
+external vec2: (t, float, float) => Vec2.t = "vec2"
 
 @unboxed
 type key =
@@ -91,6 +104,20 @@ external onKeyRelease: (t, key => unit) => kEventController = "onKeyRelease"
 
 @send
 external isKeyDown: (t, key) => bool = "isKeyDown"
+
+type touch
+
+@send
+external onTouchStart: (t, (Vec2.t, touch) => unit) => kEventController = "onTouchStart"
+
+@send
+external onTouchMove: (t, (Vec2.t, touch) => unit) => kEventController = "onTouchMove"
+
+@send
+external onTouchEnd: (t, (Vec2.t, touch) => unit) => kEventController = "onTouchEnd"
+
+@send
+external onUpdate: (t, unit => unit) => kEventController = "onUpdate"
 
 @send
 external width: t => int = "width"
@@ -231,3 +258,18 @@ external getCamPos: t => Vec2.t = "getCamPos"
 
 @send
 external clamp: (t, int, int, int) => int = "clamp"
+
+type tweenController
+
+@send
+external tween: (
+  t,
+  ~from: 'v,
+  ~to_: 'v,
+  ~duration: float,
+  ~setValue: 'v => unit,
+  ~easeFunc: easeFunc=?,
+) => tweenController = "tween"
+
+@send
+external setFullscreen: (t, bool) => unit = "setFullscreen"
