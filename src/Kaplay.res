@@ -48,7 +48,13 @@ type loadSpriteOptions = {
 external loadSprite: (t, string, string, ~options: loadSpriteOptions=?) => unit = "loadSprite"
 
 module Vec2 = {
-  type t
+  type t = {
+    mutable x: int,
+    mutable y: int,
+  }
+
+  @send
+  external add: (t, t) => t = "add"
 }
 
 @send
@@ -133,6 +139,24 @@ module GameObj = {
 
   @send
   external onGround: (t, unit => unit) => kEventController = "onGround"
+
+  /**
+    Hitting the key
+ */
+  @send
+  external onKeyPress: (t, key => unit) => kEventController = "onKeyPress"
+
+  /**
+    Holding the key down
+ */
+  @send
+  external onKeyDown: (t, key => unit) => kEventController = "onKeyDown"
+
+  /**
+    Lifting the key up
+ */
+  @send
+  external onKeyRelease: (t, key => unit) => kEventController = "onKeyRelease"
 }
 
 @send
@@ -192,3 +216,18 @@ external rect: (t, int, int, ~options: rectCompOpt=?) => comp = "rect"
 /** hex value */
 @send
 external color: (t, string) => comp = "color"
+
+@send
+external scene: (t, string, 'a => unit) => unit = "scene"
+
+@send
+external go: (t, string, ~data: 'a=?) => unit = "go"
+
+@send
+external setCamPos: (t, Vec2.t) => unit = "setCamPos"
+
+@send
+external getCamPos: t => Vec2.t = "getCamPos"
+
+@send
+external clamp: (t, int, int, int) => int = "clamp"
