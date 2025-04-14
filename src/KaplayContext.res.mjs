@@ -3,12 +3,11 @@
 import Kaplay from "kaplay";
 
 let k = Kaplay({
-  width: 720,
-  height: 320,
+  width: Math.min(720, screen.width),
+  height: Math.min(360, screen.height),
   global: false,
   background: "#6495ED",
-  scale: 1,
-  letterbox: true
+  scale: 1
 });
 
 export {

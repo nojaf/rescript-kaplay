@@ -6,13 +6,15 @@ external screenWidth: int = "width"
 @val @scope("screen")
 external screenHeight: int = "height"
 
+@scope("Math")
+external min: (int, int) => int = "min"
+
 let k = kaplay(
   ~initOptions={
-    width: 720, // screenWidth,
-    height: 320, // screenHeight,
+    width: min(720, screenWidth),
+    height: min(360, screenHeight),
     global: false,
     background: "#6495ED",
     scale: 1.,
-    letterbox: true,
   },
 )
