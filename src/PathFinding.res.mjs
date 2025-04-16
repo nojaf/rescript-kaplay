@@ -12,7 +12,7 @@ function scene() {
     "#  S     #",
     "#        #",
     "#        #",
-    "###########"
+    "##########"
   ], {
     tileWidth: 64,
     tileHeight: 64,
@@ -25,7 +25,7 @@ function scene() {
       "#": () => [
         KaplayContext.k.rect(64, 64),
         KaplayContext.k.tile(),
-        KaplayContext.k.color("#00EE00"),
+        KaplayContext.k.color(KaplayContext.k.Color.fromHex("#00EE00")),
         KaplayContext.k.outline(2, KaplayContext.k.Color.fromHex("#0AC0B0"), 1)
       ],
       S: () => [
@@ -36,7 +36,7 @@ function scene() {
         }),
         KaplayContext.k.pos(32, 32),
         KaplayContext.k.anchor("center"),
-        KaplayContext.k.color("#ADD8E6"),
+        KaplayContext.k.color(KaplayContext.k.Color.fromHex("#ADD8E6")),
         "squirtle"
       ]
     }
@@ -49,7 +49,7 @@ function scene() {
     KaplayContext.k.anchor("center"),
     KaplayContext.k.pos(32, 32),
     KaplayContext.k.tile(),
-    KaplayContext.k.color("#FF746C"),
+    KaplayContext.k.color(KaplayContext.k.Color.fromHex("#FF746C")),
     KaplayContext.k.agent({
       speed: 120,
       allowDiagonals: false

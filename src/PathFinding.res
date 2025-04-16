@@ -14,7 +14,7 @@ let scene = () => {
       "#  S     #",
       "#        #",
       "#        #",
-      "###########",
+      "##########",
     ],
     {
       tileWidth: tileSize,
@@ -29,7 +29,7 @@ let scene = () => {
           //
           k->rect(tileSize, tileSize),
           k->tile,
-          k->color("#00EE00"),
+          k->color(k->colorFromHex("#00EE00")),
           k->outline(~width=2, ~color=k->colorFromHex("#0AC0B0"), ~opacity=1.),
         ],
         "S": () => [
@@ -37,7 +37,7 @@ let scene = () => {
           k->sprite("squirtle", ~options={width: tileSize, height: tileSize}),
           k->pos(tileSize / 2, tileSize / 2),
           k->anchorCenter,
-          k->color("#ADD8E6"),
+          k->color(k->colorFromHex("#ADD8E6")),
           tag("squirtle"),
         ],
       },
@@ -51,7 +51,7 @@ let scene = () => {
       k->anchorCenter,
       k->pos(tileSize / 2, tileSize / 2),
       k->tile,
-      k->color("#FF746C"),
+      k->color(k->colorFromHex("#FF746C")),
       k->agent(~options={speed: 120., allowDiagonals: false}),
     ],
     k->vec2(7., 4.),

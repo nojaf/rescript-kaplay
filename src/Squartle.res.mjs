@@ -42,7 +42,7 @@ function scene() {
   KaplayContext.k.add([
     KaplayContext.k.rect(KaplayContext.k.width(), 24),
     KaplayContext.k.pos(0, KaplayContext.k.height() - 24 | 0),
-    KaplayContext.k.color("#D97744"),
+    KaplayContext.k.color(KaplayContext.k.Color.fromHex("#D97744")),
     KaplayContext.k.area(),
     KaplayContext.k.body({
       isStatic: true

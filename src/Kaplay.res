@@ -212,6 +212,17 @@ external onClick: (t, tag, GameObj.t => unit) => kEventController = "onClick"
 @send
 external setGravity: (t, float) => unit = "setGravity"
 
+module AudioPlay = {
+  type t
+}
+
+type playOptions = {
+  /** The start time, in seconds. */
+  seek?: float,
+}
+@send
+external play: (t, string, ~options: playOptions=?) => AudioPlay.t = "play"
+
 type comp
 
 @send
@@ -224,6 +235,14 @@ type spriteCompOptions = {
   anim?: string,
   singular?: bool,
 }
+
+type getOptions = {
+  recursive?: bool,
+  liveUpdate?: bool,
+}
+
+@send
+external getGameObjects: (t, tag, ~options: getOptions=?) => array<GameObj.t> = "get"
 
 @send
 external sprite: (t, string, ~options: spriteCompOptions=?) => comp = "sprite"
@@ -265,7 +284,7 @@ external rect: (t, int, int, ~options: rectCompOpt=?) => comp = "rect"
 
 /** hex value */
 @send
-external color: (t, string) => comp = "color"
+external color: (t, Color.t) => comp = "color"
 
 @send
 external outline: (t, ~width: int=?, ~color: Color.t=?, ~opacity: float=?) => comp = "outline"
@@ -335,23 +354,3 @@ type agentOptions = {
 
 @send
 external agent: (t, ~options: agentOptions=?) => comp = "agent"
-
-type getOptions = {
-  recursive?: bool,
-  liveUpdate?: bool,
-}
-
-@send
-external getGameObjects: (t, tag, ~options: getOptions=?) => array<GameObj.t> = "get"
-
-module AudioPlay = {
-  type t
-}
-
-type playOptions = {
-  /** The start time, in seconds. */
-  seek?: float,
-}
-
-@send
-external play: (t, string, ~options: playOptions=?) => AudioPlay.t = "play"

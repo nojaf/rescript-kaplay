@@ -41,7 +41,7 @@ let scene = () => {
     //
     k->rect(k->width, 24),
     k->pos(0, k->height - 24),
-    k->color("#D97744"),
+    k->color(k->colorFromHex("#D97744")),
     k->area,
     k->body(~options={isStatic: true}),
   ])

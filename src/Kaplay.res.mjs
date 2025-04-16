@@ -19,9 +19,9 @@ let mathRect = (function (k, pos, width, height) {
 
 let GameObj = {};
 
-let Level = {};
-
 let AudioPlay = {};
+
+let Level = {};
 
 export {
   Debug,
@@ -30,7 +30,7 @@ export {
   $$Math,
   mathRect,
   GameObj,
-  Level,
   AudioPlay,
+  Level,
 }
 /* No side effect */
