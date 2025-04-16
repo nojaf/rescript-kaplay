@@ -51,6 +51,13 @@ type loadSpriteOptions = {
 @send
 external loadSprite: (t, string, string, ~options: loadSpriteOptions=?) => unit = "loadSprite"
 
+@send
+external loadSound: (t, string, string) => unit = "loadSound"
+
+/** Like loadSound(), but the audio is streamed and won't block loading. Use this for big audio files like background music. */
+@send
+external loadMusic: (t, string, string) => unit = "loadMusic"
+
 module Vec2 = {
   type t = {
     mutable x: int,
@@ -72,6 +79,13 @@ module Vec2 = {
 
 @send
 external vec2: (t, float, float) => Vec2.t = "vec2"
+
+module Color = {
+  type t
+}
+
+@send @scope("Color")
+external colorFromHex: (t, string) => Color.t = "fromHex"
 
 @unboxed
 type key =
@@ -140,6 +154,9 @@ function (k, pos, width, height) {
 module GameObj = {
   type t
 
+  @get
+  external getPos: t => Vec2.t = "pos"
+
   @send
   external move: (t, int, int) => unit = "move"
 
@@ -184,6 +201,9 @@ module GameObj = {
  */
   @send
   external onKeyRelease: (t, key => unit) => kEventController = "onKeyRelease"
+
+  @send
+  external setTarget: (t, Vec2.t) => unit = "setTarget"
 }
 
 @send
@@ -211,6 +231,9 @@ external sprite: (t, string, ~options: spriteCompOptions=?) => comp = "sprite"
 @send
 external pos: (t, int, int) => comp = "pos"
 
+@send
+external anchorCenter: (t, @as("center") _) => comp = "anchor"
+
 type areaCompOptions = {
   /** Only Rect and Polygon are supported */
   shape?: Math.Shape.t,
@@ -225,8 +248,8 @@ external tag: tag => comp = "%identity"
 type bodyCompOpt = {isStatic?: bool}
 
 /**
-Physical body that responds to gravity. 
-Requires "area" and "pos" comp. 
+Physical body that responds to gravity.
+Requires "area" and "pos" comp.
 This also makes the object "solid".
  */
 @send
@@ -243,6 +266,12 @@ external rect: (t, int, int, ~options: rectCompOpt=?) => comp = "rect"
 /** hex value */
 @send
 external color: (t, string) => comp = "color"
+
+@send
+external outline: (t, ~width: int=?, ~color: Color.t=?, ~opacity: float=?) => comp = "outline"
+
+@send
+external opacity: (t, float) => comp = "opacity"
 
 @send
 external scene: (t, string, 'a => unit) => unit = "scene"
@@ -273,3 +302,56 @@ external tween: (
 
 @send
 external setFullscreen: (t, bool) => unit = "setFullscreen"
+
+type levelOptions = {
+  tileWidth?: int,
+  tileHeight?: int,
+  tiles: Dict.t<unit => array<comp>>,
+}
+
+module Level = {
+  type t
+
+  @send
+  external spawn: (t, array<comp>, Vec2.t) => GameObj.t = "spawn"
+}
+
+@send
+external addLevel: (t, array<string>, levelOptions) => Level.t = "addLevel"
+
+type tileOptions = {
+  isObstacle?: bool,
+  cost?: int,
+  offset?: Vec2.t,
+}
+
+@send
+external tile: (t, ~options: tileOptions=?) => comp = "tile"
+
+type agentOptions = {
+  speed?: float,
+  allowDiagonals?: bool,
+}
+
+@send
+external agent: (t, ~options: agentOptions=?) => comp = "agent"
+
+type getOptions = {
+  recursive?: bool,
+  liveUpdate?: bool,
+}
+
+@send
+external getGameObjects: (t, tag, ~options: getOptions=?) => array<GameObj.t> = "get"
+
+module AudioPlay = {
+  type t
+}
+
+type playOptions = {
+  /** The start time, in seconds. */
+  seek?: float,
+}
+
+@send
+external play: (t, string, ~options: playOptions=?) => AudioPlay.t = "play"

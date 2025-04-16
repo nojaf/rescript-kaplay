@@ -5,6 +5,8 @@ let Debug = {};
 
 let Vec2 = {};
 
+let Color = {};
+
 let Shape = {};
 
 let $$Math = {
@@ -17,11 +19,18 @@ let mathRect = (function (k, pos, width, height) {
 
 let GameObj = {};
 
+let Level = {};
+
+let AudioPlay = {};
+
 export {
   Debug,
   Vec2,
+  Color,
   $$Math,
   mathRect,
   GameObj,
+  Level,
+  AudioPlay,
 }
 /* No side effect */

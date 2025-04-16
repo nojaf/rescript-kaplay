@@ -3,8 +3,6 @@
 import Kaplay from "kaplay";
 
 let k = Kaplay({
-  width: Math.min(720, screen.width),
-  height: Math.min(360, screen.height),
   global: false,
   background: "#6495ED",
   scale: 1

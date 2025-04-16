@@ -2,12 +2,15 @@
 
 import * as Squartle from "./Squartle.res.mjs";
 import * as MiddleEarth from "./MiddleEarth.res.mjs";
+import * as PathFinding from "./PathFinding.res.mjs";
 import * as KaplayContext from "./KaplayContext.res.mjs";
 
 KaplayContext.k.scene("squartle", Squartle.scene);
 
 KaplayContext.k.scene("middle-earth", MiddleEarth.scene);
 
-KaplayContext.k.go("middle-earth");
+KaplayContext.k.scene("path-finding", PathFinding.scene);
+
+KaplayContext.k.go("path-finding");
 
 /*  Not a pure module */
