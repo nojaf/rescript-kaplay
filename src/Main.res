@@ -4,5 +4,6 @@ open KaplayContext
 k->scene("squartle", Squartle.scene)
 k->scene("middle-earth", MiddleEarth.scene)
 k->scene("path-finding", PathFinding.scene)
+k->scene("sentry", Sentry.scene)
 
-k->go("path-finding")
+k->go("sentry")

@@ -202,8 +202,13 @@ module GameObj = {
   @send
   external onKeyRelease: (t, key => unit) => kEventController = "onKeyRelease"
 
+  /** Part of the agent comp  */
   @send
   external setTarget: (t, Vec2.t) => unit = "setTarget"
+
+  /** Part of the sentry comp */
+  @send
+  external onObjectsSpotted: (t, array<t> => unit) => kEventController = "onObjectsSpotted"
 }
 
 @send
@@ -354,3 +359,31 @@ type agentOptions = {
 
 @send
 external agent: (t, ~options: agentOptions=?) => comp = "agent"
+
+type sentryOptions = {
+  direction?: Vec2.t,
+  fieldOfView?: float,
+  lineOfSight?: bool,
+  raycastExclude?: array<string>,
+  checkFrequency?: float,
+}
+
+@send
+external sentry: (t, array<GameObj.t>, ~options: sentryOptions=?) => comp = "sentry"
+
+type textAlign =
+  | @as("left") Left
+  | @as("center") Center
+  | @as("right") Right
+
+type textOptions = {
+  size?: float,
+  font?: string,
+  width?: int,
+  align?: textAlign,
+  lineSpacing?: float,
+  letterSpacing?: float,
+}
+
+@send
+external text: (t, string, ~options: textOptions=?) => comp = "text"
