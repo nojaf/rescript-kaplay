@@ -63,5 +63,5 @@ let scene = () => {
     | Down => squirtle->GameObj.move(0, 400)
     | _ => ()
     }
-  })
+  })->ignore
 }

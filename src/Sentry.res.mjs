@@ -44,7 +44,7 @@ function scene() {
   flareon.onObjectsSpotted(spotted => {
     KaplayContext.k.debug.log("Spotted squirtle: " + spotted.length.toString());
   });
-  return squirtle.onKeyDown(key => {
+  squirtle.onKeyDown(key => {
     switch (key) {
       case "left" :
         squirtle.move(-400, 0);
