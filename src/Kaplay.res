@@ -269,7 +269,7 @@ external area: (t, ~options: areaCompOptions=?) => comp = "area"
 
 external tag: tag => comp = "%identity"
 
-type bodyCompOpt = {isStatic?: bool}
+type bodyOptions = {isStatic?: bool}
 
 /**
 Physical body that responds to gravity.
@@ -277,15 +277,20 @@ Requires "area" and "pos" comp.
 This also makes the object "solid".
  */
 @send
-external body: (t, ~options: bodyCompOpt=?) => comp = "body"
+external body: (t, ~options: bodyOptions=?) => comp = "body"
 
-type rectCompOpt = {
+type rectOptions = {
   radius?: float,
   fill?: bool,
 }
 
 @send
-external rect: (t, int, int, ~options: rectCompOpt=?) => comp = "rect"
+external rect: (t, int, int, ~options: rectOptions=?) => comp = "rect"
+
+type circleOptions = {fill?: bool}
+
+@send
+external circle: (t, int, ~options: circleOptions=?) => comp = "circle"
 
 /** hex value */
 @send

@@ -55,7 +55,8 @@ let scene = () => {
   })
   ->ignore
 
-  squirtle->GameObj.onKeyDown(key => {
+  squirtle
+  ->GameObj.onKeyDown(key => {
     switch key {
     | Left => squirtle->GameObj.move(-400, 0)
     | Right => squirtle->GameObj.move(400, 0)
@@ -63,5 +64,6 @@ let scene = () => {
     | Down => squirtle->GameObj.move(0, 400)
     | _ => ()
     }
-  })->ignore
+  })
+  ->ignore
 }
