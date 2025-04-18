@@ -14,14 +14,14 @@
   },
   "dependencies": {
     "kaplay": "3001.0.10",
-    "rescript": "12.0.0-alpha.12"
+    "rescript": "12.0.0-alpha.11"
   },
   "devDependencies": {
-    "@nojaf/vite-plugin-rescript": "0.1.2",
-    "@rescript/language-server": "1.63.0-next-acd6d7d.0",
+    "@nojaf/vite-plugin-rescript": "0.2.0",
     "vite": "6.3.0"
   },
   "trustedDependencies": [
+    "esbuild",
     "rescript"
   ]
 }

@@ -17,6 +17,14 @@ let mathRect = (function (k, pos, width, height) {
     return new k.Rect(pos, width, height);
 });
 
+let mathCircle = (function (k, center, radius) {
+    return new k.Circle(center, radius);
+});
+
+let mathPolygon = (function (k,  points) {
+    return new k.Polygon(points);
+});
+
 let Collision = {};
 
 let GameObj = {};
@@ -31,6 +39,8 @@ export {
   Color,
   $$Math,
   mathRect,
+  mathCircle,
+  mathPolygon,
   Collision,
   GameObj,
   AudioPlay,

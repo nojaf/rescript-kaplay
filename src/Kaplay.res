@@ -60,8 +60,8 @@ external loadMusic: (t, string, string) => unit = "loadMusic"
 
 module Vec2 = {
   type t = {
-    mutable x: int,
-    mutable y: int,
+    mutable x: float,
+    mutable y: float,
   }
 
   @send
@@ -171,6 +171,19 @@ function (k, pos, width, height) {
 }
 `)
 
+/** center, radius */
+let mathCircle: (t, Vec2.t, float) => Math.Shape.t = %raw(`
+function (k, center, radius) {
+    return new k.Circle(center, radius);
+}
+`)
+
+let mathPolygon: (t, array<Vec2.t>) => Math.Shape.t = %raw(`
+function (k,  points) {
+    return new k.Polygon(points);
+}
+`)
+
 type comp
 
 module Collision = {
@@ -253,6 +266,27 @@ module GameObj = {
 
   @send
   external destroy: t => unit = "destroy"
+
+  @send
+  external hurt: (t, int) => unit = "hurt"
+
+  @send
+  external heal: (t, int) => unit = "heal"
+
+  @send
+  external hp: t => int = "hp"
+
+  @send
+  external setHP: (t, int) => unit = "setHP"
+
+  @send
+  external onHurt: (t, (~amount: int=?) => unit) => kEventController = "onHurt"
+
+  @send
+  external onHeal: (t, (~amount: int=?) => unit) => kEventController = "onHeal"
+
+  @send
+  external onDeath: (t, unit => unit) => kEventController = "onDeath"
 }
 
 @send
@@ -260,6 +294,9 @@ external onClick: (t, tag, GameObj.t => unit) => kEventController = "onClick"
 
 @send
 external setGravity: (t, float) => unit = "setGravity"
+
+@send
+external destroy: (t, GameObj.t) => unit = "destroy"
 
 module AudioPlay = {
   type t
@@ -363,6 +400,9 @@ external getCamPos: t => Vec2.t = "getCamPos"
 @send
 external clamp: (t, int, int, int) => int = "clamp"
 
+@send
+external clampFloat: (t, float, float, float) => float = "clampFloat"
+
 type tweenController
 
 @send
@@ -451,3 +491,6 @@ external offscreen: (t, ~options: offscreenOptions=?) => comp = "offscreen"
 
 @send
 external text: (t, string, ~options: textOptions=?) => comp = "text"
+
+@send
+external health: (t, int, ~maxHp: int=?) => comp = "health"
