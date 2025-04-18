@@ -133,6 +133,16 @@ external onTouchEnd: (t, (Vec2.t, touch) => unit) => kEventController = "onTouch
 @send
 external onUpdate: (t, unit => unit) => kEventController = "onUpdate"
 
+type timerController
+
+/** Run the function every n seconds. */
+@send
+external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) => timerController =
+  "loop"
+
+@send
+external wait: (t, float, unit => unit) => timerController = "wait"
+
 @send
 external width: t => int = "width"
 
@@ -151,6 +161,12 @@ function (k, pos, width, height) {
 }
 `)
 
+type comp
+
+module Collision = {
+  type t
+}
+
 module GameObj = {
   type t
 
@@ -168,6 +184,9 @@ module GameObj = {
 
   @send
   external numFrames: t => int = "numFrames"
+
+  @set
+  external setColor: (t, Color.t) => unit = "color"
 
   @send
   external play: (t, string) => unit = "play"
@@ -209,6 +228,15 @@ module GameObj = {
   /** Part of the sentry comp */
   @send
   external onObjectsSpotted: (t, array<t> => unit) => kEventController = "onObjectsSpotted"
+
+  @send
+  external onCollide: (t, tag, (t, Collision.t) => unit) => kEventController = "onCollide"
+
+  @send
+  external onCollideEnd: (t, tag, t => unit) => kEventController = "onCollideEnd"
+
+  @send
+  external add: (t, array<comp>) => t = "add"
 }
 
 @send
@@ -227,8 +255,6 @@ type playOptions = {
 }
 @send
 external play: (t, string, ~options: playOptions=?) => AudioPlay.t = "play"
-
-type comp
 
 @send
 external add: (t, array<comp>) => GameObj.t = "add"
@@ -299,6 +325,7 @@ external color: (t, Color.t) => comp = "color"
 @send
 external outline: (t, ~width: int=?, ~color: Color.t=?, ~opacity: float=?) => comp = "outline"
 
+/** Value between 0 and 1 */
 @send
 external opacity: (t, float) => comp = "opacity"
 
@@ -389,6 +416,19 @@ type textOptions = {
   lineSpacing?: float,
   letterSpacing?: float,
 }
+
+@send
+external move: (t, Vec2.t, float) => comp = "move"
+
+type offscreenOptions = {
+  hide?: bool,
+  pause?: bool,
+  destroy?: bool,
+  distance?: int,
+}
+
+@send
+external offscreen: (t, ~options: offscreenOptions=?) => comp = "offscreen"
 
 @send
 external text: (t, string, ~options: textOptions=?) => comp = "text"

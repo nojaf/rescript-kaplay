@@ -17,6 +17,8 @@ let mathRect = (function (k, pos, width, height) {
     return new k.Rect(pos, width, height);
 });
 
+let Collision = {};
+
 let GameObj = {};
 
 let AudioPlay = {};
@@ -29,6 +31,7 @@ export {
   Color,
   $$Math,
   mathRect,
+  Collision,
   GameObj,
   AudioPlay,
   Level,
