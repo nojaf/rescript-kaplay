@@ -75,6 +75,12 @@ module Vec2 = {
 
   @send
   external len: t => float = "len"
+
+  @send
+  external unit: t => t = "unit"
+
+  @send
+  external lerp: (t, t, float) => t = "lerp"
 }
 
 @send
@@ -149,6 +155,10 @@ external width: t => int = "width"
 @send
 external height: t => int = "height"
 
+/** Get the delta time since last frame. */
+@send
+external dt: t => float = "dt"
+
 module Math = {
   module Shape = {
     type t
@@ -174,7 +184,7 @@ module GameObj = {
   external getPos: t => Vec2.t = "pos"
 
   @send
-  external move: (t, int, int) => unit = "move"
+  external move: (t, Vec2.t) => unit = "move"
 
   @set
   external setFrame: (t, int) => unit = "frame"
@@ -236,7 +246,13 @@ module GameObj = {
   external onCollideEnd: (t, tag, t => unit) => kEventController = "onCollideEnd"
 
   @send
+  external onUpdate: (t, unit => unit) => kEventController = "onUpdate"
+
+  @send
   external add: (t, array<comp>) => t = "add"
+
+  @send
+  external destroy: t => unit = "destroy"
 }
 
 @send
@@ -280,6 +296,9 @@ external sprite: (t, string, ~options: spriteCompOptions=?) => comp = "sprite"
 
 @send
 external pos: (t, int, int) => comp = "pos"
+
+@send
+external posVec2: (t, Vec2.t) => comp = "pos"
 
 @send
 external anchorCenter: (t, @as("center") _) => comp = "anchor"

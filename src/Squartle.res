@@ -64,7 +64,7 @@ let scene = () => {
 
   squirtle->GameObj.play("idle")
 
-  let speed = 200
+  let speed = 200.
 
   k
   ->onKeyPress(key => {
@@ -97,8 +97,8 @@ let scene = () => {
   k
   ->onKeyDown(key => {
     switch key {
-    | Left => squirtle->GameObj.move(-speed, 0)
-    | Right => squirtle->GameObj.move(speed, 0)
+    | Left => squirtle->GameObj.move(k->vec2(-speed, 0.))
+    | Right => squirtle->GameObj.move(k->vec2(speed, 0.))
     | _ => ()
     }
   })

@@ -58,10 +58,10 @@ let scene = () => {
   squirtle
   ->GameObj.onKeyDown(key => {
     switch key {
-    | Left => squirtle->GameObj.move(-400, 0)
-    | Right => squirtle->GameObj.move(400, 0)
-    | Up => squirtle->GameObj.move(0, -400)
-    | Down => squirtle->GameObj.move(0, 400)
+    | Left => squirtle->GameObj.move(k->vec2(-400., 0.))
+    | Right => squirtle->GameObj.move(k->vec2(400., 0.))
+    | Up => squirtle->GameObj.move(k->vec2(0., -400.))
+    | Down => squirtle->GameObj.move(k->vec2(0., 400.))
     | _ => ()
     }
   })

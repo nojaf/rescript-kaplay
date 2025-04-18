@@ -47,16 +47,16 @@ function scene() {
   squirtle.onKeyDown(key => {
     switch (key) {
       case "left" :
-        squirtle.move(-400, 0);
+        squirtle.move(KaplayContext.k.vec2(-400, 0));
         return;
       case "right" :
-        squirtle.move(400, 0);
+        squirtle.move(KaplayContext.k.vec2(400, 0));
         return;
       case "up" :
-        squirtle.move(0, -400);
+        squirtle.move(KaplayContext.k.vec2(0, -400));
         return;
       case "down" :
-        squirtle.move(0, 400);
+        squirtle.move(KaplayContext.k.vec2(0, 400));
         return;
       case "space" :
       case "enter" :

@@ -93,10 +93,10 @@ function scene() {
   KaplayContext.k.onKeyDown(key => {
     switch (key) {
       case "left" :
-        squirtle.move(-200, 0);
+        squirtle.move(KaplayContext.k.vec2(- 200, 0));
         return;
       case "right" :
-        squirtle.move(200, 0);
+        squirtle.move(KaplayContext.k.vec2(200, 0));
         return;
       default:
         return;

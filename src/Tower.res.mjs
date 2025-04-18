@@ -2,6 +2,17 @@
 
 import * as KaplayContext from "./KaplayContext.res.mjs";
 
+function homing(velocity, timer) {
+  return {
+    homingVelocity: velocity,
+    homingTimer: timer
+  };
+}
+
+let Homing = {
+  homing: homing
+};
+
 function scene() {
   KaplayContext.k.loadSprite("charmander", "/sprites/charmander-rb.png");
   KaplayContext.k.add([
@@ -44,9 +55,34 @@ function scene() {
       })
     ]);
   });
+  let bulletSpeed = KaplayContext.k.vec2(300, 300);
   viewport.onCollide("pkmn", (pkmn, param) => {
     KaplayContext.k.debug.log("pkmn in viewport");
     pkmn.color = KaplayContext.k.Color.fromHex("#FF0000");
+    let from = tower.pos;
+    let bullet = KaplayContext.k.add([
+      KaplayContext.k.pos(from),
+      KaplayContext.k.area(),
+      "bullet",
+      KaplayContext.k.circle(8, {
+        fill: true
+      }),
+      KaplayContext.k.color(KaplayContext.k.Color.fromHex("#0D0D0D")),
+      homing(pkmn.pos.sub(from).unit().scale(bulletSpeed), 0.5)
+    ]);
+    bullet.onUpdate(() => {
+      if (bullet.homingTimer > 0) {
+        let toTarget = pkmn.pos.sub(bullet.pos).unit();
+        bullet.homingVelocity = bullet.homingVelocity.lerp(toTarget.scale(bulletSpeed), 0.1);
+        bullet.homingTimer = bullet.homingTimer - KaplayContext.k.dt();
+      }
+      bullet.move(bullet.homingVelocity);
+    });
+    bullet.onCollide("pkmn", (pkmn, param) => {
+      KaplayContext.k.debug.log("bullet hit pkmn");
+      pkmn.color = KaplayContext.k.Color.fromHex("#000000");
+      bullet.destroy();
+    });
   });
   viewport.onCollideEnd("pkmn", pkmn => {
     KaplayContext.k.debug.log("pkmn out of viewport");
@@ -55,6 +91,7 @@ function scene() {
 }
 
 export {
+  Homing,
   scene,
 }
 /* KaplayContext Not a pure module */
