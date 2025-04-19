@@ -49,7 +49,7 @@ function fireHomingBullet(from, target, maxDistance) {
     KaplayContext.k.area(),
     "bullet",
     KaplayContext.k.z(0),
-    KaplayContext.k.circle(5, {
+    KaplayContext.k.circle(KaplayContext.k.randi(4, 6), {
       fill: true
     }),
     KaplayContext.k.color(bulletColor),

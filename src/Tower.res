@@ -64,7 +64,7 @@ module Shooting = {
         k->area,
         tag("bullet"),
         k->z(0),
-        k->circle(5, ~options={fill: true}),
+        k->circle(k->randi(4, 6), ~options={fill: true}),
         k->color(bulletColor),
         Homing.homing(bulletSpeed, homingStrength, from, target, 0.5, maxDistance),
       ])
