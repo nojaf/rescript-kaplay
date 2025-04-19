@@ -13,6 +13,7 @@ module Homing = {
     from: Vec2.t,
     target: GameObj.t,
     timer: float,
+    maxDistance: float,
   ): comp => {
     let state = {
       velocity: target->GameObj.getPos->Vec2.sub(from)->Vec2.unit->Vec2.scale(speed),
@@ -30,30 +31,42 @@ module Homing = {
         }
 
         self->GameObj.move(state.velocity)
+
+        if self->GameObj.getPos->Vec2.dist(from) >= maxDistance {
+          self->GameObj.destroy
+        }
       },
     })
   }
 }
 
 module Shooting = {
+  let bubbleColors = [
+    k->colorFromHex("#00bcff"),
+    k->colorFromHex("#a2f4fd"),
+    k->colorFromHex("#155dfc"),
+  ]
+
   type state = {
     coolDown: float,
     inSight: Map.t<int, GameObj.t>,
     mutable loopController: option<TimerController.t>,
   }
 
-  let bulletSpeed = k->vec2(300., 300.)
+  let bulletSpeed = k->vec2(200., 200.)
   let homingStrength = 0.1
 
-  let fireHomingBullet = (from, target: GameObj.t) => {
+  let fireHomingBullet = (from, target: GameObj.t, maxDistance: float) => {
+    let bulletColor = bubbleColors->Array.getUnsafe(k->randi(0, 2))
     let bullet =
       k->add([
         k->posVec2(from),
         k->area,
         tag("bullet"),
-        k->circle(8, ~options={fill: true}),
-        k->color(k->colorFromHex("#0D0D0D")),
-        Homing.homing(bulletSpeed, homingStrength, from, target, 0.5),
+        k->z(0),
+        k->circle(5, ~options={fill: true}),
+        k->color(bulletColor),
+        Homing.homing(bulletSpeed, homingStrength, from, target, 0.5, maxDistance),
       ])
 
     bullet
@@ -71,7 +84,7 @@ module Shooting = {
     ->ignore
   }
 
-  let shoot = (from: Vec2.t): comp => {
+  let shoot = (from: Vec2.t, maxDistance: float): comp => {
     let state = {
       coolDown: 0.3,
       inSight: Map.make(),
@@ -100,7 +113,7 @@ module Shooting = {
             let next = state.inSight->Map.values->Iterator.next
 
             next.value->Option.forEach(enemy => {
-              fireHomingBullet(from, enemy)
+              fireHomingBullet(from, enemy, maxDistance)
             })
           }),
         )
@@ -135,37 +148,51 @@ let onSceneLoad = () => {
     k->color(k->colorFromHex("#D1E2F3")),
   ])
 
-  let tower =
-    k->add([
-      k->pos(k->width / 2, 320),
-      k->circle(50, ~options={fill: true}),
-      k->color(k->colorFromHex("#D1FEB8")),
-      k->body,
-      tag("tower"),
-    ])
+  let tower = k->add([
+    k->pos(k->width / 2, 320),
+    k->circle(30, ~options={fill: true}),
+    k->color(k->colorFromHex("#e2e8f0")),
+    k->body,
+    tag("tower"),
+    customComponent({
+      id: "towerGuy",
+      add: @this
+      (tower: GameObj.t) => {
+        tower
+        ->GameObj.add([
+          k->sprite("squirtle"),
+          k->anchorCenter,
+          k->color(k->colorFromHex("#00d3f2")),
+          k->z(10),
+        ])
+        ->ignore
+      },
+    }),
+  ])
 
   let _viewport = tower->GameObj.add([
     k->circle(200, ~options={fill: true}),
     k->color(k->colorFromHex("#D1FEB8")),
-    k->opacity(0.2),
+    k->opacity(0.),
     k->area(
       ~options={
         shape: circlePolygon(k->vec2(0., 0.), 200., ~segments=32),
       },
     ),
-    Shooting.shoot(tower->GameObj.getPos),
+    Shooting.shoot(tower->GameObj.getPos, 200.),
   ])
 
   let regularColor = k->colorFromHex("#fe9441")
 
   k
-  ->loop(3., () => {
+  ->loop(1., () => {
     let charmander = k->add([
       //
       k->sprite(
         "charmander",
         ~options={
           height: 36,
+          flipX: true,
         },
       ),
       k->color(regularColor),
@@ -180,13 +207,11 @@ let onSceneLoad = () => {
         id: "hearts",
         add: @this
         charmander => {
-          Console.log(`Charmander drawn with ${charmander->GameObj.hp->Int.toString} health`)
-
           let hp = charmander->GameObj.hp
           for i in 1 to hp {
             charmander
             ->GameObj.add([
-              k->pos(30 - i * 15, -30),
+              k->pos(25 - i * 15, -35),
               k->sprite(
                 "heart",
                 ~options={
@@ -212,8 +237,9 @@ let onSceneLoad = () => {
 }
 
 let scene = (): unit => {
-  k.debug->Debug.setInspect(true)
+  //k.debug->Debug.setInspect(true)
   k->loadSprite("charmander", "/sprites/charmander-rb.png")
+  k->loadSprite("squirtle", "/sprites/squirtle-rb.png")
   k->loadSprite(
     "heart",
     "/sprites/heart.png",

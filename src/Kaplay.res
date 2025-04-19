@@ -82,10 +82,34 @@ module Vec2 = {
 
   @send
   external lerp: (t, t, float) => t = "lerp"
+
+  @send
+  external dist: (t, t) => float = "dist"
 }
+
+@send @scope("Vec2")
+external vec2Zero: t => Vec2.t = "ZERO"
+
+@send @scope("Vec2")
+external vec2One: t => Vec2.t = "ONE"
+
+@send @scope("Vec2")
+external vec2Left: t => Vec2.t = "LEFT"
+
+@send @scope("Vec2")
+external vec2Right: t => Vec2.t = "RIGHT"
+
+@send @scope("Vec2")
+external vec2Up: t => Vec2.t = "UP"
+
+@send @scope("Vec2")
+external vec2Down: t => Vec2.t = "DOWN"
 
 @send
 external vec2: (t, float, float) => Vec2.t = "vec2"
+
+@send
+external vec2Diagnoal: (t, float) => Vec2.t = "vec2"
 
 module Color = {
   type t
@@ -193,6 +217,9 @@ function (k,  points) {
     return new k.Polygon(points);
 }
 `)
+
+@send
+external randi: (t, int, int) => int = "randi"
 
 type comp
 
@@ -347,6 +374,8 @@ type spriteCompOptions = {
   height?: int,
   anim?: string,
   singular?: bool,
+  flipX?: bool,
+  flipY?: bool,
 }
 
 type getOptions = {
@@ -523,3 +552,6 @@ external text: (t, string, ~options: textOptions=?) => comp = "text"
 
 @send
 external health: (t, int, ~maxHp: int=?) => comp = "health"
+
+@send
+external z: (t, int) => comp = "z"
