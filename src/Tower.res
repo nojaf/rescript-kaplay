@@ -2,10 +2,20 @@ open Kaplay
 open KaplayContext
 
 module Homing = {
-  type state = {
-    mutable velocity: Vec2.t,
-    mutable timer: float,
-  }
+  @editor.completeFrom(Kaplay.GameObj)
+  type t = GameObj.t
+
+  @get
+  external getTimer: t => float = "homingTimer"
+
+  @set
+  external setTimer: (t, float) => unit = "homingTimer"
+
+  @get
+  external getVelocity: t => Vec2.t = "homingVelocity"
+
+  @set
+  external setVelocity: (t, Vec2.t) => unit = "homingVelocity"
 
   let homing = (
     speed: Vec2.t,
@@ -15,22 +25,24 @@ module Homing = {
     timer: float,
     maxDistance: float,
   ): comp => {
-    let state = {
-      velocity: target->GameObj.getPos->Vec2.sub(from)->Vec2.unit->Vec2.scale(speed),
-      timer,
-    }
     customComponent({
       id: "homing",
+      add: @this
+      (self: t) => {
+        self->setVelocity(target->GameObj.getPos->Vec2.sub(from)->Vec2.unit->Vec2.scale(speed))
+        self->setTimer(timer)
+      },
       update: @this
-      self => {
-        if state.timer > 0. {
+      (self: t) => {
+        // If the timer is still running, update the velocity
+        // The idea is that we don't home forever.
+        if self->getTimer > 0. {
           let toTarget = target->GameObj.getPos->Vec2.sub(self->GameObj.getPos)->Vec2.unit
-          state.velocity = state.velocity->Vec2.lerp(toTarget->Vec2.scale(speed), strength)
-
-          state.timer = state.timer - k->dt
+          self->setVelocity(self->getVelocity->Vec2.lerp(toTarget->Vec2.scale(speed), strength))
+          self->setTimer(self->getTimer - k->dt)
         }
 
-        self->GameObj.move(state.velocity)
+        self->GameObj.move(self->getVelocity)
 
         if self->GameObj.getPos->Vec2.dist(from) >= maxDistance {
           self->GameObj.destroy
@@ -47,14 +59,24 @@ module Shooting = {
     k->colorFromHex("#155dfc"),
   ]
 
-  type state = {
-    coolDown: float,
-    inSight: Map.t<int, GameObj.t>,
-    mutable loopController: option<TimerController.t>,
-  }
+  @editor.completeFrom(Kaplay.GameObj)
+  type t = GameObj.t
+
+  @get
+  external getInSight: t => Map.t<int, GameObj.t> = "inSight"
+
+  @set
+  external setInSight: (t, Map.t<int, GameObj.t>) => unit = "inSight"
+
+  @get
+  external getLoopController: t => option<TimerController.t> = "loopController"
+
+  @set
+  external setLoopController: (t, option<TimerController.t>) => unit = "loopController"
 
   let bulletSpeed = k->vec2(200., 200.)
   let homingStrength = 0.1
+  let coolDown = 0.227
 
   let fireHomingBullet = (from, target: GameObj.t, maxDistance: float) => {
     let bulletColor = bubbleColors->Array.getUnsafe(k->randi(0, 2))
@@ -85,42 +107,43 @@ module Shooting = {
   }
 
   let shoot = (from: Vec2.t, maxDistance: float): comp => {
-    let state = {
-      coolDown: 0.3,
-      inSight: Map.make(),
-      loopController: None,
-    }
     customComponent({
       id: "shooting",
       add: @this
-      (self: GameObj.t) => {
+      (self: t) => {
+        self->setInSight(Map.make())
+
         // Keep track of who is in sight
         self
         ->GameObj.onCollide("enemy", (e, _) => {
-          state.inSight->Map.set(e.id, e)
+          self->getInSight->Map.set(e.id, e)
         })
         ->ignore
 
         self
         ->GameObj.onCollideEnd("enemy", e => {
-          state.inSight->Map.delete(e.id)->ignore
+          self->getInSight->Map.delete(e.id)->ignore
         })
         ->ignore
 
-        state.loopController = Some(
-          k->loop(state.coolDown, () => {
-            // Find the best suited enemy in sight to fire on.
-            let next = state.inSight->Map.values->Iterator.next
+        self->setLoopController(
+          Some(
+            k->loop(coolDown, () => {
+              // Find the best suited enemy in sight to fire on.
+              let next = self->getInSight->Map.values->Iterator.next
 
-            next.value->Option.forEach(enemy => {
-              fireHomingBullet(from, enemy, maxDistance)
-            })
-          }),
+              next.value->Option.forEach(enemy => {
+                fireHomingBullet(from, enemy, maxDistance)
+              })
+            }),
+          ),
         )
       },
       destroy: @this
-      _ => {
-        state.loopController->Option.forEach(loopController => {
+      (self: t) => {
+        self
+        ->getLoopController
+        ->Option.forEach(loopController => {
           loopController->TimerController.cancel
         })
       },

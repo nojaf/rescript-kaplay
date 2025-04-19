@@ -7,25 +7,26 @@ import * as Stdlib_Option from "rescript/lib/es6/Stdlib_Option.js";
 import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
 
 function homing(speed, strength, from, target, timer, maxDistance) {
-  let state = {
-    velocity: target.pos.sub(from).unit().scale(speed),
-    timer: timer
-  };
   return {
     id: "homing",
     update: function () {
       let self = this ;
-      if (state.timer > 0) {
+      if (self.homingTimer > 0) {
         let toTarget = target.pos.sub(self.pos).unit();
-        state.velocity = state.velocity.lerp(toTarget.scale(speed), strength);
-        state.timer = state.timer - KaplayContext.k.dt();
+        self.homingVelocity = self.homingVelocity.lerp(toTarget.scale(speed), strength);
+        self.homingTimer = self.homingTimer - KaplayContext.k.dt();
       }
-      self.move(state.velocity);
+      self.move(self.homingVelocity);
       if (self.pos.dist(from) >= maxDistance) {
         self.destroy();
         return;
       }
       
+    },
+    add: function () {
+      let self = this ;
+      self.homingVelocity = target.pos.sub(from).unit().scale(speed);
+      self.homingTimer = timer;
     }
   };
 }
@@ -66,28 +67,25 @@ function fireHomingBullet(from, target, maxDistance) {
 }
 
 function shoot(from, maxDistance) {
-  let state = {
-    coolDown: 0.3,
-    inSight: new Map(),
-    loopController: undefined
-  };
   return {
     id: "shooting",
     add: function () {
       let self = this ;
+      self.inSight = new Map();
       self.onCollide("enemy", (e, param) => {
-        state.inSight.set(e.id, e);
+        self.inSight.set(e.id, e);
       });
       self.onCollideEnd("enemy", e => {
-        state.inSight.delete(e.id);
+        self.inSight.delete(e.id);
       });
-      state.loopController = KaplayContext.k.loop(state.coolDown, () => {
-        let next = state.inSight.values().next();
+      self.loopController = KaplayContext.k.loop(0.227, () => {
+        let next = self.inSight.values().next();
         Stdlib_Option.forEach(next.value, enemy => fireHomingBullet(from, enemy, maxDistance));
       });
     },
     destroy: function () {
-      Stdlib_Option.forEach(state.loopController, loopController => {
+      let self = this ;
+      Stdlib_Option.forEach(self.loopController, loopController => {
         loopController.cancel();
       });
     }
@@ -98,6 +96,7 @@ let Shooting = {
   bubbleColors: bubbleColors,
   bulletSpeed: bulletSpeed,
   homingStrength: 0.1,
+  coolDown: 0.227,
   fireHomingBullet: fireHomingBullet,
   shoot: shoot
 };
