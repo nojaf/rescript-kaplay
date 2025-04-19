@@ -72,11 +72,11 @@ let scene = () => {
       switch key {
       | Left => {
           squirtle->GameObj.play("walk")
-          squirtle->GameObj.setFlipX(false)
+          squirtle.flipX = false
         }
       | Right => {
           squirtle->GameObj.play("walk")
-          squirtle->GameObj.setFlipX(true)
+          squirtle.flipX = true
         }
       | Space => {
           squirtle->GameObj.play("jump")
@@ -86,8 +86,8 @@ let scene = () => {
       }
     } else {
       switch key {
-      | Left => squirtle->GameObj.setFlipX(false)
-      | Right => squirtle->GameObj.setFlipX(true)
+      | Left => squirtle.flipX = false
+      | Right => squirtle.flipX = true
       | _ => ()
       }
     }

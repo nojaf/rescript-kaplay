@@ -233,7 +233,11 @@ type gameObj = {
   mutable pos: Vec2.t,
   // SpriteComp
   mutable frame: int,
+  mutable flipX: bool,
+  mutable width: float,
+  mutable height: float,
   // ColorComp
+  mutable color: Color.t,
 }
 
 module GameObjImpl = (
@@ -247,14 +251,8 @@ module GameObjImpl = (
   @send
   external numFrames: T.t => int = "numFrames"
 
-  @set
-  external setColor: (T.t, Color.t) => unit = "color"
-
   @send
   external play: (T.t, string) => unit = "play"
-
-  @set
-  external setFlipX: (T.t, bool) => unit = "flipX"
 
   @send
   external jump: (T.t, float) => unit = "jump"
