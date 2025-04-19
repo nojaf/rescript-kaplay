@@ -7,6 +7,8 @@ let Vec2 = {};
 
 let Color = {};
 
+let TimerController = {};
+
 let Shape = {};
 
 let $$Math = {
@@ -37,6 +39,7 @@ export {
   Debug,
   Vec2,
   Color,
+  TimerController,
   $$Math,
   mathRect,
   mathCircle,

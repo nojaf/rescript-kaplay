@@ -3,17 +3,89 @@
 import * as Kaplay from "./Kaplay.res.mjs";
 import * as Stdlib_Array from "rescript/lib/es6/Stdlib_Array.js";
 import * as KaplayContext from "./KaplayContext.res.mjs";
+import * as Stdlib_Option from "rescript/lib/es6/Stdlib_Option.js";
 import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
 
-function homing(velocity, timer) {
+function homing(speed, strength, from, target, timer) {
+  let state = {
+    velocity: target.pos.sub(from).unit().scale(speed),
+    timer: timer
+  };
   return {
-    homingVelocity: velocity,
-    homingTimer: timer
+    id: "homing",
+    update: function () {
+      let self = this ;
+      if (state.timer > 0) {
+        let toTarget = target.pos.sub(self.pos).unit();
+        state.velocity = state.velocity.lerp(toTarget.scale(speed), strength);
+        state.timer = state.timer - KaplayContext.k.dt();
+      }
+      self.move(state.velocity);
+    }
   };
 }
 
 let Homing = {
   homing: homing
+};
+
+let bulletSpeed = KaplayContext.k.vec2(300, 300);
+
+function fireHomingBullet(from, target) {
+  let bullet = KaplayContext.k.add([
+    KaplayContext.k.pos(from),
+    KaplayContext.k.area(),
+    "bullet",
+    KaplayContext.k.circle(8, {
+      fill: true
+    }),
+    KaplayContext.k.color(KaplayContext.k.Color.fromHex("#0D0D0D")),
+    homing(bulletSpeed, 0.1, from, target, 0.5)
+  ]);
+  bullet.onCollide("enemy", (pkmn, param) => {
+    bullet.destroy();
+    pkmn.hurt(1);
+    Stdlib_Option.forEach(pkmn.get("solid-heart").at(0), heart => {
+      heart.play("empty");
+      heart.untag("solid-heart");
+    });
+  });
+}
+
+function shoot(from) {
+  let state = {
+    coolDown: 0.3,
+    inSight: new Map(),
+    loopController: undefined
+  };
+  return {
+    id: "shooting",
+    add: function () {
+      let self = this ;
+      self.onCollide("enemy", (e, param) => {
+        state.inSight.set(e.id, e);
+      });
+      self.onCollideEnd("enemy", e => {
+        state.inSight.delete(e.id);
+      });
+      state.loopController = KaplayContext.k.loop(state.coolDown, () => {
+        let next = state.inSight.values().next();
+        Stdlib_Option.forEach(next.value, enemy => fireHomingBullet(from, enemy));
+      });
+    },
+    destroy: function () {
+      Stdlib_Option.forEach(state.loopController, loopController => {
+        loopController.cancel();
+      });
+    }
+  };
+}
+
+let Shooting = {
+  bulletSpeed: bulletSpeed,
+  homingStrength: 0.1,
+  fireHomingBullet: fireHomingBullet,
+  shoot: shoot
 };
 
 function circlePolygon(center, radius, segmentsOpt) {
@@ -25,9 +97,7 @@ function circlePolygon(center, radius, segmentsOpt) {
   return Kaplay.mathPolygon(KaplayContext.k, points);
 }
 
-function scene() {
-  KaplayContext.k.debug.inspect = true;
-  KaplayContext.k.loadSprite("charmander", "/sprites/charmander-rb.png");
+function onSceneLoad() {
   KaplayContext.k.add([
     KaplayContext.k.pos(0, 400),
     KaplayContext.k.rect(KaplayContext.k.width(), 100),
@@ -42,7 +112,7 @@ function scene() {
     KaplayContext.k.body(),
     "tower"
   ]);
-  let viewport = tower.add([
+  tower.add([
     KaplayContext.k.circle(200, {
       fill: true
     }),
@@ -50,7 +120,8 @@ function scene() {
     KaplayContext.k.opacity(0.2),
     KaplayContext.k.area({
       shape: Primitive_option.some(circlePolygon(KaplayContext.k.vec2(0, 0), 200, 32))
-    })
+    }),
+    shoot(tower.pos)
   ]);
   let regularColor = KaplayContext.k.Color.fromHex("#fe9441");
   KaplayContext.k.loop(3, () => {
@@ -59,7 +130,7 @@ function scene() {
         height: 36
       }),
       KaplayContext.k.color(regularColor),
-      "pkmn",
+      "enemy",
       KaplayContext.k.pos(50, 450),
       KaplayContext.k.area(),
       KaplayContext.k.anchor("center"),
@@ -67,49 +138,58 @@ function scene() {
       KaplayContext.k.offscreen({
         destroy: true
       }),
-      KaplayContext.k.health(3)
+      KaplayContext.k.health(3),
+      {
+        id: "hearts",
+        add: function () {
+          let charmander = this ;
+          console.log("Charmander drawn with " + charmander.hp().toString() + " health");
+          let hp = charmander.hp();
+          for (let i = 1; i <= hp; ++i) {
+            charmander.add([
+              KaplayContext.k.pos(30 - (i * 15 | 0) | 0, -30),
+              KaplayContext.k.sprite("heart", {
+                width: 10,
+                height: 10
+              }),
+              "solid-heart"
+            ]);
+          }
+        }
+      }
     ]);
     charmander.onDeath(() => {
       KaplayContext.k.destroy(charmander);
     });
   });
-  let bulletSpeed = KaplayContext.k.vec2(300, 300);
-  viewport.onCollide("pkmn", (pkmn, param) => {
-    pkmn.color = KaplayContext.k.Color.fromHex("#FF0000");
-    let from = tower.pos;
-    let bullet = KaplayContext.k.add([
-      KaplayContext.k.pos(from),
-      KaplayContext.k.area(),
-      "bullet",
-      KaplayContext.k.circle(8, {
-        fill: true
-      }),
-      KaplayContext.k.color(KaplayContext.k.Color.fromHex("#0D0D0D")),
-      homing(pkmn.pos.sub(from).unit().scale(bulletSpeed), 0.5)
-    ]);
-    bullet.onUpdate(() => {
-      if (bullet.homingTimer > 0) {
-        let toTarget = pkmn.pos.sub(bullet.pos).unit();
-        bullet.homingVelocity = bullet.homingVelocity.lerp(toTarget.scale(bulletSpeed), 0.1);
-        bullet.homingTimer = bullet.homingTimer - KaplayContext.k.dt();
+}
+
+function scene() {
+  KaplayContext.k.debug.inspect = true;
+  KaplayContext.k.loadSprite("charmander", "/sprites/charmander-rb.png");
+  KaplayContext.k.loadSprite("heart", "/sprites/heart.png", {
+    sliceX: 2,
+    sliceY: 1,
+    anims: {
+      solid: {
+        from: 0,
+        to: 0
+      },
+      empty: {
+        from: 1,
+        to: 1
       }
-      bullet.move(bullet.homingVelocity);
-    });
-    bullet.onCollide("pkmn", (pkmn, param) => {
-      KaplayContext.k.debug.log("bullet hit pkmn");
-      pkmn.color = KaplayContext.k.Color.fromHex("#000000");
-      bullet.destroy();
-      pkmn.hurt(1);
-    });
+    },
+    anim: "solid"
   });
-  viewport.onCollideEnd("pkmn", pkmn => {
-    pkmn.color = regularColor;
-  });
+  KaplayContext.k.onLoad(onSceneLoad);
 }
 
 export {
   Homing,
+  Shooting,
   circlePolygon,
+  onSceneLoad,
   scene,
 }
-/* KaplayContext Not a pure module */
+/* bulletSpeed Not a pure module */

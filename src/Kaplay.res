@@ -45,6 +45,7 @@ type loadSpriteOptions = {
   sliceX?: int,
   sliceY?: int,
   anims?: Dict.t<loadSpriteAnimation>,
+  anim?: string,
   frames?: array<quad>,
 }
 
@@ -139,15 +140,24 @@ external onTouchEnd: (t, (Vec2.t, touch) => unit) => kEventController = "onTouch
 @send
 external onUpdate: (t, unit => unit) => kEventController = "onUpdate"
 
-type timerController
+/** Register an event that runs when all assets finished loading. */
+@send
+external onLoad: (t, unit => unit) => unit = "onLoad"
+
+module TimerController = {
+  type t = {mutable paused: bool}
+
+  @send
+  external cancel: t => unit = "cancel"
+}
 
 /** Run the function every n seconds. */
 @send
-external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) => timerController =
+external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) => TimerController.t =
   "loop"
 
 @send
-external wait: (t, float, unit => unit) => timerController = "wait"
+external wait: (t, float, unit => unit) => TimerController.t = "wait"
 
 @send
 external width: t => int = "width"
@@ -191,7 +201,7 @@ module Collision = {
 }
 
 module GameObj = {
-  type t
+  type t = {id: int}
 
   @get
   external getPos: t => Vec2.t = "pos"
@@ -287,7 +297,26 @@ module GameObj = {
 
   @send
   external onDeath: (t, unit => unit) => kEventController = "onDeath"
+
+  @send
+  external get: (t, tag) => array<t> = "get"
+
+  @send
+  external untag: (t, tag) => unit = "untag"
 }
+
+/** Definition of a custom component */
+type component = {
+  id: string,
+  update?: @this (GameObj.t => unit),
+  require?: array<string>,
+  add?: @this (GameObj.t => unit),
+  draw?: @this (GameObj.t => unit),
+  destroy?: @this (GameObj.t => unit),
+  inspect?: @this (GameObj.t => unit),
+}
+
+external customComponent: component => comp = "%identity"
 
 @send
 external onClick: (t, tag, GameObj.t => unit) => kEventController = "onClick"
