@@ -1,21 +1,20 @@
 open Kaplay
 open KaplayContext
 
-module Homing = {
-  @editor.completeFrom(Kaplay.GameObj)
-  type t = GameObj.t
+module type HomingType = {
+  let homing: (Vec2.t, float, Vec2.t, GameObj.t, float, float) => comp
+}
 
-  @get
-  external getTimer: t => float = "homingTimer"
+module Homing: HomingType = {
+  type t = {
+    ...GameObj.t,
+    mutable homingTimer: float,
+    mutable homingVelocity: Vec2.t,
+  }
 
-  @set
-  external setTimer: (t, float) => unit = "homingTimer"
-
-  @get
-  external getVelocity: t => Vec2.t = "homingVelocity"
-
-  @set
-  external setVelocity: (t, Vec2.t) => unit = "homingVelocity"
+  include GameObjImpl({
+    type t = t
+  })
 
   let homing = (
     speed: Vec2.t,
@@ -29,50 +28,50 @@ module Homing = {
       id: "homing",
       add: @this
       (self: t) => {
-        self->setVelocity(target->GameObj.getPos->Vec2.sub(from)->Vec2.unit->Vec2.scale(speed))
-        self->setTimer(timer)
+        self.homingVelocity = target.pos->Vec2.sub(from)->Vec2.unit->Vec2.scale(speed)
+        self.homingTimer = timer
       },
       update: @this
       (self: t) => {
         // If the timer is still running, update the velocity
         // The idea is that we don't home forever.
-        if self->getTimer > 0. {
-          let toTarget = target->GameObj.getPos->Vec2.sub(self->GameObj.getPos)->Vec2.unit
-          self->setVelocity(self->getVelocity->Vec2.lerp(toTarget->Vec2.scale(speed), strength))
-          self->setTimer(self->getTimer - k->dt)
+        if self.homingTimer > 0. {
+          let toTarget = target.pos->Vec2.sub(self.pos)->Vec2.unit
+          self.homingVelocity =
+            self.homingVelocity->Vec2.lerp(toTarget->Vec2.scale(speed), strength)
+          self.homingTimer = self.homingTimer - k->dt
         }
 
-        self->GameObj.move(self->getVelocity)
+        self->move(self.homingVelocity)
 
-        if self->GameObj.getPos->Vec2.dist(from) >= maxDistance {
-          self->GameObj.destroy
+        if self.pos->Vec2.dist(from) >= maxDistance {
+          self->destroy
         }
       },
     })
   }
 }
 
-module Shooting = {
+module type ShootingType = {
+  let shoot: (Vec2.t, float) => comp
+}
+
+module Shooting: ShootingType = {
   let bubbleColors = [
     k->colorFromHex("#00bcff"),
     k->colorFromHex("#a2f4fd"),
     k->colorFromHex("#155dfc"),
   ]
 
-  @editor.completeFrom(Kaplay.GameObj)
-  type t = GameObj.t
+  type t = {
+    ...GameObj.t,
+    mutable inSight: Map.t<int, GameObj.t>,
+    mutable loopController: option<TimerController.t>,
+  }
 
-  @get
-  external getInSight: t => Map.t<int, GameObj.t> = "inSight"
-
-  @set
-  external setInSight: (t, Map.t<int, GameObj.t>) => unit = "inSight"
-
-  @get
-  external getLoopController: t => option<TimerController.t> = "loopController"
-
-  @set
-  external setLoopController: (t, option<TimerController.t>) => unit = "loopController"
+  include GameObjImpl({
+    type t = t
+  })
 
   let bulletSpeed = k->vec2(200., 200.)
   let homingStrength = 0.1
@@ -81,8 +80,8 @@ module Shooting = {
   let fireHomingBullet = (from, target: GameObj.t, maxDistance: float) => {
     let bulletColor = bubbleColors->Array.getUnsafe(k->randi(0, 2))
     let bullet =
-      k->add([
-        k->posVec2(from),
+      k->Kaplay.add([
+        k->Kaplay.posVec2(from),
         k->area,
         tag("bullet"),
         k->z(0),
@@ -111,39 +110,35 @@ module Shooting = {
       id: "shooting",
       add: @this
       (self: t) => {
-        self->setInSight(Map.make())
+        self.inSight = Map.make()
 
         // Keep track of who is in sight
         self
-        ->GameObj.onCollide("enemy", (e, _) => {
-          self->getInSight->Map.set(e.id, e)
+        ->onCollide("enemy", (e, _) => {
+          self.inSight->Map.set(e.id, e)
         })
         ->ignore
 
         self
-        ->GameObj.onCollideEnd("enemy", e => {
-          self->getInSight->Map.delete(e.id)->ignore
+        ->onCollideEnd("enemy", e => {
+          self.inSight->Map.delete(e.id)->ignore
         })
         ->ignore
 
-        self->setLoopController(
-          Some(
-            k->loop(coolDown, () => {
-              // Find the best suited enemy in sight to fire on.
-              let next = self->getInSight->Map.values->Iterator.next
+        self.loopController = Some(
+          k->loop(coolDown, () => {
+            // Find the best suited enemy in sight to fire on.
+            let next = self.inSight->Map.values->Iterator.next
 
-              next.value->Option.forEach(enemy => {
-                fireHomingBullet(from, enemy, maxDistance)
-              })
-            }),
-          ),
+            next.value->Option.forEach(enemy => {
+              fireHomingBullet(from, enemy, maxDistance)
+            })
+          }),
         )
       },
       destroy: @this
       (self: t) => {
-        self
-        ->getLoopController
-        ->Option.forEach(loopController => {
+        self.loopController->Option.forEach(loopController => {
           loopController->TimerController.cancel
         })
       },
@@ -168,7 +163,7 @@ let onSceneLoad = () => {
     //
     k->pos(0, 400),
     k->rect(k->width, 100),
-    k->color(k->colorFromHex("#D1E2F3")),
+    k->color(k->colorFromHex("#cad5e2")),
   ])
 
   let tower = k->add([
@@ -202,13 +197,13 @@ let onSceneLoad = () => {
         shape: circlePolygon(k->vec2(0., 0.), 200., ~segments=32),
       },
     ),
-    Shooting.shoot(tower->GameObj.getPos, 200.),
+    Shooting.shoot(tower.pos, 200.),
   ])
 
   let regularColor = k->colorFromHex("#fe9441")
 
   k
-  ->loop(1., () => {
+  ->loop(1.0, () => {
     let charmander = k->add([
       //
       k->sprite(

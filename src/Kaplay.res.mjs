@@ -29,6 +29,10 @@ let mathPolygon = (function (k,  points) {
 
 let Collision = {};
 
+function GameObjImpl(T) {
+  return {};
+}
+
 let GameObj = {};
 
 let AudioPlay = {};
@@ -45,6 +49,7 @@ export {
   mathCircle,
   mathPolygon,
   Collision,
+  GameObjImpl,
   GameObj,
   AudioPlay,
   Level,

@@ -64,7 +64,7 @@ let scene = () => {
       switch k->getGameObjects("squirtle", ~options={recursive: true})->Array.get(0) {
       | None => k.debug->Debug.log("No squirtle found")
       | Some(squartle) => {
-          let target = squartle->GameObj.getPos
+          let target = squartle.pos
           charmander->GameObj.setTarget(target)
           k
           ->play("beast-in-black")

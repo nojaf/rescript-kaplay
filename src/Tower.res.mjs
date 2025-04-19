@@ -6,6 +6,8 @@ import * as KaplayContext from "./KaplayContext.res.mjs";
 import * as Stdlib_Option from "rescript/lib/es6/Stdlib_Option.js";
 import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
 
+Kaplay.GameObjImpl({});
+
 function homing(speed, strength, from, target, timer, maxDistance) {
   return {
     id: "homing",
@@ -41,30 +43,9 @@ let bubbleColors = [
   KaplayContext.k.Color.fromHex("#155dfc")
 ];
 
-let bulletSpeed = KaplayContext.k.vec2(200, 200);
+Kaplay.GameObjImpl({});
 
-function fireHomingBullet(from, target, maxDistance) {
-  let bulletColor = bubbleColors[KaplayContext.k.randi(0, 2)];
-  let bullet = KaplayContext.k.add([
-    KaplayContext.k.pos(from),
-    KaplayContext.k.area(),
-    "bullet",
-    KaplayContext.k.z(0),
-    KaplayContext.k.circle(KaplayContext.k.randi(4, 6), {
-      fill: true
-    }),
-    KaplayContext.k.color(bulletColor),
-    homing(bulletSpeed, 0.1, from, target, 0.5, maxDistance)
-  ]);
-  bullet.onCollide("enemy", (pkmn, param) => {
-    bullet.destroy();
-    pkmn.hurt(1);
-    Stdlib_Option.forEach(pkmn.get("solid-heart").at(0), heart => {
-      heart.play("empty");
-      heart.untag("solid-heart");
-    });
-  });
-}
+let bulletSpeed = KaplayContext.k.vec2(200, 200);
 
 function shoot(from, maxDistance) {
   return {
@@ -80,7 +61,28 @@ function shoot(from, maxDistance) {
       });
       self.loopController = KaplayContext.k.loop(0.227, () => {
         let next = self.inSight.values().next();
-        Stdlib_Option.forEach(next.value, enemy => fireHomingBullet(from, enemy, maxDistance));
+        Stdlib_Option.forEach(next.value, enemy => {
+          let bulletColor = bubbleColors[KaplayContext.k.randi(0, 2)];
+          let bullet = KaplayContext.k.add([
+            KaplayContext.k.pos(from),
+            KaplayContext.k.area(),
+            "bullet",
+            KaplayContext.k.z(0),
+            KaplayContext.k.circle(KaplayContext.k.randi(4, 6), {
+              fill: true
+            }),
+            KaplayContext.k.color(bulletColor),
+            homing(bulletSpeed, 0.1, from, enemy, 0.5, maxDistance)
+          ]);
+          bullet.onCollide("enemy", (pkmn, param) => {
+            bullet.destroy();
+            pkmn.hurt(1);
+            Stdlib_Option.forEach(pkmn.get("solid-heart").at(0), heart => {
+              heart.play("empty");
+              heart.untag("solid-heart");
+            });
+          });
+        });
       });
     },
     destroy: function () {
@@ -93,11 +95,6 @@ function shoot(from, maxDistance) {
 }
 
 let Shooting = {
-  bubbleColors: bubbleColors,
-  bulletSpeed: bulletSpeed,
-  homingStrength: 0.1,
-  coolDown: 0.227,
-  fireHomingBullet: fireHomingBullet,
   shoot: shoot
 };
 
@@ -114,7 +111,7 @@ function onSceneLoad() {
   KaplayContext.k.add([
     KaplayContext.k.pos(0, 400),
     KaplayContext.k.rect(KaplayContext.k.width(), 100),
-    KaplayContext.k.color(KaplayContext.k.Color.fromHex("#D1E2F3"))
+    KaplayContext.k.color(KaplayContext.k.Color.fromHex("#cad5e2"))
   ]);
   let tower = KaplayContext.k.add([
     KaplayContext.k.pos(KaplayContext.k.width() / 2 | 0, 320),
@@ -149,7 +146,7 @@ function onSceneLoad() {
     shoot(tower.pos, 200)
   ]);
   let regularColor = KaplayContext.k.Color.fromHex("#fe9441");
-  KaplayContext.k.loop(1, () => {
+  KaplayContext.k.loop(1.0, () => {
     let charmander = KaplayContext.k.add([
       KaplayContext.k.sprite("charmander", {
         height: 36,
@@ -217,4 +214,4 @@ export {
   onSceneLoad,
   scene,
 }
-/* bubbleColors Not a pure module */
+/*  Not a pure module */

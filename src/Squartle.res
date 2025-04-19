@@ -129,9 +129,9 @@ let scene = () => {
   ->onClick("squirtle", squirtle => {
     //   k.debug->Debug.log("squirtle clicked")
     // squirtle->GameObj.play("walk")
-    let current = squirtle->GameObj.getFrame
+    let current = squirtle.frame
     let max = squirtle->GameObj.numFrames
-    squirtle->GameObj.setFrame((current + 1) % max)
+    squirtle.frame = (current + 1) % max
   })
   ->ignore
 }

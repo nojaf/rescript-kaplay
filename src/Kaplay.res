@@ -227,123 +227,133 @@ module Collision = {
   type t
 }
 
-module GameObj = {
-  type t = {id: int}
+type gameObj = {
+  id: int,
+  // PosComp
+  mutable pos: Vec2.t,
+  // SpriteComp
+  mutable frame: int,
+  // ColorComp
+}
 
-  @get
-  external getPos: t => Vec2.t = "pos"
+module GameObjImpl = (
+  T: {
+    type t
+  },
+) => {
+  @send
+  external move: (T.t, Vec2.t) => unit = "move"
 
   @send
-  external move: (t, Vec2.t) => unit = "move"
+  external numFrames: T.t => int = "numFrames"
 
   @set
-  external setFrame: (t, int) => unit = "frame"
-
-  @get
-  external getFrame: t => int = "frame"
+  external setColor: (T.t, Color.t) => unit = "color"
 
   @send
-  external numFrames: t => int = "numFrames"
+  external play: (T.t, string) => unit = "play"
 
   @set
-  external setColor: (t, Color.t) => unit = "color"
+  external setFlipX: (T.t, bool) => unit = "flipX"
 
   @send
-  external play: (t, string) => unit = "play"
-
-  @set
-  external setFlipX: (t, bool) => unit = "flipX"
+  external jump: (T.t, float) => unit = "jump"
 
   @send
-  external jump: (t, float) => unit = "jump"
+  external isGrounded: T.t => bool = "isGrounded"
 
   @send
-  external isGrounded: t => bool = "isGrounded"
-
-  @send
-  external onGround: (t, unit => unit) => kEventController = "onGround"
+  external onGround: (T.t, unit => unit) => kEventController = "onGround"
 
   /**
     Hitting the key
  */
   @send
-  external onKeyPress: (t, key => unit) => kEventController = "onKeyPress"
+  external onKeyPress: (T.t, key => unit) => kEventController = "onKeyPress"
 
   /**
     Holding the key down
  */
   @send
-  external onKeyDown: (t, key => unit) => kEventController = "onKeyDown"
+  external onKeyDown: (T.t, key => unit) => kEventController = "onKeyDown"
 
   /**
     Lifting the key up
  */
   @send
-  external onKeyRelease: (t, key => unit) => kEventController = "onKeyRelease"
+  external onKeyRelease: (T.t, key => unit) => kEventController = "onKeyRelease"
 
   /** Part of the agent comp  */
   @send
-  external setTarget: (t, Vec2.t) => unit = "setTarget"
+  external setTarget: (T.t, Vec2.t) => unit = "setTarget"
 
   /** Part of the sentry comp */
   @send
-  external onObjectsSpotted: (t, array<t> => unit) => kEventController = "onObjectsSpotted"
+  external onObjectsSpotted: (T.t, array<gameObj> => unit) => kEventController = "onObjectsSpotted"
 
   @send
-  external onCollide: (t, tag, (t, Collision.t) => unit) => kEventController = "onCollide"
+  external onCollide: (T.t, tag, (gameObj, Collision.t) => unit) => kEventController = "onCollide"
 
   @send
-  external onCollideEnd: (t, tag, t => unit) => kEventController = "onCollideEnd"
+  external onCollideEnd: (T.t, tag, gameObj => unit) => kEventController = "onCollideEnd"
 
   @send
-  external onUpdate: (t, unit => unit) => kEventController = "onUpdate"
+  external onUpdate: (T.t, unit => unit) => kEventController = "onUpdate"
 
   @send
-  external add: (t, array<comp>) => t = "add"
+  external add: (T.t, array<comp>) => t = "add"
 
   @send
-  external destroy: t => unit = "destroy"
+  external destroy: T.t => unit = "destroy"
 
   @send
-  external hurt: (t, int) => unit = "hurt"
+  external hurt: (T.t, int) => unit = "hurt"
 
   @send
-  external heal: (t, int) => unit = "heal"
+  external heal: (T.t, int) => unit = "heal"
 
   @send
-  external hp: t => int = "hp"
+  external hp: T.t => int = "hp"
 
   @send
-  external setHP: (t, int) => unit = "setHP"
+  external setHP: (T.t, int) => unit = "setHP"
 
   @send
-  external onHurt: (t, (~amount: int=?) => unit) => kEventController = "onHurt"
+  external onHurt: (T.t, (~amount: int=?) => unit) => kEventController = "onHurt"
 
   @send
-  external onHeal: (t, (~amount: int=?) => unit) => kEventController = "onHeal"
+  external onHeal: (T.t, (~amount: int=?) => unit) => kEventController = "onHeal"
 
   @send
-  external onDeath: (t, unit => unit) => kEventController = "onDeath"
+  external onDeath: (T.t, unit => unit) => kEventController = "onDeath"
 
   @send
-  external get: (t, tag) => array<t> = "get"
+  external get: (T.t, tag) => array<gameObj> = "get"
 
   @send
-  external untag: (t, tag) => unit = "untag"
+  external untag: (T.t, tag) => unit = "untag"
+}
+
+module GameObj = {
+  type t = gameObj
+
+  include GameObjImpl({
+    type t = gameObj
+  })
 }
 
 /** Definition of a custom component */
-type component = {
+type component<'t> = {
   id: string,
-  update?: @this (GameObj.t => unit),
+  update?: @this ('t => unit),
   require?: array<string>,
-  add?: @this (GameObj.t => unit),
-  draw?: @this (GameObj.t => unit),
-  destroy?: @this (GameObj.t => unit),
-  inspect?: @this (GameObj.t => unit),
+  add?: @this ('t => unit),
+  draw?: @this ('t => unit),
+  destroy?: @this ('t => unit),
+  inspect?: @this ('t => unit),
 }
 
-external customComponent: component => comp = "%identity"
+external customComponent: component<'t> => comp = "%identity"
 
 @send
 external onClick: (t, tag, GameObj.t => unit) => kEventController = "onClick"
