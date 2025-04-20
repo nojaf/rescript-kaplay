@@ -1,0 +1,85 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+# Custom Kaplay Component Pattern
+
+A Custom Kaplay component in ReScript follows a specific pattern:
+
+1. Define a module type that specifies the component's interface:
+```rescript
+module type ComponentType = {
+  let componentName: (param1: type1, param2: type2, ...) => Kaplay.comp
+}
+```
+
+2. Create a module that implements the type:
+```rescript
+module Component: ComponentType = {
+  // Define a type that extends GameObj.t with component-specific state
+  type t = {
+    ...GameObj.t,
+    mutable state1: type1,
+    mutable state2: type2,
+    // ... other component-specific state
+  }
+
+  // Include GameObjImpl to get all GameObj methods
+  include GameObjImpl({
+    type t = t
+  })
+
+  // Define the component function
+  let componentName = (
+    param1: type1,
+    param2: type2,
+    // ... other parameters
+  ): Kaplay.comp => {
+    Kaplay.customComponent({
+      id: "component-id",
+      add: @this
+      (self: t) => {
+        // Initialize component state
+        self.state1 = initialValue1
+        self.state2 = initialValue2
+      },
+      update: @this
+      (self: t) => {
+        // Update logic on each frame
+      },
+      destroy: @this
+      (self: t) => {
+        // Cleanup logic when component is destroyed
+      },
+    })
+  }
+}
+```
+
+## Key Points
+
+- The component type `t` must extend `GameObj.t` to get all game object functionality
+- Use `mutable` fields for state that needs to change
+- Include `GameObjImpl` to get access to all GameObj methods
+- The component function returns a `Kaplay.comp`
+- Use `@this` annotations to get proper typing in component callbacks
+- Component callbacks can access the component's state through `self`
+
+## Example Usage
+
+```rescript
+// Add the component to a game object
+gameObj->GameObj.add([
+  Component.componentName(param1, param2)
+])
+```
+
+## Available Callbacks
+
+- `add`: Called when component is added to a game object
+- `update`: Called every frame
+- `destroy`: Called when component is destroyed
+- `draw`: Called when component needs to render
+- `inspect`: Called when component is inspected in debug mode
