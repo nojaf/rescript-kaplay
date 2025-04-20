@@ -168,11 +168,27 @@ external onUpdate: (t, unit => unit) => kEventController = "onUpdate"
 @send
 external onLoad: (t, unit => unit) => unit = "onLoad"
 
+module TimerControllerImpl = (
+  T: {
+    type t
+  },
+) => {
+  @send
+  external cancel: T.t => unit = "cancel"
+
+  @send
+  external onEnd: (T.t, unit => unit) => unit = "onEnd"
+
+  @send
+  external then: (T.t, unit => unit) => T.t = "then"
+}
+
 module TimerController = {
   type t = {mutable paused: bool}
 
-  @send
-  external cancel: t => unit = "cancel"
+  include TimerControllerImpl({
+    type t = t
+  })
 }
 
 /** Run the function every n seconds. */
@@ -238,6 +254,8 @@ type gameObj = {
   mutable height: float,
   // ColorComp
   mutable color: Color.t,
+  // OpacityComp
+  mutable opacity: float,
 }
 
 module GameObjImpl = (
@@ -317,7 +335,7 @@ module GameObjImpl = (
   external setHP: (T.t, int) => unit = "setHP"
 
   @send
-  external onHurt: (T.t, (~amount: int=?) => unit) => kEventController = "onHurt"
+  external onHurt: (T.t, int => unit) => kEventController = "onHurt"
 
   @send
   external onHeal: (T.t, (~amount: int=?) => unit) => kEventController = "onHeal"
@@ -469,7 +487,16 @@ external clamp: (t, int, int, int) => int = "clamp"
 @send
 external clampFloat: (t, float, float, float) => float = "clampFloat"
 
-type tweenController
+module TweenController = {
+  type t = {mutable paused: bool}
+
+  include TimerControllerImpl({
+    type t = t
+  })
+
+  @send
+  external finish: t => unit = "finish"
+}
 
 @send
 external tween: (
@@ -479,7 +506,7 @@ external tween: (
   ~duration: float,
   ~setValue: 'v => unit,
   ~easeFunc: easeFunc=?,
-) => tweenController = "tween"
+) => TweenController.t = "tween"
 
 @send
 external setFullscreen: (t, bool) => unit = "setFullscreen"

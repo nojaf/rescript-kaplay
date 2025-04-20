@@ -7,6 +7,10 @@ let Vec2 = {};
 
 let Color = {};
 
+function TimerControllerImpl(T) {
+  return {};
+}
+
 let TimerController = {};
 
 let Shape = {};
@@ -37,12 +41,15 @@ let GameObj = {};
 
 let AudioPlay = {};
 
+let TweenController = {};
+
 let Level = {};
 
 export {
   Debug,
   Vec2,
   Color,
+  TimerControllerImpl,
   TimerController,
   $$Math,
   mathRect,
@@ -52,6 +59,7 @@ export {
   GameObjImpl,
   GameObj,
   AudioPlay,
+  TweenController,
   Level,
 }
 /* No side effect */

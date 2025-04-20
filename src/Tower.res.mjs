@@ -147,7 +147,7 @@ function onSceneLoad() {
   ]);
   let regularColor = KaplayContext.k.Color.fromHex("#fe9441");
   KaplayContext.k.loop(1.0, () => {
-    let charmander = KaplayContext.k.add([
+    KaplayContext.k.add([
       KaplayContext.k.sprite("charmander", {
         height: 36,
         flipX: true
@@ -177,12 +177,22 @@ function onSceneLoad() {
               "solid-heart"
             ]);
           }
+          charmander.onHurt(param => {
+            let tc = KaplayContext.k.tween(1, 0.5, 0.1, opacity => {
+              charmander.opacity = opacity;
+            }, KaplayContext.k.easings.linear);
+            tc.onEnd(() => {
+              KaplayContext.k.tween(0.5, 1, 0.1, opacity => {
+                charmander.opacity = opacity;
+              }, KaplayContext.k.easings.linear);
+            });
+          });
+          charmander.onDeath(() => {
+            KaplayContext.k.destroy(charmander);
+          });
         }
       }
     ]);
-    charmander.onDeath(() => {
-      KaplayContext.k.destroy(charmander);
-    });
   });
 }
 

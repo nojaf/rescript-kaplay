@@ -204,7 +204,7 @@ let onSceneLoad = () => {
 
   k
   ->loop(1.0, () => {
-    let charmander = k->add([
+    let _charmander = k->add([
       //
       k->sprite(
         "charmander",
@@ -241,15 +241,45 @@ let onSceneLoad = () => {
             ])
             ->ignore
           }
+
+          charmander
+          ->GameObj.onHurt(_ => {
+            let tc = k->tween(
+              ~from=1.,
+              ~to_=0.5,
+              ~duration=0.1,
+              ~setValue=opacity => {
+                charmander.opacity = opacity
+              },
+              ~easeFunc=k.easings.linear,
+            )
+
+            tc->TweenController.onEnd(
+              () => {
+                k
+                ->tween(
+                  ~from=0.5,
+                  ~to_=1.,
+                  ~duration=0.1,
+                  ~setValue=opacity => {
+                    charmander.opacity = opacity
+                  },
+                  ~easeFunc=k.easings.linear,
+                )
+                ->ignore
+              },
+            )
+          })
+          ->ignore
+
+          charmander
+          ->GameObj.onDeath(() => {
+            k->destroy(charmander)
+          })
+          ->ignore
         },
       }),
     ])
-
-    charmander
-    ->GameObj.onDeath(() => {
-      k->destroy(charmander)
-    })
-    ->ignore
   })
   ->ignore
 }
