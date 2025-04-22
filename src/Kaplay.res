@@ -248,7 +248,10 @@ type gameObj = {
   // PosComp
   mutable pos: Vec2.t,
   // SpriteComp
+  mutable sprite: string,
   mutable frame: int,
+  mutable animFrame: int,
+  mutable animSpeed: float,
   mutable flipX: bool,
   mutable width: float,
   mutable height: float,
