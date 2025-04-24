@@ -59,6 +59,9 @@ external loadSound: (t, string, string) => unit = "loadSound"
 @send
 external loadMusic: (t, string, string) => unit = "loadMusic"
 
+@send
+external loadBean: (t, ~name: string=?) => unit = "loadBean"
+
 module Vec2 = {
   type t = {
     mutable x: float,
