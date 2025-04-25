@@ -161,13 +161,13 @@ let circlePolygon = (center: Vec2.t, radius: float, ~segments: int=32): Kaplay.M
 let onSceneLoad = () => {
   let _path = k->add([
     //
-    k->pos(0, 400),
-    k->rect(k->width, 100),
+    k->pos(0., 400.),
+    k->rect(k->width, 100.),
     k->color(k->colorFromHex("#cad5e2")),
   ])
 
   let tower = k->add([
-    k->pos(k->width / 2, 320),
+    k->pos(k->width / 2., 320.),
     k->circle(30, ~options={fill: true}),
     k->color(k->colorFromHex("#e2e8f0")),
     k->body,
@@ -209,13 +209,13 @@ let onSceneLoad = () => {
       k->sprite(
         "charmander",
         ~options={
-          height: 36,
+          height: 36.,
           flipX: true,
         },
       ),
       k->color(regularColor),
       tag("enemy"),
-      k->pos(50, 450),
+      k->pos(50., 450.),
       k->area,
       k->anchorCenter,
       k->move(k->vec2(1., 0.), 100.),
@@ -229,12 +229,12 @@ let onSceneLoad = () => {
           for i in 1 to hp {
             charmander
             ->GameObj.add([
-              k->pos(25 - i * 15, -35),
+              k->pos(25. - Int.toFloat(i) * 15., -35.),
               k->sprite(
                 "heart",
                 ~options={
-                  width: 10,
-                  height: 10,
+                  width: 10.,
+                  height: 10.,
                 },
               ),
               tag("solid-heart"),

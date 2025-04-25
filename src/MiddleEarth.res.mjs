@@ -8,12 +8,12 @@ let gameHeight = KaplayContext.k.height();
 
 let cameraBounds = {
   x: {
-    min: gameWidth / 2 | 0,
-    max: 1000 - (gameWidth / 2 | 0) | 0
+    min: gameWidth / 2,
+    max: 1000 - gameWidth / 2
   },
   y: {
-    min: gameHeight / 2 | 0,
-    max: 563 - (gameHeight / 2 | 0) | 0
+    min: gameHeight / 2,
+    max: 563 - gameHeight / 2
   }
 };
 
@@ -34,8 +34,8 @@ let isDragging = {
 function updateCamera(result) {
   let currentCamPos = KaplayContext.k.getCamPos();
   let result$1 = currentCamPos.add(result);
-  result$1.x = KaplayContext.k.clamp(result$1.x | 0, cameraBounds.x.min, cameraBounds.x.max);
-  result$1.y = KaplayContext.k.clamp(result$1.y | 0, cameraBounds.y.min, cameraBounds.y.max);
+  result$1.x = KaplayContext.k.clampFloat(result$1.x, cameraBounds.x.min, cameraBounds.x.max);
+  result$1.y = KaplayContext.k.clampFloat(result$1.y, cameraBounds.y.min, cameraBounds.y.max);
   KaplayContext.k.tween(currentCamPos, result$1, 0.100, v => {
     KaplayContext.k.setCamPos(v);
   }, KaplayContext.k.easings.linear);
@@ -101,8 +101,8 @@ function scene() {
         break;
     }
     let result = currentCamPos.add(move);
-    result.x = KaplayContext.k.clamp(result.x | 0, cameraBounds.x.min, cameraBounds.x.max);
-    result.y = KaplayContext.k.clamp(result.y | 0, cameraBounds.y.min, cameraBounds.y.max);
+    result.x = KaplayContext.k.clampFloat(result.x, cameraBounds.x.min, cameraBounds.x.max);
+    result.y = KaplayContext.k.clampFloat(result.y, cameraBounds.y.min, cameraBounds.y.max);
     KaplayContext.k.setCamPos(result);
   });
 }

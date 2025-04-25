@@ -8,7 +8,7 @@ let scene = () => {
   let squirtle =
     k->add([
       k->sprite("squirtle"),
-      k->pos(100, 100),
+      k->pos(100., 100.),
       k->anchorCenter,
       k->color(k->colorFromHex("#ADD8E6")),
       k->area,
@@ -17,7 +17,7 @@ let scene = () => {
 
   let flareon = k->add([
     k->sprite("flareon"),
-    k->pos(400, 400),
+    k->pos(400., 400.),
     k->anchorCenter,
     k->color(k->colorFromHex("#FF746C")),
     k->sentry(
@@ -33,8 +33,8 @@ let scene = () => {
 
   let _wall =
     k->add([
-      k->rect(20, 700),
-      k->pos(300, 200),
+      k->rect(20., 700.),
+      k->pos(300., 200.),
       k->anchorCenter,
       k->color(k->colorFromHex("#D1E2F3")),
       k->area,
@@ -44,7 +44,7 @@ let scene = () => {
   k
   ->add([
     //
-    k->pos(340, 460),
+    k->pos(340., 460.),
     k->text("Move underneath Flareon to be spotted", ~options={size: 20.}),
   ])
   ->ignore

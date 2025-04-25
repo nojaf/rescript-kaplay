@@ -88,24 +88,27 @@ module Vec2 = {
 
   @send
   external dist: (t, t) => float = "dist"
+
+  @send
+  external dot: (t, t) => float = "dot"
 }
 
-@send @scope("Vec2")
+@get @scope("Vec2")
 external vec2Zero: t => Vec2.t = "ZERO"
 
-@send @scope("Vec2")
+@get @scope("Vec2")
 external vec2One: t => Vec2.t = "ONE"
 
-@send @scope("Vec2")
+@get @scope("Vec2")
 external vec2Left: t => Vec2.t = "LEFT"
 
-@send @scope("Vec2")
+@get @scope("Vec2")
 external vec2Right: t => Vec2.t = "RIGHT"
 
-@send @scope("Vec2")
+@get @scope("Vec2")
 external vec2Up: t => Vec2.t = "UP"
 
-@send @scope("Vec2")
+@get @scope("Vec2")
 external vec2Down: t => Vec2.t = "DOWN"
 
 @send
@@ -203,10 +206,10 @@ external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) =>
 external wait: (t, float, unit => unit) => TimerController.t = "wait"
 
 @send
-external width: t => int = "width"
+external width: t => float = "width"
 
 @send
-external height: t => int = "height"
+external height: t => float = "height"
 
 /** Get the delta time since last frame. */
 @send
@@ -270,6 +273,9 @@ module GameObjImpl = (
   },
 ) => {
   @send
+  external has: (T.t, string) => bool = "has"
+
+  @send
   external move: (T.t, Vec2.t) => unit = "move"
 
   @send
@@ -323,7 +329,7 @@ module GameObjImpl = (
   external onUpdate: (T.t, unit => unit) => kEventController = "onUpdate"
 
   @send
-  external add: (T.t, array<comp>) => t = "add"
+  external add: (T.t, array<comp>) => gameObj = "add"
 
   @send
   external destroy: T.t => unit = "destroy"
@@ -354,6 +360,12 @@ module GameObjImpl = (
 
   @send
   external untag: (T.t, tag) => unit = "untag"
+
+  @send
+  external hasPoint: (T.t, Vec2.t) => bool = "hasPoint"
+
+  @send
+  external onDestroy: (T.t, unit => unit) => kEventController = "onDestroy"
 }
 
 module GameObj = {
@@ -402,8 +414,8 @@ external add: (t, array<comp>) => GameObj.t = "add"
 
 type spriteCompOptions = {
   frame?: int,
-  width?: int,
-  height?: int,
+  width?: float,
+  height?: float,
   anim?: string,
   singular?: bool,
   flipX?: bool,
@@ -422,7 +434,7 @@ external getGameObjects: (t, tag, ~options: getOptions=?) => array<GameObj.t> = 
 external sprite: (t, string, ~options: spriteCompOptions=?) => comp = "sprite"
 
 @send
-external pos: (t, int, int) => comp = "pos"
+external pos: (t, float, float) => comp = "pos"
 
 @send
 external posVec2: (t, Vec2.t) => comp = "pos"
@@ -434,6 +446,7 @@ type areaCompOptions = {
   /** Only Rect and Polygon are supported */
   shape?: Math.Shape.t,
   offset?: Vec2.t,
+  scale?: float,
 }
 
 @send
@@ -457,12 +470,12 @@ type rectOptions = {
 }
 
 @send
-external rect: (t, int, int, ~options: rectOptions=?) => comp = "rect"
+external rect: (t, float, float, ~options: rectOptions=?) => comp = "rect"
 
 type circleOptions = {fill?: bool}
 
 @send
-external circle: (t, int, ~options: circleOptions=?) => comp = "circle"
+external circle: (t, float, ~options: circleOptions=?) => comp = "circle"
 
 /** hex value */
 @send
@@ -518,8 +531,8 @@ external tween: (
 external setFullscreen: (t, bool) => unit = "setFullscreen"
 
 type levelOptions = {
-  tileWidth?: int,
-  tileHeight?: int,
+  tileWidth?: float,
+  tileHeight?: float,
   tiles: Dict.t<unit => array<comp>>,
 }
 

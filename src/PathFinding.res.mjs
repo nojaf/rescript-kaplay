@@ -33,7 +33,7 @@ function scene() {
           width: 64,
           height: 64
         }),
-        KaplayContext.k.pos(32, 32),
+        KaplayContext.k.pos(64 / 2, 64 / 2),
         KaplayContext.k.anchor("center"),
         KaplayContext.k.color(KaplayContext.k.Color.fromHex("#ADD8E6")),
         "squirtle"
@@ -46,7 +46,7 @@ function scene() {
       height: 64
     }),
     KaplayContext.k.anchor("center"),
-    KaplayContext.k.pos(32, 32),
+    KaplayContext.k.pos(64 / 2, 64 / 2),
     KaplayContext.k.tile(),
     KaplayContext.k.color(KaplayContext.k.Color.fromHex("#FF746C")),
     KaplayContext.k.agent({

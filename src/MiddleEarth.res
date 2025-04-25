@@ -2,19 +2,19 @@ open Kaplay
 open KaplayContext
 
 let speed = 10.
-let mapWidth = 1000
-let mapHeight = 563
+let mapWidth = 1000.
+let mapHeight = 563.
 let gameWidth = k->width
 let gameHeight = k->height
 
 let cameraBounds = {
   "x": {
-    "min": gameWidth / 2,
-    "max": mapWidth - gameWidth / 2,
+    "min": gameWidth / 2.,
+    "max": mapWidth - gameWidth / 2.,
   },
   "y": {
-    "min": gameHeight / 2,
-    "max": mapHeight - gameHeight / 2,
+    "min": gameHeight / 2.,
+    "max": mapHeight - gameHeight / 2.,
   },
 }
 
@@ -29,14 +29,8 @@ let updateCamera = (result: Vec2.t) => {
   let currentCamPos = k->getCamPos
   let moveWithBounds = {
     let result = currentCamPos->Vec2.add(result)
-    result.x =
-      k
-      ->clamp(Float.toInt(result.x), cameraBounds["x"]["min"], cameraBounds["x"]["max"])
-      ->Int.toFloat
-    result.y =
-      k
-      ->clamp(Float.toInt(result.y), cameraBounds["y"]["min"], cameraBounds["y"]["max"])
-      ->Int.toFloat
+    result.x = k->clampFloat(result.x, cameraBounds["x"]["min"], cameraBounds["x"]["max"])
+    result.y = k->clampFloat(result.y, cameraBounds["y"]["min"], cameraBounds["y"]["max"])
     result
   }
 
@@ -57,7 +51,7 @@ let scene = () => {
   k->loadSprite("bg", "middle-earth.webp")
 
   let map = k->add([
-    k->pos(0, 0),
+    k->pos(0., 0.),
     k->sprite(
       "bg",
       ~options={
@@ -122,14 +116,8 @@ let scene = () => {
     }
     let moveWithBounds = {
       let result = currentCamPos->Vec2.add(move)
-      result.x =
-        k
-        ->clamp(Float.toInt(result.x), cameraBounds["x"]["min"], cameraBounds["x"]["max"])
-        ->Int.toFloat
-      result.y =
-        k
-        ->clamp(Float.toInt(result.y), cameraBounds["y"]["min"], cameraBounds["y"]["max"])
-        ->Int.toFloat
+      result.x = k->clampFloat(result.x, cameraBounds["x"]["min"], cameraBounds["x"]["max"])
+      result.y = k->clampFloat(result.y, cameraBounds["y"]["min"], cameraBounds["y"]["max"])
       result
     }
     k->setCamPos(moveWithBounds)

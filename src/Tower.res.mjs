@@ -114,7 +114,7 @@ function onSceneLoad() {
     KaplayContext.k.color(KaplayContext.k.Color.fromHex("#cad5e2"))
   ]);
   let tower = KaplayContext.k.add([
-    KaplayContext.k.pos(KaplayContext.k.width() / 2 | 0, 320),
+    KaplayContext.k.pos(KaplayContext.k.width() / 2, 320),
     KaplayContext.k.circle(30, {
       fill: true
     }),
@@ -169,7 +169,7 @@ function onSceneLoad() {
           let hp = charmander.hp();
           for (let i = 1; i <= hp; ++i) {
             charmander.add([
-              KaplayContext.k.pos(25 - (i * 15 | 0) | 0, -35),
+              KaplayContext.k.pos(25 - i * 15, -35),
               KaplayContext.k.sprite("heart", {
                 width: 10,
                 height: 10

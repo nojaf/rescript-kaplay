@@ -6,7 +6,7 @@ let scene = () => {
   k->loadSprite("charmander", "/sprites/charmander-rb.png")
   k->loadMusic("beast-in-black", "sounds/beast-in-black.mp3")
 
-  let tileSize = 64
+  let tileSize = 64.
   let level = k->addLevel(
     [
       //
@@ -35,7 +35,7 @@ let scene = () => {
         "S": () => [
           k->tile,
           k->sprite("squirtle", ~options={width: tileSize, height: tileSize}),
-          k->pos(tileSize / 2, tileSize / 2),
+          k->pos(tileSize / 2., tileSize / 2.),
           k->anchorCenter,
           k->color(k->colorFromHex("#ADD8E6")),
           tag("squirtle"),
@@ -49,7 +49,7 @@ let scene = () => {
       //
       k->sprite("charmander", ~options={width: tileSize, height: tileSize}),
       k->anchorCenter,
-      k->pos(tileSize / 2, tileSize / 2),
+      k->pos(tileSize / 2., tileSize / 2.),
       k->tile,
       k->color(k->colorFromHex("#FF746C")),
       k->agent(~options={speed: 120., allowDiagonals: false}),

@@ -39,8 +39,8 @@ let scene = () => {
 
   let _ground = k->add([
     //
-    k->rect(k->width, 24),
-    k->pos(0, k->height - 24),
+    k->rect(k->width, 24.),
+    k->pos(0., k->height - 24.),
     k->color(k->colorFromHex("#D97744")),
     k->area,
     k->body(~options={isStatic: true}),
@@ -48,7 +48,7 @@ let scene = () => {
 
   let squirtle = k->add([
     //
-    k->pos(200, 90),
+    k->pos(200., 90.),
     k->sprite(
       "squirtle",
       ~options={
