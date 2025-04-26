@@ -21,5 +21,3 @@ let _ = switch r1 {
     | 
 }
 */
-
-k->circle(100)->ignore

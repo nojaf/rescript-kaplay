@@ -85,7 +85,7 @@ module Shooting: ShootingType = {
         k->area,
         tag("bullet"),
         k->z(0),
-        k->circle(k->randi(4, 6), ~options={fill: true}),
+        k->circle(k->randf(4., 6.), ~options={fill: true}),
         k->color(bulletColor),
         Homing.homing(bulletSpeed, homingStrength, from, target, 0.5, maxDistance),
       ])
@@ -168,7 +168,7 @@ let onSceneLoad = () => {
 
   let tower = k->add([
     k->pos(k->width / 2., 320.),
-    k->circle(30, ~options={fill: true}),
+    k->circle(30., ~options={fill: true}),
     k->color(k->colorFromHex("#e2e8f0")),
     k->body,
     tag("tower"),
@@ -189,7 +189,7 @@ let onSceneLoad = () => {
   ])
 
   let _viewport = tower->GameObj.add([
-    k->circle(200, ~options={fill: true}),
+    k->circle(200., ~options={fill: true}),
     k->color(k->colorFromHex("#D1FEB8")),
     k->opacity(0.),
     k->area(

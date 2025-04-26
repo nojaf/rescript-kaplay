@@ -7,6 +7,10 @@ import * as Stdlib_Option from "rescript/lib/es6/Stdlib_Option.js";
 
 let tileSizeVec2 = KaplayContext.k.vec2(16, 16);
 
+let score = {
+  contents: 0
+};
+
 function make(maxSize) {
   return {
     items: [],
@@ -38,8 +42,8 @@ let Queue = {
   peek: peek
 };
 
-function addSegment(self, pos, extraComponentsOpt) {
-  let extraComponents = extraComponentsOpt !== undefined ? extraComponentsOpt : [];
+function addSegment(self, pos, isHeadOpt) {
+  let isHead = isHeadOpt !== undefined ? isHeadOpt : false;
   if (!self.has("snake")) {
     throw {
       RE_EXN_ID: "Invalid_argument",
@@ -47,6 +51,7 @@ function addSegment(self, pos, extraComponentsOpt) {
       Error: new Error()
     };
   }
+  let state = self.snake;
   let segment = self.add(Belt_Array.concatMany([
     [
       KaplayContext.k.pos(pos),
@@ -56,9 +61,9 @@ function addSegment(self, pos, extraComponentsOpt) {
       KaplayContext.k.area(),
       "segment"
     ],
-    extraComponents
+    isHead ? ["head"] : []
   ]));
-  self.segments.push(segment);
+  state.segments.push(segment);
 }
 
 function tryLastSegmentPos(gameObj) {
@@ -69,7 +74,7 @@ function tryLastSegmentPos(gameObj) {
       Error: new Error()
     };
   }
-  return Stdlib_Option.map(Stdlib_Array.last(gameObj.segments), segment => segment.pos);
+  return Stdlib_Option.map(Stdlib_Array.last(gameObj.snake.segments), segment => segment.pos);
 }
 
 function make$1() {
@@ -77,37 +82,54 @@ function make$1() {
     id: "snake",
     update: function () {
       let snake = this ;
-      snake.timeSinceLastMove = snake.timeSinceLastMove + KaplayContext.k.dt();
-      if (snake.timeSinceLastMove <= 0.22) {
+      let state = snake.snake;
+      if (state.isDead) {
         return;
       }
-      let previousPositions = snake.segments.map(segment => segment.pos);
-      let segment = snake.segments[0];
-      if (segment !== undefined) {
-        let nextDirection = snake.inputQueue.items.shift();
-        if (nextDirection !== undefined && nextDirection.dot(snake.direction) >= 0) {
-          snake.direction = nextDirection;
-        }
-        segment.pos = segment.pos.add(snake.direction.scale(tileSizeVec2));
+      state.timeSinceLastMove = state.timeSinceLastMove + KaplayContext.k.dt();
+      if (state.timeSinceLastMove <= 0.50) {
+        return;
       }
-      for (let i = 1, i_finish = snake.segments.length; i < i_finish; ++i) {
-        let match = snake.segments[i];
+      let headSegment = state.segments[0];
+      if (headSegment === undefined) {
+        return;
+      }
+      let nextDirection = state.inputQueue.items.shift();
+      if (nextDirection !== undefined && nextDirection.dot(state.direction) >= 0) {
+        state.direction = nextDirection;
+      }
+      let nextPos = headSegment.worldPos().add(state.direction.scale(tileSizeVec2));
+      let walls = KaplayContext.k.get("wall", {
+        recursive: true
+      });
+      let willCollide = walls.some(wall => wall.hasPoint(nextPos));
+      if (willCollide) {
+        state.isDead = true;
+        return;
+      }
+      let previousPositions = state.segments.map(segment => segment.pos);
+      headSegment.worldPos(nextPos);
+      for (let i = 1, i_finish = state.segments.length; i < i_finish; ++i) {
+        let match = state.segments[i];
         let match$1 = previousPositions[i - 1 | 0];
         if (match !== undefined && match$1 !== undefined) {
           match.pos = match$1;
         }
         
       }
-      snake.timeSinceLastMove = 0;
+      state.timeSinceLastMove = 0;
     },
     add: function () {
       let snake = this ;
-      snake.segments = [];
-      snake.direction = KaplayContext.k.Vec2.RIGHT;
-      snake.timeSinceLastMove = 0;
-      snake.inputQueue = {
-        items: [],
-        maxSize: 2
+      snake.snake = {
+        segments: [],
+        direction: KaplayContext.k.Vec2.RIGHT,
+        timeSinceLastMove: 0,
+        inputQueue: {
+          items: [],
+          maxSize: 2
+        },
+        isDead: false
       };
       snake.onKeyPress(key => {
         let intendedDirection;
@@ -132,21 +154,18 @@ function make$1() {
         if (intendedDirection === undefined) {
           return;
         }
-        let lastDirection = snake.inputQueue.items[0];
-        let currentEffectiveDirection = lastDirection !== undefined ? lastDirection : snake.direction;
+        let state = snake.snake;
+        let lastDirection = state.inputQueue.items[0];
+        let currentEffectiveDirection = lastDirection !== undefined ? lastDirection : state.direction;
         let isReversal = intendedDirection.dot(currentEffectiveDirection) < 0;
         if (!isReversal) {
-          return enqueue(snake.inputQueue, intendedDirection);
+          return enqueue(state.inputQueue, intendedDirection);
         }
         
       });
       for (let i = 0; i <= 2; ++i) {
         let pos = KaplayContext.k.vec2(i * - 16, 0);
-        if (i === 0) {
-          addSegment(snake, pos, ["head"]);
-        } else {
-          addSegment(snake, pos, undefined);
-        }
+        addSegment(snake, pos, i === 0);
       }
     }
   };
@@ -160,7 +179,7 @@ let Snake = {
 
 function addCoin(snake, grid) {
   while (true) {
-    let randomPosition = KaplayContext.k.vec2(KaplayContext.k.randi(1, 19), KaplayContext.k.randi(1, 19));
+    let randomPosition = KaplayContext.k.vec2(KaplayContext.k.randi(1, 9), KaplayContext.k.randi(1, 9));
     if (snake.get("segment").every(segment => !segment.hasPoint(randomPosition))) {
       let coin = grid.spawn([
         KaplayContext.k.area({
@@ -189,9 +208,9 @@ function addCoin(snake, grid) {
 
 function scene() {
   let grid = KaplayContext.k.addLevel(Belt_Array.concatMany([
-    ["x".repeat(20)],
-    Stdlib_Array.fromInitializer(18, param => "x" + " ".repeat(18) + "x"),
-    ["x".repeat(20)]
+    ["x".repeat(10)],
+    Stdlib_Array.fromInitializer(8, param => "x" + " ".repeat(8) + "x"),
+    ["x".repeat(10)]
   ]), {
     tileWidth: 16,
     tileHeight: 16,
@@ -201,25 +220,27 @@ function scene() {
         KaplayContext.k.rect(16, 16),
         KaplayContext.k.color(KaplayContext.k.Color.fromHex("#a684ff")),
         "wall",
-        KaplayContext.k.outline(1, KaplayContext.k.Color.fromHex("#000000"))
+        KaplayContext.k.outline(1, KaplayContext.k.Color.fromHex("#000000")),
+        KaplayContext.k.z(1)
       ]
     }
   });
-  let snake = grid.spawn([make$1()], KaplayContext.k.vec2(KaplayContext.k.randi(10, 10), KaplayContext.k.randi(10, 10)));
+  let snake = grid.spawn([make$1()], KaplayContext.k.vec2(KaplayContext.k.randi(1, 8), KaplayContext.k.randi(1, 8)));
   addCoin(snake, grid);
 }
 
-let gridSize = 20;
+let gridSize = 10;
 
 let tileSize = 16;
 
-let moveInterval = 0.22;
+let moveInterval = 0.50;
 
 export {
   gridSize,
   tileSize,
   tileSizeVec2,
   moveInterval,
+  score,
   Queue,
   Snake,
   addCoin,

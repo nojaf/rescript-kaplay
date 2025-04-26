@@ -2,10 +2,11 @@ open Kaplay
 open KaplayContext
 
 // Constants
-let gridSize = 20
+let gridSize = 10
 let tileSize = 16.
 let tileSizeVec2 = k->vec2(tileSize, tileSize)
-let moveInterval = 0.22
+let moveInterval = 0.50
+let score = ref(0)
 
 module Queue = {
   type t<'item> = {mutable items: array<'item>, maxSize: int}
@@ -31,36 +32,39 @@ module Queue = {
 }
 
 module Snake = {
-  type t = {
-    ...GameObj.t,
+  type state = {
     mutable segments: array<GameObj.t>,
     mutable direction: Vec2.t,
     mutable timeSinceLastMove: float,
     mutable inputQueue: Queue.t<Vec2.t>,
+    mutable isDead: bool,
   }
 
-  external asGameObj: t => GameObj.t = "%identity"
-  external asSnake: GameObj.t => t = "%identity"
+  @get
+  external getSnakeState: GameObj.t => state = "snake"
 
-  let addSegment = (self: GameObj.t, pos: Vec2.t, ~extraComponents: array<comp>=[]) => {
+  @set
+  external setSnakeState: (GameObj.t, state) => unit = "snake"
+
+  let addSegment = (self: GameObj.t, pos: Vec2.t, ~isHead: bool=false) => {
     if !(self->GameObj.has("snake")) {
       throw(Invalid_argument("Your gameObj does not have the snake component"))
     } else {
-      let snake = self->asSnake
+      let state = self->getSnakeState
       let segment =
         self->GameObj.add(
           [
-            k->Kaplay.posVec2(pos),
-            k->Kaplay.rect(tileSize, tileSize),
-            k->Kaplay.color(k->colorFromHex("#00d492")),
-            k->Kaplay.outline(~width=1, ~color=k->colorFromHex("#000000")),
-            k->Kaplay.area,
+            k->posVec2(pos),
+            k->rect(tileSize, tileSize),
+            k->color(k->colorFromHex("#00d492")),
+            k->outline(~width=1, ~color=k->colorFromHex("#000000")),
+            k->area,
             tag("segment"),
-            ...extraComponents,
+            ...isHead ? [tag("head")] : [],
           ],
         )
 
-      Array.push(snake.segments, segment)
+      Array.push(state.segments, segment)
     }
   }
 
@@ -68,7 +72,7 @@ module Snake = {
     if !(gameObj->GameObj.has("snake")) {
       throw(Invalid_argument("Your gameObj does not have the snake component"))
     } else {
-      gameObj->asSnake->(s => s.segments)->Array.last->Option.map(segment => segment.pos)
+      gameObj->getSnakeState->(s => s.segments)->Array.last->Option.map(segment => segment.pos)
     }
   }
 
@@ -76,15 +80,17 @@ module Snake = {
     customComponent({
       id: "snake",
       add: @this
-      (snake: t) => {
+      (snake: GameObj.t) => {
         // Initialize the snake
-        snake.segments = []
-        snake.direction = k->Kaplay.vec2Right
-        snake.timeSinceLastMove = 0.
-        snake.inputQueue = Queue.make(2)
+        snake->setSnakeState({
+          segments: [],
+          direction: k->Kaplay.vec2Right,
+          timeSinceLastMove: 0.,
+          inputQueue: Queue.make(2),
+          isDead: false,
+        })
 
         snake
-        ->asGameObj
         ->GameObj.onKeyPress(key => {
           // The arrow keys are used to control the snake
           let intendedDirection = switch key {
@@ -98,9 +104,10 @@ module Snake = {
           switch intendedDirection {
           | None => ()
           | Some(intendedDirection) => {
+              let state = snake->getSnakeState
               // We check if a previous key was pressed.
-              let currentEffectiveDirection = switch snake.inputQueue->Queue.peek {
-              | None => snake.direction
+              let currentEffectiveDirection = switch state.inputQueue->Queue.peek {
+              | None => state.direction
               | Some(lastDirection) => lastDirection
               }
               // Compare the current direction with the intended direction.
@@ -109,7 +116,7 @@ module Snake = {
 
               if !isReversal {
                 // If the direction is not reversed, we add the intended direction to the queue.
-                snake.inputQueue->Queue.enqueue(intendedDirection)
+                state.inputQueue->Queue.enqueue(intendedDirection)
               }
             }
           }
@@ -119,51 +126,65 @@ module Snake = {
         // Add initial body segments
         for i in 0 to 2 {
           let pos = k->vec2(Int.toFloat(i) *. -tileSize, 0.)
-          if i == 0 {
-            snake->asGameObj->addSegment(pos, ~extraComponents=[tag("head")])
-          } else {
-            snake->asGameObj->addSegment(pos)
-          }
+          snake->addSegment(pos, ~isHead=i == 0)
         }
       },
       update: @this
-      snake => {
-        snake.timeSinceLastMove = snake.timeSinceLastMove + k->Kaplay.dt
-        if snake.timeSinceLastMove > moveInterval {
-          let previousPositions = snake.segments->Array.map(segment => segment.pos)
+      (snake: GameObj.t) => {
+        let state = snake->getSnakeState
 
-          // Move the head
-          switch snake.segments[0] {
-          | None => ()
-          | Some(segment) =>
-            // We check if there is a direction in the queue.
-            switch snake.inputQueue->Queue.dequeue {
-            | None => ()
-            | Some(nextDirection) =>
-              // If the direction is not reversed, we update the direction.
-              // Why are we checking this twice? Didn't that happen in onKeyPressed?
-              // There could be a delay between the key press and update.
-              // We don't fully know what happened first.
-              if nextDirection->Vec2.dot(snake.direction) >= 0. {
-                snake.direction = nextDirection
+        // Immediately stop processing if the snake is dead
+        if !state.isDead {
+          state.timeSinceLastMove = state.timeSinceLastMove + k->Kaplay.dt
+          if state.timeSinceLastMove > moveInterval {
+            // Get current head position and calculate potential next position
+            switch state.segments[0] {
+            | None => () // Should not happen if snake has segments
+            | Some(headSegment) =>
+              // Check if input queue has a new direction
+              switch state.inputQueue->Queue.dequeue {
+              | None => ()
+              | Some(nextDirection) =>
+                if nextDirection->Vec2.dot(state.direction) >= 0. {
+                  state.direction = nextDirection
+                }
+              }
+
+              let nextPos = Vec2.add(
+                headSegment->GameObj.worldPos,
+                state.direction->Vec2.scale(tileSizeVec2),
+              )
+
+              let walls = k->getGameObjects(
+                "wall",
+                ~options={
+                  recursive: true,
+                },
+              )
+
+              let willCollide = walls->Array.some(wall => wall->GameObj.hasPoint(nextPos))
+
+              if willCollide {
+                state.isDead = true
+              } else {
+                // No collision predicted, proceed with movement
+                let previousPositions = state.segments->Array.map(segment => segment.pos)
+                // Move the head with the new world position
+                headSegment->GameObj.setWorldPos(nextPos)
+
+                // Move the body segments
+                for i in 1 to state.segments->Array.length - 1 {
+                  switch (state.segments[i], previousPositions[i - 1]) {
+                  | (Some(segment), Some(previousPos)) => segment.pos = previousPos
+                  | _ => ()
+                  }
+                }
+
+                // Reset the time since last move
+                state.timeSinceLastMove = 0.
               }
             }
-
-            // Move the head
-            segment.pos = Vec2.add(segment.pos, snake.direction->Vec2.scale(tileSizeVec2))
           }
-
-          // Move the body segments
-          for i in 1 to snake.segments->Array.length - 1 {
-            // We move the body segments to the previous position of the next segment.
-            switch (snake.segments[i], previousPositions[i - 1]) {
-            | (Some(segment), Some(previousPos)) => segment.pos = previousPos
-            | _ => ()
-            }
-          }
-
-          // Reset the time since last move
-          snake.timeSinceLastMove = 0.
         }
       },
     })
@@ -236,6 +257,7 @@ let scene = () => {
           k->color(k->colorFromHex("#a684ff")),
           tag("wall"),
           k->outline(~width=1, ~color=k->colorFromHex("#000000")),
+          k->z(1),
         ],
       },
     },
@@ -244,9 +266,9 @@ let scene = () => {
   let snake = grid->Level.spawn(
     [Snake.make()],
     k->vec2(
-      //
-      Int.toFloat(k->randi(10, gridSize - 10)),
-      Int.toFloat(k->randi(10, gridSize - 10)),
+      // Spawn within the inner grid boundaries (1 to gridSize - 2)
+      Int.toFloat(k->randi(1, gridSize - 2)),
+      Int.toFloat(k->randi(1, gridSize - 2)),
     ),
   )
 

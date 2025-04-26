@@ -243,6 +243,9 @@ function (k,  points) {
 @send
 external randi: (t, int, int) => int = "randi"
 
+@send
+external randf: (t, float, float) => float = "randf"
+
 type comp
 
 module Collision = {
@@ -366,6 +369,12 @@ module GameObjImpl = (
 
   @send
   external onDestroy: (T.t, unit => unit) => kEventController = "onDestroy"
+
+  @send
+  external worldPos: T.t => Vec2.t = "worldPos"
+
+  @send
+  external setWorldPos: (T.t, Vec2.t) => unit = "worldPos"
 }
 
 module GameObj = {

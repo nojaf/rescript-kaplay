@@ -22,6 +22,4 @@ KaplayContext.k.scene("snake", Snake.scene);
 
 KaplayContext.k.go("snake");
 
-KaplayContext.k.circle(100);
-
 /*  Not a pure module */
