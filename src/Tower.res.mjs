@@ -68,7 +68,7 @@ function shoot(from, maxDistance) {
             KaplayContext.k.area(),
             "bullet",
             KaplayContext.k.z(0),
-            KaplayContext.k.circle(KaplayContext.k.randf(4, 6), {
+            KaplayContext.k.circle(KaplayContext.k.rand(4, 6), {
               fill: true
             }),
             KaplayContext.k.color(bulletColor),

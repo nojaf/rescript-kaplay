@@ -244,7 +244,7 @@ function (k,  points) {
 external randi: (t, int, int) => int = "randi"
 
 @send
-external randf: (t, float, float) => float = "randf"
+external randf: (t, float, float) => float = "rand"
 
 type comp
 
