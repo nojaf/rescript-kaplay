@@ -7,7 +7,6 @@ let tileSize = 16.
 let tileSizeVec2 = k->vec2(tileSize, tileSize)
 let moveInterval = 0.50
 let score = ref(0)
-
 module Queue = {
   type t<'item> = {mutable items: array<'item>, maxSize: int}
 
@@ -191,7 +190,7 @@ module Snake = {
   }
 }
 
-let rec addCoin = (snake: GameObj.t, grid: Level.t) => {
+let rec addCoin = (snake: GameObj.t, grid: Level.t, scoreText: GameObj.t) => {
   // We find a random position that is not occupied by the snake
   let randomPosition =
     k->vec2(Int.toFloat(k->randi(1, gridSize - 1)), Int.toFloat(k->randi(1, gridSize - 1)))
@@ -229,11 +228,14 @@ let rec addCoin = (snake: GameObj.t, grid: Level.t) => {
       | Some(lastSegmentPos) => snake->Snake.addSegment(lastSegmentPos)
       }
 
-      addCoin(snake, grid)
+      score := score.contents + 1
+      scoreText.text = "Score: " ++ Int.toString(score.contents)
+
+      addCoin(snake, grid, scoreText)
     })
     ->ignore
   } else {
-    addCoin(snake, grid)
+    addCoin(snake, grid, scoreText)
   }
 }
 
@@ -272,7 +274,9 @@ let scene = () => {
     ),
   )
 
-  addCoin(snake, grid)
+  let scoreText = k->add([k->text("Score: 0"), k->posVec2(k->vec2(30., 200.))])
+
+  addCoin(snake, grid, scoreText)
 
   // grid->Level.spawn()
 }

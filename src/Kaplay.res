@@ -268,6 +268,8 @@ type gameObj = {
   mutable color: Color.t,
   // OpacityComp
   mutable opacity: float,
+  // TextComp
+  mutable text: string,
 }
 
 module GameObjImpl = (

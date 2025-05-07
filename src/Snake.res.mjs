@@ -177,7 +177,7 @@ let Snake = {
   make: make$1
 };
 
-function addCoin(snake, grid) {
+function addCoin(snake, grid, scoreText) {
   while (true) {
     let randomPosition = KaplayContext.k.vec2(KaplayContext.k.randi(1, 9), KaplayContext.k.randi(1, 9));
     if (snake.get("segment").every(segment => !segment.hasPoint(randomPosition))) {
@@ -198,7 +198,9 @@ function addCoin(snake, grid) {
         if (lastSegmentPos !== undefined) {
           addSegment(snake, lastSegmentPos, undefined);
         }
-        addCoin(snake, grid);
+        score.contents = score.contents + 1 | 0;
+        scoreText.text = "Score: " + score.contents.toString();
+        addCoin(snake, grid, scoreText);
       });
       return;
     }
@@ -226,7 +228,11 @@ function scene() {
     }
   });
   let snake = grid.spawn([make$1()], KaplayContext.k.vec2(KaplayContext.k.randi(1, 8), KaplayContext.k.randi(1, 8)));
-  addCoin(snake, grid);
+  let scoreText = KaplayContext.k.add([
+    KaplayContext.k.text("Score: 0"),
+    KaplayContext.k.pos(KaplayContext.k.vec2(30, 200))
+  ]);
+  addCoin(snake, grid, scoreText);
 }
 
 let gridSize = 10;
