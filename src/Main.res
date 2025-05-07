@@ -9,15 +9,3 @@ k->scene("tower", Tower.scene)
 k->scene("snake", Snake.scene)
 
 k->go("snake")
-/*
-type r = {
-    x: option<int>
-}
-
-let r1 = { x: Some(1) }
-
-let _ = switch r1 {
-    | None => ()
-    | 
-}
-*/

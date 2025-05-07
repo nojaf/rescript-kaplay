@@ -5,7 +5,7 @@
       "name": "a-squirtle-tale",
       "dependencies": {
         "kaplay": "3001.0.10",
-        "rescript": "12.0.0-alpha.11",
+        "rescript": "12.0.0-alpha.12",
       },
       "devDependencies": {
         "@nojaf/vite-plugin-rescript": "0.2.0",
@@ -130,7 +130,7 @@
 
     "postcss": ["postcss@8.5.3", "", { "dependencies": { "nanoid": "^3.3.8", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-dle9A3yYxlBSrt8Fu+IpjGT8SY8hN0mlaA6GY8t0P5PjIOZemULz/E2Bnm/2dcUOena75OTNkHI76uZBNUUq3A=="],
 
-    "rescript": ["rescript@12.0.0-alpha.11", "", { "bin": { "bsc": "cli/bsc.js", "rewatch": "cli/rewatch.js", "rescript": "cli/rescript.js", "bstracing": "lib/bstracing.js", "rescript-tools": "cli/rescript-tools.js" } }, "sha512-J9e7T44VfFPrim9BH/1I0M7ywpK2AUB9c6Y+lxoUAtNbD53qc/IKqNnA0h9V19rZr8ZBlTQ7RYvQZJjrMToozg=="],
+    "rescript": ["rescript@12.0.0-alpha.12", "", { "bin": { "bsc": "cli/bsc.js", "rewatch": "cli/rewatch.js", "rescript": "cli/rescript.js", "bstracing": "lib/bstracing.js", "rescript-tools": "cli/rescript-tools.js" } }, "sha512-CffTYrWwg3x+iyYEUa8coaygjHcK7NH3CsqNKMvFDbZUxWWRi0JNnpFp01bfv1LdrHNIptmLgr7Df4a4FXSD5Q=="],
 
     "rollup": ["rollup@4.40.0", "", { "dependencies": { "@types/estree": "1.0.7" }, "optionalDependencies": { "@rollup/rollup-android-arm-eabi": "4.40.0", "@rollup/rollup-android-arm64": "4.40.0", "@rollup/rollup-darwin-arm64": "4.40.0", "@rollup/rollup-darwin-x64": "4.40.0", "@rollup/rollup-freebsd-arm64": "4.40.0", "@rollup/rollup-freebsd-x64": "4.40.0", "@rollup/rollup-linux-arm-gnueabihf": "4.40.0", "@rollup/rollup-linux-arm-musleabihf": "4.40.0", "@rollup/rollup-linux-arm64-gnu": "4.40.0", "@rollup/rollup-linux-arm64-musl": "4.40.0", "@rollup/rollup-linux-loongarch64-gnu": "4.40.0", "@rollup/rollup-linux-powerpc64le-gnu": "4.40.0", "@rollup/rollup-linux-riscv64-gnu": "4.40.0", "@rollup/rollup-linux-riscv64-musl": "4.40.0", "@rollup/rollup-linux-s390x-gnu": "4.40.0", "@rollup/rollup-linux-x64-gnu": "4.40.0", "@rollup/rollup-linux-x64-musl": "4.40.0", "@rollup/rollup-win32-arm64-msvc": "4.40.0", "@rollup/rollup-win32-ia32-msvc": "4.40.0", "@rollup/rollup-win32-x64-msvc": "4.40.0", "fsevents": "~2.3.2" }, "bin": { "rollup": "dist/bin/rollup" } }, "sha512-Noe455xmA96nnqH5piFtLobsGbCij7Tu+tb3c1vYjNbTkfzGqXqQXG3wJaYXkRZuQ0vEYN4bhwg7QnIrqB5B+w=="],
 
