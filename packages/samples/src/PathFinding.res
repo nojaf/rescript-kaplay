@@ -1,0 +1,161 @@
+open Kaplay
+open KaplayContext
+
+let tileSize = 64.
+
+module EmptyTile = {
+  type t = unit
+
+  include RectComp({
+    type t = t
+  })
+  include OutlineComp({
+    type t = t
+  })
+  include TileComp({
+    type t = t
+  })
+
+  let make = () => {
+    [
+      //
+      addRect(k, tileSize, tileSize),
+      addTile(k),
+      addOutline(k, ~width=1, ~color=k->colorFromHex("#000000")),
+    ]
+  }
+}
+
+module WallTile = {
+  type t
+
+  include RectComp({
+    type t = t
+  })
+  include OutlineComp({
+    type t = t
+  })
+  include ColorComp({
+    type t = t
+  })
+  include TileComp({
+    type t = t
+  })
+
+  let make = () => {
+    [
+      addRect(k, tileSize, tileSize),
+      addTile(k),
+      addOutline(k, ~width=1, ~color=k->colorFromHex("#0AC0B0"), ~opacity=1.),
+      addColor(k, k->colorFromHex("#00EE00")),
+    ]
+  }
+}
+
+module SquirtleTile = {
+  type t
+
+  include SpriteComp({
+    type t = t
+  })
+  include TileComp({
+    type t = t
+  })
+  include ColorComp({
+    type t = t
+  })
+  include AnchorComp({
+    type t = t
+  })
+  include PosComp({
+    type t = t
+  })
+
+  let make = () => {
+    [
+      addTile(k),
+      addSprite(k, "squirtle", ~options={width: tileSize, height: tileSize}),
+      addColor(k, k->colorFromHex("#ADD8E6")),
+      addAnchorCenter(k),
+      addPos(k, tileSize / 2., tileSize / 2.),
+      tag("squirtle"),
+    ]
+  }
+}
+
+module CharmanderTile = {
+  type t
+
+  include SpriteComp({
+    type t = t
+  })
+  include TileComp({
+    type t = t
+  })
+  include AnchorComp({
+    type t = t
+  })
+  include PosComp({
+    type t = t
+  })
+  include AgentComp({
+    type t = t
+  })
+  include ColorComp({
+    type t = t
+  })
+
+  let make = () => {
+    [
+      addSprite(k, "charmander", ~options={width: tileSize, height: tileSize}),
+      addAnchorCenter(k),
+      addPos(k, tileSize / 2., tileSize / 2.),
+      addTile(k),
+      addColor(k, k->colorFromHex("#FF746C")),
+      addAgent(k, ~options={speed: 120., allowDiagonals: false}),
+    ]
+  }
+}
+
+let scene = () => {
+  k->loadSprite("squirtle", "/sprites/squirtle-rb.png")
+  k->loadSprite("charmander", "/sprites/charmander-rb.png")
+  k->loadMusic("beast-in-black", "sounds/beast-in-black.mp3")
+
+  let level = k->addLevel(
+    [
+      //
+      "##########",
+      "#        #",
+      "#        #",
+      "#        #",
+      "##########",
+    ],
+    {
+      tileWidth: tileSize,
+      tileHeight: tileSize,
+      tiles: dict{
+        " ": EmptyTile.make,
+        "#": WallTile.make,
+      },
+    },
+  )
+
+  let squirtle = level->Level.spawn(SquirtleTile.make(), k->vec2(1., 1.))
+  let charmander = level->Level.spawn(CharmanderTile.make(), k->vec2(7., 4.))
+
+  k
+  ->onKeyPress(key => {
+    switch key {
+    | Space =>
+      let target = squirtle->SquirtleTile.getPos
+      charmander->CharmanderTile.setTarget(target)
+      k
+      ->play("beast-in-black")
+      ->ignore
+
+    | _ => ()
+    }
+  })
+  ->ignore
+}

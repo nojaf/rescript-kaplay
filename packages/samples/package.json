@@ -1,0 +1,27 @@
+{
+  "name": "@nojaf/samples",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "res:build": "rescript",
+    "res:clean": "rescript clean",
+    "res:dev": "rescript -w",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "fmt": "rescript format -all"
+  },
+  "dependencies": {
+    "kaplay": "3001.0.10",
+    "@nojaf/rescript-kaplay": "workspace:^"
+  },
+  "devDependencies": {
+    "@nojaf/vite-plugin-rescript": "0.2.0",
+    "vite": "6.3.0"
+  },
+  "trustedDependencies": [
+    "esbuild",
+    "rescript"
+  ]
+}

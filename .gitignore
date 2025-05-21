@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 # ReScript
-/lib/
+**/lib/bs/
+**/lib/ocaml/
 .bsb.lock
 .merlin

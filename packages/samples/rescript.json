@@ -1,0 +1,12 @@
+{
+  "name": "@nojaf/samples",
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    }
+  ],
+  "bs-dependencies": [
+    "@nojaf/rescript-kaplay"
+  ]
+}

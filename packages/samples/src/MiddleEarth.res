@@ -47,20 +47,29 @@ let updateCamera = (result: Vec2.t) => {
   //   k->setCamPos(moveWithBounds)
 }
 
+module Map = {
+  type t
+
+  include PosComp({ type t = t })
+  include SpriteComp({ type t = t })
+  include AreaComp({ type t = t })
+
+  let make = () => {
+    k->Kaplay.add([
+      addPos(k, 0., 0.),
+      addSprite(k, "bg", ~options={
+        width: mapWidth,
+        height: mapHeight,
+      }),
+      addArea(k),
+    ])
+  }
+}
+
 let scene = () => {
   k->loadSprite("bg", "middle-earth.webp")
 
-  let map = k->add([
-    k->pos(0., 0.),
-    k->sprite(
-      "bg",
-      ~options={
-        width: mapWidth,
-        height: mapHeight,
-      },
-    ),
-    k->area,
-  ])
+  let map = Map.make()
 
   k
   ->onTouchStart((pos, _touch) => {
@@ -104,7 +113,7 @@ let scene = () => {
   ->ignore
 
   map
-  ->GameObj.onKeyDown(key => {
+  ->Map.onKeyDown(key => {
     let currentCamPos = k->getCamPos
 
     let move = switch key {

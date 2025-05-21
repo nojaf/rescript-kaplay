@@ -1,0 +1,7 @@
+{
+  "name": "@nojaf/rescript-kaplay",
+  "sources": {
+    "dir": "src",
+    "subdirs": true
+  }
+}
