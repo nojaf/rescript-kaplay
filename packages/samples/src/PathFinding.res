@@ -1,18 +1,19 @@
 open Kaplay
-open KaplayContext
+open Kaplay.Context
+open GameContext
 
 let tileSize = 64.
 
 module EmptyTile = {
   type t = unit
 
-  include RectComp({
+  include Rect.Comp({
     type t = t
   })
-  include OutlineComp({
+  include Outline.Comp({
     type t = t
   })
-  include TileComp({
+  include Tile.Comp({
     type t = t
   })
 
@@ -29,16 +30,16 @@ module EmptyTile = {
 module WallTile = {
   type t
 
-  include RectComp({
+  include Rect.Comp({
     type t = t
   })
-  include OutlineComp({
+  include Outline.Comp({
     type t = t
   })
-  include ColorComp({
+  include Color.Comp({
     type t = t
   })
-  include TileComp({
+  include Tile.Comp({
     type t = t
   })
 
@@ -55,19 +56,19 @@ module WallTile = {
 module SquirtleTile = {
   type t
 
-  include SpriteComp({
+  include Sprite.Comp({
     type t = t
   })
-  include TileComp({
+  include Tile.Comp({
     type t = t
   })
-  include ColorComp({
+  include Color.Comp({
     type t = t
   })
-  include AnchorComp({
+  include Anchor.Comp({
     type t = t
   })
-  include PosComp({
+  include Pos.Comp({
     type t = t
   })
 
@@ -86,22 +87,22 @@ module SquirtleTile = {
 module CharmanderTile = {
   type t
 
-  include SpriteComp({
+  include Sprite.Comp({
     type t = t
   })
-  include TileComp({
+  include Tile.Comp({
     type t = t
   })
-  include AnchorComp({
+  include Anchor.Comp({
     type t = t
   })
-  include PosComp({
+  include Pos.Comp({
     type t = t
   })
-  include AgentComp({
+  include Agent.Comp({
     type t = t
   })
-  include ColorComp({
+  include Color.Comp({
     type t = t
   })
 

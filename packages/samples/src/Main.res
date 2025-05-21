@@ -1,7 +1,7 @@
-open Kaplay
-open KaplayContext
+open Kaplay.Context
+open GameContext
 
-k->scene("squirtle", Squartle.scene)
+k->scene("squirtle", Squirtle.scene)
 k->scene("middle-earth", MiddleEarth.scene)
 k->scene("path-finding", PathFinding.scene)
 // k->scene("sentry", Sentry.scene)

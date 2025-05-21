@@ -1,5 +1,6 @@
 open Kaplay
-open KaplayContext
+open Kaplay.Context
+open GameContext
 
 let speed = 10.
 let mapWidth = 1000.
@@ -50,12 +51,12 @@ let updateCamera = (result: Vec2.t) => {
 module Map = {
   type t
 
-  include PosComp({ type t = t })
-  include SpriteComp({ type t = t })
-  include AreaComp({ type t = t })
+  include Pos.Comp({ type t = t })
+  include Sprite. Comp({ type t = t })
+  include Area.Comp({ type t = t })
 
   let make = () => {
-    k->Kaplay.add([
+    k->Context.add([
       addPos(k, 0., 0.),
       addSprite(k, "bg", ~options={
         width: mapWidth,
