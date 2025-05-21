@@ -3,7 +3,7 @@
   "sources": [
     {
       "dir": "src",
-      "subdirs": true
+      "subdirs": false
     }
   ],
   "bs-dependencies": [

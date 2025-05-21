@@ -1,16 +1,18 @@
 open Kaplay
-open KaplayContext
+open Kaplay.Context
+
+open GameContext
 
 module Squirtle = {
   type t
 
-  include PosComp({ type t = t })
-  include SpriteComp({ type t = t })
-  include AreaComp({ type t = t })
-  include BodyComp({ type t = t })
+  include Pos.Comp({ type t = t })
+  include Sprite.Comp({ type t = t })
+  include Area.Comp({ type t = t })
+  include Body.Comp({ type t = t })
 
   let make = (~x, ~y) => {
-    k->Kaplay.add([
+    k->Context.add([
       addPos(k, x, y),
       addSprite(k, "squirtle",   ~options={
         anim: "idle",
@@ -25,14 +27,14 @@ module Squirtle = {
 module Ground = {
   type t
 
-  include PosComp({ type t = t })
-  include AreaComp({ type t = t })
-  include RectComp({ type t = t })
-  include ColorComp({ type t = t })
-  include BodyComp({ type t = t })
+  include Pos.Comp({ type t = t })
+  include Area.Comp({ type t = t })
+  include Rect.Comp({ type t = t })
+  include Color.Comp({ type t = t })
+  include Body.Comp({ type t = t })
 
   let make = () => {
-    k->Kaplay.add([
+    k->Context.add([
       addPos(k, 0., k->height - 24.),
       addRect(k, k->width, 24.),
       addColor(k, k->colorFromHex("#D97744")),

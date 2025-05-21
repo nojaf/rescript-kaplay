@@ -28,3 +28,4 @@ dist-ssr
 **/lib/ocaml/
 .bsb.lock
 .merlin
+rewatch.lock

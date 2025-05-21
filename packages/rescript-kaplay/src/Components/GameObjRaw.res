@@ -1,0 +1,52 @@
+module Comp = (
+  T: {
+    type t
+  },
+) => {
+  open Types
+
+  @get
+  external getId: T.t => int = "id"
+
+  /**
+   Check if game object has a certain component.
+   */
+  @send
+  external has: (T.t, string) => bool = "has"
+
+  /**
+    Hitting the key
+ */
+  @send
+  external onKeyPress: (T.t, key => unit) => KEventController.t = "onKeyPress"
+
+  /**
+    Holding the key down
+ */
+  @send
+  external onKeyDown: (T.t, key => unit) => KEventController.t = "onKeyDown"
+
+  /**
+    Lifting the key up
+ */
+  @send
+  external onKeyRelease: (T.t, key => unit) => KEventController.t = "onKeyRelease"
+
+  @send
+  external onUpdate: (T.t, unit => unit) => KEventController.t = "onUpdate"
+
+  @send
+  external add: (T.t, array<comp>) => 't = "add"
+
+  @send
+  external destroy: T.t => unit = "destroy"
+
+  @send
+  external get: (T.t, 'tag) => array<'t> = "get"
+
+  @send
+  external untag: (T.t, 'tag) => unit = "untag"
+
+  @send
+  external onDestroy: (T.t, unit => unit) => KEventController.t = "onDestroy"
+}

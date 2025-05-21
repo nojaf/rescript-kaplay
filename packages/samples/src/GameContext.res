@@ -1,4 +1,4 @@
-open Kaplay
+open Kaplay.Context
 
 @val @scope("screen")
 external screenWidth: int = "width"

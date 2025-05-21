@@ -1,5 +1,6 @@
 {
   "name": "@nojaf/rescript-kaplay",
+  "namespace": "Kaplay",
   "sources": {
     "dir": "src",
     "subdirs": true

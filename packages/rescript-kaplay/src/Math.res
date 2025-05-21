@@ -1,0 +1,3 @@
+module Shape = {
+  type t
+}
