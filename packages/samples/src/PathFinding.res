@@ -7,15 +7,9 @@ let tileSize = 64.
 module EmptyTile = {
   type t = unit
 
-  include Rect.Comp({
-    type t = t
-  })
-  include Outline.Comp({
-    type t = t
-  })
-  include Tile.Comp({
-    type t = t
-  })
+  include Rect.Comp({type t = t})
+  include Outline.Comp({type t = t})
+  include Tile.Comp({type t = t})
 
   let make = () => {
     [
@@ -30,18 +24,10 @@ module EmptyTile = {
 module WallTile = {
   type t
 
-  include Rect.Comp({
-    type t = t
-  })
-  include Outline.Comp({
-    type t = t
-  })
-  include Color.Comp({
-    type t = t
-  })
-  include Tile.Comp({
-    type t = t
-  })
+  include Rect.Comp({type t = t})
+  include Outline.Comp({type t = t})
+  include Color.Comp({type t = t})
+  include Tile.Comp({type t = t})
 
   let make = () => {
     [
@@ -56,21 +42,11 @@ module WallTile = {
 module SquirtleTile = {
   type t
 
-  include Sprite.Comp({
-    type t = t
-  })
-  include Tile.Comp({
-    type t = t
-  })
-  include Color.Comp({
-    type t = t
-  })
-  include Anchor.Comp({
-    type t = t
-  })
-  include Pos.Comp({
-    type t = t
-  })
+  include Sprite.Comp({type t = t})
+  include Tile.Comp({type t = t})
+  include Color.Comp({type t = t})
+  include Anchor.Comp({type t = t})
+  include Pos.Comp({type t = t})
 
   let make = () => {
     [
@@ -87,24 +63,12 @@ module SquirtleTile = {
 module CharmanderTile = {
   type t
 
-  include Sprite.Comp({
-    type t = t
-  })
-  include Tile.Comp({
-    type t = t
-  })
-  include Anchor.Comp({
-    type t = t
-  })
-  include Pos.Comp({
-    type t = t
-  })
-  include Agent.Comp({
-    type t = t
-  })
-  include Color.Comp({
-    type t = t
-  })
+  include Sprite.Comp({type t = t})
+  include Tile.Comp({type t = t})
+  include Anchor.Comp({type t = t})
+  include Pos.Comp({type t = t})
+  include Agent.Comp({type t = t})
+  include Color.Comp({type t = t})
 
   let make = () => {
     [

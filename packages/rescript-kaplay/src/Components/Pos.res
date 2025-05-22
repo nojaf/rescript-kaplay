@@ -21,6 +21,7 @@ module Comp = (
 
   @set
   external setPos: (T.t, Vec2.t) => unit = "pos"
+
   @send
   external addPos: (Context.t, float, float) => Types.comp = "pos"
 

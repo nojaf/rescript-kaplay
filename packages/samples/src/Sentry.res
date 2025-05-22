@@ -5,24 +5,12 @@ open GameContext
 module Squirtle = {
   type t
 
-  include Sprite.Comp({
-    type t = t
-  })
-  include Pos.Comp({
-    type t = t
-  })
-  include Color.Comp({
-    type t = t
-  })
-  include Area.Comp({
-    type t = t
-  })
-  include Body.Comp({
-    type t = t
-  })
-  include Anchor.Comp({
-    type t = t
-  })
+  include Sprite.Comp({type t = t})
+  include Pos.Comp({type t = t})
+  include Color.Comp({type t = t})
+  include Area.Comp({type t = t})
+  include Body.Comp({type t = t})
+  include Anchor.Comp({type t = t})
 
   let make = () => {
     k->Context.add([
@@ -39,21 +27,11 @@ module Squirtle = {
 module Flareon = {
   type t
 
-  include Sprite.Comp({
-    type t = t
-  })
-  include Pos.Comp({
-    type t = t
-  })
-  include Color.Comp({
-    type t = t
-  })
-  include Anchor.Comp({
-    type t = t
-  })
-  include Sentry.Comp({
-    type t = t
-  })
+  include Sprite.Comp({type t = t})
+  include Pos.Comp({type t = t})
+  include Color.Comp({type t = t})
+  include Anchor.Comp({type t = t})
+  include Sentry.Comp({type t = t})
 
   let make = (squirtle: Squirtle.t) => {
     k->Context.add([
@@ -62,14 +40,14 @@ module Flareon = {
       k->addAnchorCenter,
       k->addColor(k->colorFromHex("#FF746C")),
       k->addSentry(
-      [squirtle],
-      ~options={
-        fieldOfView: 45.,
-        direction: k->vec2(0., 0.),
-        lineOfSight: true,
-        checkFrequency: 0.200,
-      },
-    )
+        [squirtle],
+        ~options={
+          fieldOfView: 45.,
+          direction: k->vec2(0., 0.),
+          lineOfSight: true,
+          checkFrequency: 0.200,
+        },
+      ),
     ])
   }
 }
@@ -77,24 +55,12 @@ module Flareon = {
 module Wall = {
   type t
 
-  include Rect.Comp({
-    type t = t
-  })
-  include Pos.Comp({
-    type t = t
-  })
-  include Color.Comp({
-    type t = t
-  })
-  include Area.Comp({
-    type t = t
-  })
-  include Body.Comp({
-    type t = t
-  })
-  include Anchor.Comp({
-    type t = t
-  })
+  include Rect.Comp({type t = t})
+  include Pos.Comp({type t = t})
+  include Color.Comp({type t = t})
+  include Area.Comp({type t = t})
+  include Body.Comp({type t = t})
+  include Anchor.Comp({type t = t})
 
   let make = () => {
     k->Context.add([
@@ -111,18 +77,12 @@ module Wall = {
 module Text = {
   type t
 
-  include Text.Comp({
-    type t = t
-  })
+  include Text.Comp({type t = t})
 
-  include Pos.Comp({
-    type t = t
-  })
+  include Pos.Comp({type t = t})
 
   let make = () => {
-    k->Context.add([
-      k->addText("Move underneath Flareon to be spotted", ~options={size: 20.}),
-    ])
+    k->Context.add([k->addText("Move underneath Flareon to be spotted", ~options={size: 20.})])
   }
 }
 
@@ -135,8 +95,7 @@ let scene = () => {
 
   let _wall = Wall.make()
 
-  Text.make()
-  ->ignore
+  Text.make()->ignore
 
   flareon
   ->Flareon.onObjectsSpotted(spotted => {

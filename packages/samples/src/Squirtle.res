@@ -6,17 +6,21 @@ open GameContext
 module Squirtle = {
   type t
 
-  include Pos.Comp({ type t = t })
-  include Sprite.Comp({ type t = t })
-  include Area.Comp({ type t = t })
-  include Body.Comp({ type t = t })
+  include Pos.Comp({type t = t})
+  include Sprite.Comp({type t = t})
+  include Area.Comp({type t = t})
+  include Body.Comp({type t = t})
 
   let make = (~x, ~y) => {
     k->Context.add([
       addPos(k, x, y),
-      addSprite(k, "squirtle",   ~options={
-        anim: "idle",
-      }),
+      addSprite(
+        k,
+        "squirtle",
+        ~options={
+          anim: "idle",
+        },
+      ),
       addArea(k),
       addBody(k),
       tag("squirtle"),
@@ -27,11 +31,11 @@ module Squirtle = {
 module Ground = {
   type t
 
-  include Pos.Comp({ type t = t })
-  include Area.Comp({ type t = t })
-  include Rect.Comp({ type t = t })
-  include Color.Comp({ type t = t })
-  include Body.Comp({ type t = t })
+  include Pos.Comp({type t = t})
+  include Area.Comp({type t = t})
+  include Rect.Comp({type t = t})
+  include Color.Comp({type t = t})
+  include Body.Comp({type t = t})
 
   let make = () => {
     k->Context.add([
@@ -39,10 +43,9 @@ module Ground = {
       addRect(k, k->width, 24.),
       addColor(k, k->colorFromHex("#D97744")),
       addArea(k),
-      addBody(k, ~options={isStatic: true})
+      addBody(k, ~options={isStatic: true}),
     ])
   }
-  
 }
 
 let scene = () => {
@@ -101,7 +104,7 @@ let scene = () => {
         }
       | Right => {
           squirtle->Squirtle.play("walk")
-           squirtle->Squirtle.setFlipX(true)
+          squirtle->Squirtle.setFlipX(true)
         }
       | Space => {
           squirtle->Squirtle.play("jump")
@@ -112,7 +115,7 @@ let scene = () => {
     } else {
       switch key {
       | Left => squirtle->Squirtle.setFlipX(false)
-      | Right =>  squirtle->Squirtle.setFlipX(true)
+      | Right => squirtle->Squirtle.setFlipX(true)
       | _ => ()
       }
     }

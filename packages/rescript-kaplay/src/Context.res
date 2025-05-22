@@ -162,7 +162,7 @@ external vec2Down: t => Vec2.t = "DOWN"
 external vec2: (t, float, float) => Vec2.t = "vec2"
 
 @send
-external vec2Diagnoal: (t, float) => Vec2.t = "vec2"
+external vec2FromXY: (t, float) => Vec2.t = "vec2"
 
 @send
 external center: t => Vec2.t = "center"

@@ -51,17 +51,21 @@ let updateCamera = (result: Vec2.t) => {
 module Map = {
   type t
 
-  include Pos.Comp({ type t = t })
-  include Sprite. Comp({ type t = t })
-  include Area.Comp({ type t = t })
+  include Pos.Comp({type t = t})
+  include Sprite.Comp({type t = t})
+  include Area.Comp({type t = t})
 
   let make = () => {
     k->Context.add([
       addPos(k, 0., 0.),
-      addSprite(k, "bg", ~options={
-        width: mapWidth,
-        height: mapHeight,
-      }),
+      addSprite(
+        k,
+        "bg",
+        ~options={
+          width: mapWidth,
+          height: mapHeight,
+        },
+      ),
       addArea(k),
     ])
   }

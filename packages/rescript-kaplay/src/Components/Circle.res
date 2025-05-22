@@ -7,6 +7,9 @@ module Comp = (
     type t = T.t
   })
 
+  @get
+  external getRadius: T.t => float = "radius"
+
   type circleOptions = {fill?: bool}
 
   @send
