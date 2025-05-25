@@ -62,22 +62,33 @@ export const rescriptSample = `
 open Kaplay
 
 // Create a new Kaplay context
-let k = Context.kaplay()
+let k = Context.kaplay(
+  ~initOptions={
+    background: "#05df72",
+    width: 500,
+    height: 500,
+  },
+)
 
+// Create your first GameObject
 module Bean = {
   type t
 
   include Sprite.Comp({type t = t})
+  include Pos.Comp({type t = t})
 
   let make = () => {
     k->Context.add([
-      k->addSprite("bean", ~options={width: 100., height: 100.}),
+      k->addSprite("bean", ~options={width: 50., height: 50.}),
+      k->addPos(200., 100.),
     ])
   }
 }
 
+// Load the bean sprite
 k->Context.loadBean
 
+// Create a bean
 let bean = Bean.make()
 `;
 
