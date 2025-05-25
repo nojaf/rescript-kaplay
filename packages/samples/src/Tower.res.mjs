@@ -20,13 +20,13 @@ import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
 
 let enemy = "enemy";
 
-let bullet = "bullet";
+let bubble = "bubble";
 
 let solidHeart = "solid-heart";
 
 let Tags = {
   enemy: enemy,
-  bullet: bullet,
+  bubble: bubble,
   solidHeart: solidHeart
 };
 
@@ -63,24 +63,6 @@ let Path = {
 
 Sprite$Kaplay.Comp({});
 
-Color$Kaplay.Comp({});
-
-Pos$Kaplay.Comp({});
-
-Area$Kaplay.Comp({});
-
-Anchor$Kaplay.Comp({});
-
-Move$Kaplay.Comp({});
-
-OffScreen$Kaplay.Comp({});
-
-Health$Kaplay.Comp({});
-
-Opacity$Kaplay.Comp({});
-
-Sprite$Kaplay.Comp({});
-
 Pos$Kaplay.Comp({});
 
 function make$1(x, y) {
@@ -97,6 +79,24 @@ function make$1(x, y) {
 let Heart = {
   make: make$1
 };
+
+Sprite$Kaplay.Comp({});
+
+Color$Kaplay.Comp({});
+
+Pos$Kaplay.Comp({});
+
+Area$Kaplay.Comp({});
+
+Anchor$Kaplay.Comp({});
+
+Move$Kaplay.Comp({});
+
+OffScreen$Kaplay.Comp({});
+
+Health$Kaplay.Comp({});
+
+Opacity$Kaplay.Comp({});
 
 function make$2() {
   let charmander = GameContext.k.add([
@@ -136,17 +136,8 @@ function make$2() {
 }
 
 let Charmander = {
-  Heart: Heart,
   make: make$2
 };
-
-Pos$Kaplay.Comp({});
-
-Circle$Kaplay.Comp({});
-
-Color$Kaplay.Comp({});
-
-Body$Kaplay.Comp({});
 
 Circle$Kaplay.Comp({});
 
@@ -208,6 +199,8 @@ Z$Kaplay.Comp({});
 
 Circle$Kaplay.Comp({});
 
+Color$Kaplay.Comp({});
+
 let bubbleColors = [
   GameContext.k.Color.fromHex("#00bcff"),
   GameContext.k.Color.fromHex("#a2f4fd"),
@@ -215,11 +208,11 @@ let bubbleColors = [
 ];
 
 function make$5(homingVelocity, homingTimer) {
-  let bulletColor = bubbleColors[GameContext.k.randi(0, 2)];
+  let bubbleColor = bubbleColors[GameContext.k.randi(0, 2)];
   return [
     GameContext.k.pos(0, 0),
-    GameContext.k.color(bulletColor),
-    bullet,
+    GameContext.k.color(bubbleColor),
+    bubble,
     GameContext.k.z(11),
     GameContext.k.circle(GameContext.k.rand(4, 6), {
       fill: true
@@ -232,31 +225,39 @@ function make$5(homingVelocity, homingTimer) {
   ];
 }
 
-let Bullet = {
+let Bubble = {
   bubbleColors: bubbleColors,
   make: make$5
 };
+
+Pos$Kaplay.Comp({});
+
+Circle$Kaplay.Comp({});
+
+Color$Kaplay.Comp({});
+
+Body$Kaplay.Comp({});
 
 function fireHomingBullet(tower, viewport, target) {
   let maxDistance = viewport.radius;
   let bulletSpeed = GameContext.k.vec2(300);
   let homingVelocity = target.worldPos().sub(tower.worldPos()).unit().scale(bulletSpeed);
-  let bullet = tower.add(make$5(homingVelocity, 0.2));
-  bullet.onUpdate(() => {
-    if (bullet.homingTimer > 0) {
-      let toTarget = target.worldPos().sub(bullet.worldPos()).unit();
-      bullet.homingVelocity = bullet.homingVelocity.lerp(toTarget.scale(bulletSpeed), 0.1);
-      bullet.homingTimer = bullet.homingTimer - GameContext.k.dt();
+  let bubble = tower.add(make$5(homingVelocity, 0.2));
+  bubble.onUpdate(() => {
+    if (bubble.homingTimer > 0) {
+      let toTarget = target.worldPos().sub(bubble.worldPos()).unit();
+      bubble.homingVelocity = bubble.homingVelocity.lerp(toTarget.scale(bulletSpeed), 0.1);
+      bubble.homingTimer = bubble.homingTimer - GameContext.k.dt();
     }
-    bullet.move(bullet.homingVelocity);
-    if (bullet.worldPos().dist(tower.worldPos()) >= maxDistance) {
-      bullet.destroy();
+    bubble.move(bubble.homingVelocity);
+    if (bubble.worldPos().dist(tower.worldPos()) >= maxDistance) {
+      bubble.destroy();
       return;
     }
     
   });
-  bullet.onCollide(enemy, (enemy, param) => {
-    bullet.destroy();
+  bubble.onCollide(enemy, (enemy, param) => {
+    bubble.destroy();
     enemy.hurt(1);
     let heart = enemy.get(solidHeart).at(0);
     if (heart === undefined) {
@@ -296,9 +297,6 @@ function make$6() {
 }
 
 let Tower = {
-  Viewport: Viewport,
-  Squirtle: Squirtle,
-  Bullet: Bullet,
   fireHomingBullet: fireHomingBullet,
   make: make$6
 };
@@ -337,7 +335,11 @@ export {
   circlePolygon,
   tryHeadOfMap,
   Path,
+  Heart,
   Charmander,
+  Viewport,
+  Squirtle,
+  Bubble,
   Tower,
   onSceneLoad,
   scene,

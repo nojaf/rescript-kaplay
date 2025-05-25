@@ -5,6 +5,6 @@
     "packages/*"
   ],
   "dependencies": {
-    "rescript": "https://pkg.pr.new/rescript-lang/rescript@7502"
+    "rescript": "https://pkg.pr.new/rescript-lang/rescript@88cd2bc9d2ed0ba66bd4fbf9ea0c0c42cf6c9bcd"
   }
 }

@@ -4,7 +4,7 @@ open GameContext
 
 module Tags = {
   let enemy = "enemy"
-  let bullet = "bullet"
+  let bubble = "bubble"
   let solidHeart = "solid-heart"
 }
 
@@ -43,6 +43,26 @@ module Path = {
   }
 }
 
+module Heart = {
+  type t
+  include Sprite.Comp({type t = t})
+  include Pos.Comp({type t = t})
+
+  let make = (~x, ~y) => {
+    [
+      k->addSprite(
+        "heart",
+        ~options={
+          width: 10.,
+          height: 10.,
+        },
+      ),
+      k->addPos(x, y),
+      tag(Tags.solidHeart),
+    ]
+  }
+}
+
 module Charmander = {
   type t
 
@@ -55,26 +75,6 @@ module Charmander = {
   include OffScreen.Comp({type t = t})
   include Health.Comp({type t = t})
   include Opacity.Comp({type t = t})
-
-  module Heart = {
-    type t
-    include Sprite.Comp({type t = t})
-    include Pos.Comp({type t = t})
-
-    let make = (~x, ~y) => {
-      [
-        k->addSprite(
-          "heart",
-          ~options={
-            width: 10.,
-            height: 10.,
-          },
-        ),
-        k->addPos(x, y),
-        tag(Tags.solidHeart),
-      ]
-    }
-  }
 
   let make = () => {
     let charmander = k->Context.add([
@@ -138,6 +138,76 @@ module Charmander = {
   }
 }
 
+module Viewport = {
+  type t = {inSight: Map.t<int, Charmander.t>}
+
+  include Circle.Comp({type t = t})
+  include Color.Comp({type t = t})
+  include Opacity.Comp({type t = t})
+  include Area.Comp({type t = t})
+
+  external defaultState: t => Types.comp = "%identity"
+
+  let make = () => {
+    [
+      k->addCircle(200., ~options={fill: true}),
+      k->addColor(k->colorFromHex("#D1FEB8")),
+      k->addOpacity(0.2),
+      k->addArea(~options={shape: circlePolygon(k->vec2(0., 0.), 200., ~segments=32)}),
+      defaultState({inSight: Map.make()}),
+    ]
+  }
+}
+
+module Squirtle = {
+  include Sprite.Comp({type t = t})
+  include Anchor.Comp({type t = t})
+  include Color.Comp({type t = t})
+  include Z.Comp({type t = t})
+
+  let make = () => {
+    [
+      k->addSprite("squirtle", ~options={height: 36., flipX: true}),
+      k->addAnchorCenter,
+      k->addColor(k->colorFromHex("#00d3f2")),
+      k->addZ(5),
+    ]
+  }
+}
+
+module Bubble = {
+  type t = {
+    mutable homingTimer: float,
+    mutable homingVelocity: Vec2.t,
+  }
+
+  include Pos.Comp({type t = t})
+  include Area.Comp({type t = t})
+  include Z.Comp({type t = t})
+  include Circle.Comp({type t = t})
+  include Color.Comp({type t = t})
+
+  let bubbleColors = [
+    k->colorFromHex("#00bcff"),
+    k->colorFromHex("#a2f4fd"),
+    k->colorFromHex("#155dfc"),
+  ]
+
+  let make = (homingVelocity: Vec2.t, homingTimer: float) => {
+    let bubbleColor = bubbleColors->Array.getUnsafe(k->randi(0, 2))
+    [
+      k->addPos(0., 0.),
+      k->addColor(bubbleColor),
+      tag(Tags.bubble),
+      k->addZ(11),
+      k->addCircle(k->randf(4., 6.), ~options={fill: true}),
+      // default values for t, so it is at least defined
+      Obj.magic({homingTimer, homingVelocity}),
+      k->addArea,
+    ]
+  }
+}
+
 module Tower = {
   type t
 
@@ -145,75 +215,6 @@ module Tower = {
   include Circle.Comp({type t = t})
   include Color.Comp({type t = t})
   include Body.Comp({type t = t})
-
-  module Viewport = {
-    type t = {inSight: Map.t<int, Charmander.t>}
-
-    include Circle.Comp({type t = t})
-    include Color.Comp({type t = t})
-    include Opacity.Comp({type t = t})
-    include Area.Comp({type t = t})
-
-    external defaultState: t => Types.comp = "%identity"
-
-    let make = () => {
-      [
-        k->addCircle(200., ~options={fill: true}),
-        k->addColor(k->colorFromHex("#D1FEB8")),
-        k->addOpacity(0.2),
-        k->addArea(~options={shape: circlePolygon(k->vec2(0., 0.), 200., ~segments=32)}),
-        defaultState({inSight: Map.make()}),
-      ]
-    }
-  }
-
-  module Squirtle = {
-    include Sprite.Comp({type t = t})
-    include Anchor.Comp({type t = t})
-    include Color.Comp({type t = t})
-    include Z.Comp({type t = t})
-
-    let make = () => {
-      [
-        k->addSprite("squirtle", ~options={height: 36., flipX: true}),
-        k->addAnchorCenter,
-        k->addColor(k->colorFromHex("#00d3f2")),
-        k->addZ(5),
-      ]
-    }
-  }
-
-  module Bullet = {
-    type t = {
-      mutable homingTimer: float,
-      mutable homingVelocity: Vec2.t,
-    }
-
-    include Pos.Comp({type t = t})
-    include Area.Comp({type t = t})
-    include Z.Comp({type t = t})
-    include Circle.Comp({type t = t})
-
-    let bubbleColors = [
-      k->colorFromHex("#00bcff"),
-      k->colorFromHex("#a2f4fd"),
-      k->colorFromHex("#155dfc"),
-    ]
-
-    let make = (homingVelocity: Vec2.t, homingTimer: float) => {
-      let bulletColor = bubbleColors->Array.getUnsafe(k->randi(0, 2))
-      [
-        k->addPos(0., 0.),
-        k->addColor(bulletColor),
-        tag(Tags.bullet),
-        k->addZ(11),
-        k->addCircle(k->randf(4., 6.), ~options={fill: true}),
-        // default values for t, so it is at least defined
-        Obj.magic({homingTimer, homingVelocity}),
-        k->addArea,
-      ]
-    }
-  }
 
   let fireHomingBullet = (tower: t, viewport: Viewport.t, target: Charmander.t) => {
     let maxDistance = viewport->Viewport.getRadius
@@ -223,34 +224,34 @@ module Tower = {
       target->Charmander.worldPos->Vec2.sub(tower->worldPos)->Vec2.unit->Vec2.scale(bulletSpeed)
     let homingTimer = 0.2
 
-    let bullet: Bullet.t = tower->add(Bullet.make(homingVelocity, homingTimer))
+    let bubble: Bubble.t = tower->add(Bubble.make(homingVelocity, homingTimer))
 
-    bullet
-    ->Bullet.onUpdate(() => {
-      if bullet.homingTimer > 0. {
-        let toTarget = target->Charmander.worldPos->Vec2.sub(bullet->Bullet.worldPos)->Vec2.unit
-        bullet.homingVelocity =
-          bullet.homingVelocity->Vec2.lerp(toTarget->Vec2.scale(bulletSpeed), homingStrength)
-        bullet.homingTimer = bullet.homingTimer - k->dt
+    bubble
+    ->Bubble.onUpdate(() => {
+      if bubble.homingTimer > 0. {
+        let toTarget = target->Charmander.worldPos->Vec2.sub(bubble->Bubble.worldPos)->Vec2.unit
+        bubble.homingVelocity =
+          bubble.homingVelocity->Vec2.lerp(toTarget->Vec2.scale(bulletSpeed), homingStrength)
+        bubble.homingTimer = bubble.homingTimer - k->dt
       }
 
-      bullet->Bullet.move(bullet.homingVelocity)
+      bubble->Bubble.move(bubble.homingVelocity)
 
-      if bullet->Bullet.worldPos->Vec2.dist(tower->worldPos) >= maxDistance {
-        bullet->Bullet.destroy
+      if bubble->Bubble.worldPos->Vec2.dist(tower->worldPos) >= maxDistance {
+        bubble->Bubble.destroy
       }
     })
     ->ignore
 
-    bullet
-    ->Bullet.onCollide(Tags.enemy, (enemy: Charmander.t, _) => {
-      bullet->Bullet.destroy
+    bubble
+    ->Bubble.onCollide(Tags.enemy, (enemy: Charmander.t, _) => {
+      bubble->Bubble.destroy
       enemy->Charmander.hurt(1)
       switch enemy->Charmander.get(Tags.solidHeart)->Array.at(0) {
       | None => ()
       | Some(heart) => {
-          heart->Charmander.Heart.play("empty")
-          heart->Charmander.Heart.untag(Tags.solidHeart)
+          heart->Heart.play("empty")
+          heart->Heart.untag(Tags.solidHeart)
         }
       }
     })
