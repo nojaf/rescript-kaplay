@@ -10,6 +10,9 @@ import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.m
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Sentry$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sentry.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
+import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
+
+GameObjRaw$Kaplay.Comp({});
 
 Sprite$Kaplay.Comp({});
 

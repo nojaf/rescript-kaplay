@@ -3,10 +3,6 @@ module Comp = (
     type t
   },
 ) => {
-  include GameObjRaw.Comp({
-    type t = T.t
-  })
-
   @send
   external move: (T.t, Vec2.t) => unit = "move"
 

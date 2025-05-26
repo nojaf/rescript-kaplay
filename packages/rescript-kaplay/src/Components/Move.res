@@ -3,10 +3,6 @@ module Comp = (
     type t
   },
 ) => {
-  include GameObjRaw.Comp({
-    type t = T.t
-  })
-
   /**
  Move towards a direction infinitely, and destroys when it leaves game view.
  */

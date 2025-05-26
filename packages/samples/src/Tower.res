@@ -45,6 +45,8 @@ module Path = {
 
 module Heart = {
   type t
+
+  include GameObjRaw.Comp({type t = t})
   include Sprite.Comp({type t = t})
   include Pos.Comp({type t = t})
 
@@ -66,6 +68,7 @@ module Heart = {
 module Charmander = {
   type t
 
+  include GameObjRaw.Comp({type t = t})
   include Sprite.Comp({type t = t})
   include Color.Comp({type t = t})
   include Pos.Comp({type t = t})
@@ -181,6 +184,7 @@ module Bubble = {
     mutable homingVelocity: Vec2.t,
   }
 
+  include GameObjRaw.Comp({type t = t})
   include Pos.Comp({type t = t})
   include Area.Comp({type t = t})
   include Z.Comp({type t = t})
@@ -210,7 +214,8 @@ module Bubble = {
 
 module Tower = {
   type t
-
+ 
+  include GameObjRaw.Comp({type t = t})
   include Pos.Comp({type t = t})
   include Circle.Comp({type t = t})
   include Color.Comp({type t = t})

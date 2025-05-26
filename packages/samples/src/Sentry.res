@@ -5,6 +5,7 @@ open GameContext
 module Squirtle = {
   type t
 
+  include GameObjRaw.Comp({type t = t})
   include Sprite.Comp({type t = t})
   include Pos.Comp({type t = t})
   include Color.Comp({type t = t})

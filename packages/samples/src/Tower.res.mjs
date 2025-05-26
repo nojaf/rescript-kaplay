@@ -17,6 +17,7 @@ import * as Context$Kaplay from "@nojaf/rescript-kaplay/src/Context.res.mjs";
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as OffScreen$Kaplay from "@nojaf/rescript-kaplay/src/Components/OffScreen.res.mjs";
 import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
+import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 
 let enemy = "enemy";
 
@@ -61,6 +62,8 @@ let Path = {
   make: make
 };
 
+GameObjRaw$Kaplay.Comp({});
+
 Sprite$Kaplay.Comp({});
 
 Pos$Kaplay.Comp({});
@@ -79,6 +82,8 @@ function make$1(x, y) {
 let Heart = {
   make: make$1
 };
+
+GameObjRaw$Kaplay.Comp({});
 
 Sprite$Kaplay.Comp({});
 
@@ -191,6 +196,8 @@ let Squirtle = {
   make: make$4
 };
 
+GameObjRaw$Kaplay.Comp({});
+
 Pos$Kaplay.Comp({});
 
 Area$Kaplay.Comp({});
@@ -229,6 +236,8 @@ let Bubble = {
   bubbleColors: bubbleColors,
   make: make$5
 };
+
+GameObjRaw$Kaplay.Comp({});
 
 Pos$Kaplay.Comp({});
 

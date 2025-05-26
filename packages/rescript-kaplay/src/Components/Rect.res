@@ -3,9 +3,6 @@ module Comp = (
     type t
   },
 ) => {
-  include GameObjRaw.Comp({
-    type t = T.t
-  })
   type rectOptions = {
     radius?: float,
     fill?: bool,

@@ -3,10 +3,6 @@ module Comp = (
     type t
   },
 ) => {
-  include GameObjRaw.Comp({
-    type t = T.t
-  })
-
   @send
   external onObjectsSpotted: (T.t, array<'t> => unit) => KEventController.t = "onObjectsSpotted"
 

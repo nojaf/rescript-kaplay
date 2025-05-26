@@ -1,5 +1,6 @@
 ---
 import { Code } from "@astrojs/starlight/components";
+import { Badge } from "@astrojs/starlight/components";
 
 const { apiDoc, level, showModuleName = false } = Astro.props;
 
@@ -33,9 +34,22 @@ const ItemTag = `h${level + 2}`;
       {apiDoc.values.map((value) => {
         return (
           <>
-            <ItemTag id={value.name}>{value.name}</ItemTag>
+            <ItemTag id={value.name}>
+              {value.name}
+              {value.signature.endsWith(".comp") && (
+                <Badge
+                  style="margin-left: 0.5rem;"
+                  text="Component"
+                  variant="note"
+                />
+              )}
+            </ItemTag>
             <div set:html={value.documentation} />
-            <Code lang="ReScript" code={value.signature} />
+            <Code
+              lang="ReScript"
+              code={value.signature}
+              class:list={[{ comp: value.signature.endsWith(".comp") }]}
+            />
           </>
         );
       })}

@@ -51,6 +51,7 @@ let updateCamera = (result: Vec2.t) => {
 module Map = {
   type t
 
+  include GameObjRaw.Comp({type t = t})
   include Pos.Comp({type t = t})
   include Sprite.Comp({type t = t})
   include Area.Comp({type t = t})

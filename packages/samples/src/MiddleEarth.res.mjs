@@ -4,6 +4,7 @@ import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs";
 import * as GameContext from "./GameContext.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
+import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 
 let gameWidth = GameContext.k.width();
 
@@ -43,6 +44,8 @@ function updateCamera(result) {
     GameContext.k.setCamPos(v);
   }, GameContext.k.easings.linear);
 }
+
+GameObjRaw$Kaplay.Comp({});
 
 Pos$Kaplay.Comp({});
 
