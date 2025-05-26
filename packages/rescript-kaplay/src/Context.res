@@ -3,6 +3,9 @@ type easingMap = {linear: easeFunc}
 
 type t = {debug: Debug.t, easings: easingMap}
 
+/**
+Initialize KAPLAY context. The starting point of all KAPLAY games.
+*/
 type kaplayOptions = {
   width?: int,
   height?: int,

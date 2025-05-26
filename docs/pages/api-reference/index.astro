@@ -1,0 +1,36 @@
+---
+import { getCollection } from "astro:content";
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import { LinkCard } from "@astrojs/starlight/components";
+import { Aside } from "@astrojs/starlight/components";
+
+const apiDocs = await getCollection("apiDocs").then((docs) =>
+  docs.sort((a, b) => a.data.id.localeCompare(b.data.id)),
+);
+
+const frontmatter = {
+  title: "API references",
+};
+---
+
+<StarlightPage frontmatter={frontmatter} headings={[]}>
+  <p>These are the current bindings for KAPLAY.</p>
+  <Aside type="caution">
+    If you are missing something, we do take <a
+      href="https://github.com/nojaf/rescript-kaplay/CONTRIBUTING.md"
+      >contributions!</a
+    >
+  </Aside>
+  {
+    apiDocs.map(({ data: apiDoc }) => {
+      return (
+        <LinkCard
+          title={apiDoc.id}
+          href={`/rescript-kaplay/api-reference/${apiDoc.id}`}
+        >
+          {apiDoc.id}
+        </LinkCard>
+      );
+    })
+  }
+</StarlightPage>

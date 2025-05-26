@@ -91,7 +91,7 @@ const ModuleSchema = z.object({
                   optional: z.boolean(),
                   signature: z.string(),
                   docstrings: z.array(z.string()),
-                })
+                }),
               ),
             }),
             z.object({
@@ -102,13 +102,13 @@ const ModuleSchema = z.object({
                     name: z.string(),
                     signature: z.string(),
                     docstrings: z.array(z.string()),
-                  })
+                  }),
                 )
                 .optional(),
             }),
           ])
           .optional(),
-      })
+      }),
     )
     .optional(),
 
@@ -119,7 +119,7 @@ const ModuleSchema = z.object({
         documentation: z.string().optional(),
         signature: z.string(),
         detail: z.object({}).optional(),
-      })
+      }),
     )
     .optional(),
 

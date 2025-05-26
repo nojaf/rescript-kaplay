@@ -1,6 +1,6 @@
 ---
 title: Getting started
-description: Learn more about @rescript/webapi.
+description: Learn more about ReScript bindings for KAPLAY.
 hero:
   title: "ReScript & KAPLAY"
   tagline: ReScript bindings for KAPLAY!
@@ -27,18 +27,10 @@ Install the package using your favorite package manager:
 
 <Tabs syncKey="package manager">
   <TabItem label="npm">
-    <Code
-      lang="shell"
-      frame="none"
-      code="npm i @nojaf/rescript-kaplay"
-    />
+    <Code lang="shell" frame="none" code="npm i @nojaf/rescript-kaplay" />
   </TabItem>
   <TabItem label="bun">
-    <Code
-      lang="shell"
-      frame="none"
-      code="bun i @nojaf/rescript-kaplay"
-    />
+    <Code lang="shell" frame="none" code="bun i @nojaf/rescript-kaplay" />
   </TabItem>
 </Tabs>
 
@@ -63,26 +55,26 @@ open Kaplay
 
 // Create a new Kaplay context
 let k = Context.kaplay(
-  ~initOptions={
-    background: "#05df72",
-    width: 500,
-    height: 500,
-  },
+~initOptions={
+background: "#05df72",
+width: 500,
+height: 500,
+},
 )
 
 // Create your first GameObject
 module Bean = {
-  type t
+type t
 
-  include Sprite.Comp({type t = t})
-  include Pos.Comp({type t = t})
+include Sprite.Comp({type t = t})
+include Pos.Comp({type t = t})
 
-  let make = () => {
-    k->Context.add([
-      k->addSprite("bean", ~options={width: 50., height: 50.}),
-      k->addPos(200., 100.),
-    ])
-  }
+let make = () => {
+k->Context.add([
+k->addSprite("bean", ~options={width: 50., height: 50.}),
+k->addPos(200., 100.),
+])
+}
 }
 
 // Load the bean sprite
@@ -98,9 +90,9 @@ import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 
 let k = Kaplay({
-  width: 500,
-  height: 500,
-  background: "#05df72"
+width: 500,
+height: 500,
+background: "#05df72"
 });
 
 Sprite$Kaplay.Comp({});
@@ -108,17 +100,17 @@ Sprite$Kaplay.Comp({});
 Pos$Kaplay.Comp({});
 
 function make() {
-  return k.add([
-    k.sprite("bean", {
-      width: 50,
-      height: 50
-    }),
-    k.pos(200, 100)
-  ]);
+return k.add([
+k.sprite("bean", {
+width: 50,
+height: 50
+}),
+k.pos(200, 100)
+]);
 }
 
 let Bean = {
-  make: make
+make: make
 };
 
 k.loadBean();

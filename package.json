@@ -6,15 +6,17 @@
   ],
   "dependencies": {
     "@astrojs/starlight": "^0.34.3",
-    "rescript": "https://pkg.pr.new/rescript-lang/rescript@88cd2bc9d2ed0ba66bd4fbf9ea0c0c42cf6c9bcd",
+    "rescript": "https://pkg.pr.new/rescript-lang/rescript@88cd2bc9d2ed0ba66bd4fbf9ea0c0c42cf6c9bcd"
   },
   "devDependencies": {
     "astro": "^5.8.0",
     "micromark": "^4.0.2",
+    "prettier-plugin-astro": "^0.14.1",
     "starlight-theme-flexoki": "^0.1.0"
   },
   "scripts": {
     "docs": "bunx --bun astro dev",
-    "watch": "rewatch watch"
+    "watch": "rewatch watch",
+    "fmt": "prettier --write ./docs package.json astro.config.mjs"
   }
 }

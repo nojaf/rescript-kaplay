@@ -12,10 +12,26 @@ export default defineConfig({
     starlight({
       title: "Rescript Kaplay bindings",
       favicon: "/favicon.png",
+      customCss: ["./docs/styles/custom.css"],
       plugins: [
         starlightThemeFlexoki({
           accentColor: "green",
         }),
+      ],
+      sidebar: [
+        {
+          slug: "",
+        },
+        {
+          slug: "game-context",
+        },
+        {
+          slug: "game-object",
+        },
+        {
+          label: "API reference",
+          link: "./api-reference",
+        },
       ],
       social: [
         {

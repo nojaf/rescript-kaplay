@@ -1,0 +1,82 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import APIModule from "../../components/APIModule.astro";
+
+export async function getStaticPaths() {
+  const apiDocs = await getCollection("apiDocs").then((docs) =>
+    docs.sort((a, b) => a.data.id.localeCompare(b.data.id)),
+  );
+
+  return apiDocs.map((apiModule) => {
+    return {
+      params: {
+        api: apiModule.id,
+      },
+    };
+  });
+}
+
+const apiDocEntry = await getEntry("apiDocs", Astro.params.api);
+const apiDoc = apiDocEntry.data;
+
+function collectHeadings(level: number, apiDoc: any) {
+  const headings: any[] = [];
+  if (apiDoc.types?.length > 0) {
+    headings.push({
+      depth: level,
+      slug: "types",
+      text: "Types",
+    });
+    apiDoc.types.forEach((type) => {
+      headings.push({
+        depth: level + 1,
+        slug: type.name,
+        text: type.name,
+      });
+    });
+  }
+
+  if (apiDoc.values?.length > 0) {
+    headings.push({
+      depth: level,
+      slug: "values",
+      text: "Values",
+    });
+    apiDoc.values.forEach((value) => {
+      headings.push({
+        depth: level + 1,
+        slug: value.name,
+        text: value.name,
+      });
+    });
+  }
+
+  if (apiDoc.modules?.length > 0) {
+    headings.push({
+      depth: level,
+      slug: "modules",
+      text: "Modules",
+    });
+
+    apiDoc.modules.forEach((m) => {
+      headings.push({
+        depth: level + 1,
+        slug: m.id,
+        text: m.id,
+      });
+      collectHeadings(level + 2, m).forEach((h) => {
+        headings.push(h);
+      });
+    });
+  }
+
+  return headings;
+}
+
+const headings: any[] = collectHeadings(2, apiDoc);
+---
+
+<StarlightPage frontmatter={{ title: apiDoc.id }} headings={headings}>
+  <APIModule apiDoc={apiDoc} level={2} />
+</StarlightPage>

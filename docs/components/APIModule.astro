@@ -1,34 +1,56 @@
 ---
-import path from "node:path";
-import { fileURLToPath } from "url";
-import { $ } from "bun";
-import { micromark } from "micromark";
-const { filePath } = Astro.props;
+import { Code } from "@astrojs/starlight/components";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { apiDoc, level, showModuleName = false } = Astro.props;
 
-/* @vite-ignore */
-const { rescript_tools_exe } = await import(
-    path.join(__dirname, "../../node_modules/rescript/cli/common/bins.js")
-);
-
-console.log(rescript_tools_exe);
-const doc = await $`${rescript_tools_exe} doc ${filePath}`.json();
-
-const types = doc.items
-    .filter((d) => d.kind === "type")
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((type) => {
-        const documentation =
-            type.docstrings && micromark(type.docstrings.join("\n"));
-        return {
-            name: type.name,
-            documentation,
-            signature: type.signature,
-            detail: type.detail,
-        };
-    });
+const ModuleTag = `h${level}`;
+const HeadingTag = `h${level + 1}`;
+const ItemTag = `h${level + 2}`;
 ---
 
-<pre>{JSON.stringify(types, null, 2)}</pre>
+{showModuleName && <ModuleTag>{apiDoc.id}</ModuleTag>}
+{
+  apiDoc.types?.length > 0 && (
+    <>
+      <HeadingTag id="types"> Types</HeadingTag>
+      {apiDoc.types.map((type) => {
+        return (
+          <>
+            <ItemTag id={type.name}>{type.name}</ItemTag>
+            <div set:html={type.documentation} />
+            <Code lang="ReScript" code={type.signature} />
+          </>
+        );
+      })}
+    </>
+  )
+}
+{
+  apiDoc.values?.length > 0 && (
+    <>
+      <HeadingTag id="values"> Values </HeadingTag>
+
+      {apiDoc.values.map((value) => {
+        return (
+          <>
+            <ItemTag id={value.name}>{value.name}</ItemTag>
+            <div set:html={value.documentation} />
+            <Code lang="ReScript" code={value.signature} />
+          </>
+        );
+      })}
+    </>
+  )
+}
+{
+  apiDoc.modules?.length > 0 && (
+    <>
+      <HeadingTag id="modules"> Modules </HeadingTag>
+      {apiDoc.modules.map((m) => {
+        return (
+          <Astro.self apiDoc={m} level={level + 1} showModuleName={true} />
+        );
+      })}
+    </>
+  )
+}
