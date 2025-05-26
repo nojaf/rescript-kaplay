@@ -17,6 +17,6 @@
   "scripts": {
     "docs": "bunx --bun astro dev",
     "watch": "rewatch watch",
-    "fmt": "prettier --write ./docs package.json astro.config.mjs"
+    "fmt": "bun scripts/format.js"
   }
 }

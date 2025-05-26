@@ -6,10 +6,5 @@
   },
   "suffix": ".res.mjs",
   "bs-dependencies": ["@nojaf/rescript-kaplay", "@nojaf/samples"],
-  "bsc-flags": [],
-  "editor": {
-    "autocomplete": {
-      "Kaplay.Context.t": ["Tower.Charmander"]
-    }
-  }
+  "bsc-flags": []
 }

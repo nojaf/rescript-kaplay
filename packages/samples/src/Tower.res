@@ -214,7 +214,7 @@ module Bubble = {
 
 module Tower = {
   type t
- 
+
   include GameObjRaw.Comp({type t = t})
   include Pos.Comp({type t = t})
   include Circle.Comp({type t = t})

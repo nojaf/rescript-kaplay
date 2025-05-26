@@ -18,7 +18,7 @@ export async function getStaticPaths() {
 }
 
 const apiDocEntry = await getEntry("apiDocs", Astro.params.api);
-const apiDoc = apiDocEntry.data;
+let apiDoc = apiDocEntry.data;
 
 function collectHeadings(level: number, apiDoc: any) {
   const headings: any[] = [];
@@ -77,6 +77,6 @@ function collectHeadings(level: number, apiDoc: any) {
 const headings: any[] = collectHeadings(2, apiDoc);
 ---
 
-<StarlightPage frontmatter={{ title: apiDoc.id }} headings={headings}>
+<StarlightPage frontmatter={{ title: Astro.params.api }} headings={headings}>
   <APIModule apiDoc={apiDoc} level={2} />
 </StarlightPage>

@@ -3,7 +3,6 @@ module Comp = (
     type t
   },
 ) => {
-
   type tileOptions = {
     isObstacle?: bool,
     cost?: int,

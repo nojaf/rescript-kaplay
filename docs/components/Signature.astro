@@ -1,0 +1,51 @@
+---
+const { path, genericTypeParameters, currentModule } = Astro.props;
+
+let link: string | null = null;
+const primitives = new Set([
+  "int",
+  "float",
+  "string",
+  "bool",
+  "unit",
+  "array",
+  "option",
+  "T.t",
+]);
+
+if (!path.startsWith("Kaplay") && !primitives.has(path)) {
+  link = `#${path}`;
+}
+
+if (path.startsWith("Kaplay")) {
+  // link to other page
+  let lastIndex = path.lastIndexOf(".");
+  let moduleName = path.substring(0, lastIndex);
+  link = `/rescript-kaplay/api-reference/${moduleName}#${path.substring(lastIndex + 1)}`;
+}
+---
+
+<span>
+  {link ? <a href={link}>{path}</a> : path}
+  {
+    genericTypeParameters?.length > 0 && (
+      <>
+        {"<"}
+        {genericTypeParameters.map((subItem) => (
+          <Astro.self
+            currentModule={currentModule}
+            path={subItem.path}
+            genericTypeParameters={subItem.genericParameters}
+          />
+        ))}
+        {">"}
+      </>
+    )
+  }
+</span>
+<style>
+  span {
+    display: inline-flex;
+    color: var(--sl-color-accent);
+  }
+</style>

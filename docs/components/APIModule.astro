@@ -1,12 +1,14 @@
 ---
 import { Code } from "@astrojs/starlight/components";
 import { Badge } from "@astrojs/starlight/components";
+import Signature from "./Signature.astro";
 
 const { apiDoc, level, showModuleName = false } = Astro.props;
 
 const ModuleTag = `h${level}`;
 const HeadingTag = `h${level + 1}`;
 const ItemTag = `h${level + 2}`;
+const FieldTag = `h${level + 3}`;
 ---
 
 {showModuleName && <ModuleTag>{apiDoc.id}</ModuleTag>}
@@ -20,6 +22,21 @@ const ItemTag = `h${level + 2}`;
             <ItemTag id={type.name}>{type.name}</ItemTag>
             <div set:html={type.documentation} />
             <Code lang="ReScript" code={type.signature} />
+
+            {type.detail?.kind === "record" &&
+              type.detail?.items?.length > 0 && (
+                <>
+                  <FieldTag>Fields</FieldTag>
+                  {type.detail.items.map((item) => {
+                    return (
+                      <div class="record-field">
+                        <strong>{item.name}</strong>
+                        <span>{item.signature}</span>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
           </>
         );
       })}
@@ -50,6 +67,34 @@ const ItemTag = `h${level + 2}`;
               code={value.signature}
               class:list={[{ comp: value.signature.endsWith(".comp") }]}
             />
+            {value.detail?.kind === "signature" && (
+              <div class="signature-detail">
+                {value.detail?.details?.parameters?.length > 0 && (
+                  <div>
+                    <FieldTag>Parameters</FieldTag>
+                    {value.detail.details.parameters.map((param) => {
+                      return (
+                        <div class="value-parameter">
+                          <Signature currentModule={apiDoc.id} {...param} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div>
+                  <FieldTag>Return type</FieldTag>
+                  <div class="value-parameter">
+                    <Signature
+                      currentModule={apiDoc.id}
+                      path={value.detail.details.returnType.path}
+                      genericTypeParameters={
+                        value.detail.details.returnType.genericTypeParameters
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         );
       })}
@@ -68,3 +113,31 @@ const ItemTag = `h${level + 2}`;
     </>
   )
 }
+<style>
+  .record-field {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--sl-color-gray-7);
+
+    & strong {
+      font-weight: 500;
+    }
+  }
+
+  .signature-detail {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    & > div {
+      margin-top: 0 !important;
+    }
+  }
+
+  .value-parameter {
+    font-size: 1.15rem;
+    line-height: 1.3rem;
+  }
+</style>

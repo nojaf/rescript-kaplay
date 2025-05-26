@@ -73,6 +73,17 @@ function processModule(doc: any) {
   };
 }
 
+const SignatureParameterSchema = z.object({
+  path: z.string(),
+  genericTypeParameters: z
+    .array(
+      z.object({
+        path: z.string(),
+      }),
+    )
+    .optional(),
+});
+
 const ModuleSchema = z.object({
   id: z.string(),
   types: z
@@ -118,7 +129,19 @@ const ModuleSchema = z.object({
         name: z.string(),
         documentation: z.string().optional(),
         signature: z.string(),
-        detail: z.object({}).optional(),
+        detail: z
+          .discriminatedUnion("kind", [
+            z.object({
+              kind: z.literal("signature"),
+              details: z
+                .object({
+                  parameters: z.array(SignatureParameterSchema).optional(),
+                  returnType: SignatureParameterSchema,
+                })
+                .optional(),
+            }),
+          ])
+          .optional(),
       }),
     )
     .optional(),
