@@ -11,6 +11,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "Rescript Kaplay bindings",
+      favicon: "/favicon.png",
       plugins: [
         starlightThemeFlexoki({
           accentColor: "green",

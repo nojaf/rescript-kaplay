@@ -1,0 +1,88 @@
+---
+title: Game objects in KAPLAY
+description: Learn how to create game objects in KAPLAY.
+---
+
+import { Tabs, TabItem, Code, Aside } from "@astrojs/starlight/components";
+
+Game objects are the basic building blocks of your game. They are the objects that you will be interacting with.
+They are composed from [components](./components), so each object can have the functionality it needs.
+
+## Creating a game object
+
+Start out by creating a new type in a module:
+
+```ReScript
+// You can use a nested module or a separate file
+module Hero = {
+  type t
+}
+```
+
+Next included the [components](./components) via the `include` module syntax.
+
+```ReScript
+module Hero = {
+  type t
+
+  open Kaplay
+
+  // We want to draw an image on the screen for an object
+  include Sprite.Comp({type t = t})
+  // We want to change the position of the object
+  include Pos.Comp({type t = t})
+}
+```
+
+Including a composition will add additional functions to our `Hero` module.
+These can be getters and setters for the component state or a function create the corresponding [comp]() instance.
+
+Lastly, we need a way to create our game object, so we include a `make` function:
+
+```ReScript
+module Hero = {
+  type t
+
+  open Kaplay
+
+  include Sprite.Comp({type t = t})
+  include Pos.Comp({type t = t})
+
+  let make = (k: Context.t) : t => {
+    // `Context.add` takes a list of `comp` and returns a generic object.
+    // This is why we annotate the return function with the type `t`.
+    k->Context.add([
+        k->addSprite("hero", ~options={width: 30., height: 30.}),
+        k->addPos(100., 100.),
+    ])
+  }
+}
+```
+
+To create a game object we call the make function:
+
+```ReScript
+let hero = Hero.make(k)
+```
+
+Note that we pass in the Game context to the `make` function.
+We could also open the module that has our context and use it as an import.
+
+Because we included `Sprite` and `Pos` composition, we can now access additional functions via `hero->Hero.`.
+
+```ReScript
+let pos = hero->getPos
+hero->play("walk")
+```
+
+<Aside type="caution">
+Note that both the `include XYZComp` and `addXYZ` call in the `make` function will be required to make this work at runtime!
+</Aside>
+
+## Adding custom state
+
+Possible, but be careful.
+
+## Nested game objects
+
+Don't
