@@ -4,7 +4,7 @@ import Kaplay from "kaplay";
 
 let k = Kaplay({
   global: false,
-  background: "#6495ED",
+  background: "#05df72",
   scale: 1
 });
 

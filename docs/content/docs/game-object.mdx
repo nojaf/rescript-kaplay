@@ -6,7 +6,7 @@ slug: game-object
 
 import { Tabs, TabItem, Code, Aside } from "@astrojs/starlight/components";
 
-Game objects are the basic building blocks of your game. They are the objects that you will be interacting with.
+[Game objects](https://kaplayjs.com/guides/game_objects/) are the basic building blocks of your game. They are the objects that you will be interacting with.
 They are composed from [components](./components), so each object can have the functionality it needs.
 
 ## Creating a game object
@@ -83,8 +83,58 @@ hero->play("walk")
 
 ## Adding custom state
 
-Possible, but be careful.
+So far, our type `t` in our Hero module has been abstract.
+We could, however, using a record instead to store some state.
+
+```ReScript
+module Hero = {
+  type t = { name: string }
+
+  external initialState: t => Kaplay.Types.comp = "%identity"
+
+  include Pos.Comp({type t = t})
+
+  let make = (k: Context.t) : t => {
+    k->Context.add([
+      addPos(k, 4. , 3.),
+      initialState(~name="Freddie")
+    ])
+  }
+}
+```
+
+The `initialState` function is a special function that is used to create the initial state of the object.
+
+<Aside type="caution">
+  As with all component functions, this big pitfall is that you need to make
+  sure they are called inside an `add` function. If you do not call
+  `initialState`, the `name` field will be undefined.
+</Aside>
 
 ## Nested game objects
 
-Don't
+Sometimes you might be tempted to create a game object inside another game object.
+For example a health bar inside a player object.
+
+```ReScript
+open Kaplay
+
+module Player = {
+  type t
+  include Pos.Comp({type t = t})
+
+  module HealthBar = {
+    type t
+
+    include Sprite.Comp({type t = t})
+
+    let innerMake = (k: Context.t) : t => { ... }
+  }
+
+  let make = (k: Context.t) : t => { ... }
+}
+```
+
+The danger here is that the `innerMake` function will have access to `Pos.Comp` functions, because of the parent module.
+`HealthBar.getPos` will be available, but won't exist at runtime.
+Thus, it is best to avoid nested game objects.

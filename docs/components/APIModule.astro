@@ -9,6 +9,43 @@ const ModuleTag = `h${level}`;
 const HeadingTag = `h${level + 1}`;
 const ItemTag = `h${level + 2}`;
 const FieldTag = `h${level + 3}`;
+
+function tokenize(input) {
+  // Split by special characters while keeping them
+  const regex = /([<>,])/g;
+  return input
+    .split(regex)
+    .map((token) => token.trim())
+    .filter(Boolean);
+}
+
+function parseTokens(tokens) {
+  let index = 0;
+
+  const parseNode = () => {
+    const path = tokens[index++]; // Read the current token and increment index
+    let genericTypeParameters = [];
+
+    if (tokens[index] === "<") {
+      // Check for generics
+      index++; // Consume "<"
+      while (tokens[index] !== ">") {
+        genericTypeParameters.push(parseNode());
+        if (tokens[index] === ",") index++; // Consume ","
+      }
+      index++; // Consume ">"
+    }
+
+    return { path, genericTypeParameters };
+  };
+
+  return parseNode();
+}
+
+function parse(input) {
+  const tokens = tokenize(input);
+  return parseTokens(tokens);
+}
 ---
 
 {showModuleName && <ModuleTag>{apiDoc.id}</ModuleTag>}
@@ -31,7 +68,12 @@ const FieldTag = `h${level + 3}`;
                     return (
                       <div class="record-field">
                         <strong>{item.name}</strong>
-                        <span>{item.signature}</span>
+                        <span>
+                          <Signature
+                            currentModule={apiDoc.id}
+                            {...parse(item.signature)}
+                          />
+                        </span>
                       </div>
                     );
                   })}
@@ -120,6 +162,8 @@ const FieldTag = `h${level + 3}`;
     justify-content: space-between;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--sl-color-gray-7);
+    font-size: 1.15rem;
+    line-height: 1.3rem;
 
     & strong {
       font-weight: 500;

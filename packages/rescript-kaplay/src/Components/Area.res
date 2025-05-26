@@ -12,6 +12,18 @@ module Comp = (
   @send
   external hasPoint: (T.t, Vec2.t) => bool = "hasPoint"
 
+  /**
+Register an event runs when clicked
+ */
+  @send
+  external onClick: (T.t, unit => unit) => KEventController.t = "onClick"
+
+  /**
+Register an event runs once when hovered.
+ */
+  @send
+  external onHover: (T.t, string, unit => unit) => KEventController.t = "onHover"
+
   type areaCompOptions = {
     /** Only Rect and Polygon are supported */
     shape?: Math.Shape.t,

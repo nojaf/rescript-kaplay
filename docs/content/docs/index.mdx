@@ -18,6 +18,7 @@ tableOfContents: false
 ---
 
 import { Tabs, TabItem, Code } from "@astrojs/starlight/components";
+import { formatRescriptCode } from "../../format";
 
 {/* [![NPM Version](https://img.shields.io/npm/v/@rescript/webapi/experimental)](https://www.npmjs.com/package/@rescript/webapi) */}
 
@@ -50,7 +51,7 @@ export const rescriptJson = `
 
 After installing the package , you can use bindings for [KAPLAY](https://kaplayjs.com/reference/).
 
-export const rescriptSample = `
+export const rescriptSample = await formatRescriptCode(`
 open Kaplay
 
 // Create a new Kaplay context
@@ -82,7 +83,7 @@ k->Context.loadBean
 
 // Create a bean
 let bean = Bean.make()
-`;
+`);
 
 export const compiledSample = `
 import Kaplay from "kaplay";

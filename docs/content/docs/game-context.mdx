@@ -3,7 +3,12 @@ title: Game context
 slug: game-context
 ---
 
-Recommendation:
+All KAPLAY games start with the [kaplay() function](/rescript-kaplay/api-reference/Kaplay.Context#kaplay).
+This function makes returns a context that has available all methods and functions that you will use to create your game.
 
-- Create single game context in separate file
-- Use in all other files
+The convention is to create a `GameContext` module that contains the context and exports it as `k`.
+
+```ReScript
+// GameContext.res
+let k = Kaplay.Context.kaplay(~initOptions={})
+```

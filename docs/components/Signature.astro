@@ -19,8 +19,9 @@ if (!path.startsWith("Kaplay") && !primitives.has(path)) {
 
 if (path.startsWith("Kaplay")) {
   // link to other page
-  let lastIndex = path.lastIndexOf(".");
-  let moduleName = path.substring(0, lastIndex);
+  const parts = path.split(".");
+  let lastIndex = parts[-1];
+  let moduleName = parts[0] + "." + parts[1];
   link = `/rescript-kaplay/api-reference/${moduleName}#${path.substring(lastIndex + 1)}`;
 }
 ---
@@ -31,13 +32,15 @@ if (path.startsWith("Kaplay")) {
     genericTypeParameters?.length > 0 && (
       <>
         {"<"}
-        {genericTypeParameters.map((subItem) => (
-          <Astro.self
-            currentModule={currentModule}
-            path={subItem.path}
-            genericTypeParameters={subItem.genericParameters}
-          />
-        ))}
+        {genericTypeParameters.map((subItem) => {
+          return (
+            <Astro.self
+              currentModule={currentModule}
+              path={subItem.path}
+              genericTypeParameters={subItem.genericParameters}
+            />
+          );
+        })}
         {">"}
       </>
     )

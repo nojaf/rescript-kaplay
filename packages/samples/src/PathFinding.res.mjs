@@ -41,7 +41,7 @@ function make$1() {
     GameContext.k.rect(64, 64),
     GameContext.k.tile(),
     GameContext.k.outline(1, GameContext.k.Color.fromHex("#0AC0B0"), 1),
-    GameContext.k.color(GameContext.k.Color.fromHex("#00EE00"))
+    GameContext.k.color(GameContext.k.Color.fromHex("#46ecd5"))
   ];
 }
 

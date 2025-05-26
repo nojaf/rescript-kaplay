@@ -14,7 +14,7 @@ let k = kaplay(
     // width: min(720, screenWidth),
     // height: min(360, screenHeight),
     global: false,
-    background: "#6495ED",
+    background: "#05df72",
     scale: 1.,
   },
 )
