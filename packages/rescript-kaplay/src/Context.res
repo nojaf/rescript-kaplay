@@ -54,7 +54,7 @@ external clampFloat: (t, float, float, float) => float = "clampFloat"
 @send
 external wait: (t, float, unit => unit) => TimerController.t = "wait"
 
-/** Get the delta time since last frame. */
+/** Get the delta time in seconds since last frame. */
 @send
 external dt: t => float = "dt"
 
@@ -98,7 +98,10 @@ external onTouchMove: (t, (Vec2.t, touch) => unit) => KEventController.t = "onTo
 external onTouchEnd: (t, (Vec2.t, touch) => unit) => KEventController.t = "onTouchEnd"
 
 @send
-external onUpdate: (t, unit => unit) => KEventController.t = "onUpdate"
+external onUpdate: (t, unit => unit) => unit = "onUpdate"
+
+@send
+external onUpdateWithController: (t, unit => unit) => KEventController.t = "onUpdate"
 
 /** Register an event that runs when all assets finished loading. */
 @send
@@ -216,6 +219,20 @@ type playOptions = {
 @send
 external play: (t, string, ~options: playOptions=?) => AudioPlay.t = "play"
 
+/** 
+`tween(context, from, to, duration in seconds, setValue, easeFunc=?)` 
+
+Useful to change a property of a Game Object over time.
+```ReScript
+k
+->Context.tween(
+  ~from=-15.,
+  ~to_=0.,
+  ~duration=0.5,
+  ~setValue=Bird.setAngle(bird, ...),
+)
+```
+*/
 @send
 external tween: (
   t,
@@ -247,3 +264,24 @@ external addLevel: (t, array<string>, levelOptions) => Level.t = "addLevel"
 
 @send
 external setBackground: (t, color) => unit = "setBackground"
+
+/**
+`on(context, event, tag, (gameObject, arg) => unit)`
+
+Register an event on all game objs with certain tag.
+*/
+@send
+external on: (t, ~event: string, ~tag: string, ('t, 'arg) => unit) => unit = "on"
+
+/**
+`on(context, event, tag, (gameObject, arg) => unit)`
+
+Register an event on all game objs with certain tag.
+*/
+@send
+external onWithController: (
+  t,
+  ~event: string,
+  ~tag: string,
+  ('t, 'arg) => unit,
+) => KEventController.t = "on"

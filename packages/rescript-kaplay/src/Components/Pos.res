@@ -15,6 +15,12 @@ module Comp = (
   @get
   external getPos: T.t => Vec2.t = "pos"
 
+  @get @scope("pos")
+  external getPosX: T.t => float = "x"
+
+  @get @scope("pos")
+  external getPosY: T.t => float = "y"
+
   @set
   external setPos: (T.t, Vec2.t) => unit = "pos"
 

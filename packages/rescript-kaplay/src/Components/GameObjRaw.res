@@ -33,7 +33,10 @@ module Comp = (
   external onKeyRelease: (T.t, key => unit) => KEventController.t = "onKeyRelease"
 
   @send
-  external onUpdate: (T.t, unit => unit) => KEventController.t = "onUpdate"
+  external onUpdate: (T.t, unit => unit) => unit = "onUpdate"
+
+  @send
+  external onUpdateWithController: (T.t, unit => unit) => KEventController.t = "onUpdate"
 
   @send
   external add: (T.t, array<comp>) => 't = "add"
@@ -49,4 +52,10 @@ module Comp = (
 
   @send
   external onDestroy: (T.t, unit => unit) => KEventController.t = "onDestroy"
+
+  /**
+ Trigger a custom event on this game object.
+ */
+  @send
+  external trigger: (T.t, string, 'arg) => unit = "trigger"
 }

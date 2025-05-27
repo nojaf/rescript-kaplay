@@ -104,8 +104,7 @@ let scene = () => {
   ->ignore
 
   // Update camera position every frame (momentum effect)
-  k
-  ->onUpdate(() => {
+  k->onUpdate(() => {
     if !isDragging.contents {
       // Apply velocity to camera
       let currentVelocity = cameraVelocity.contents
@@ -116,7 +115,6 @@ let scene = () => {
       }
     }
   })
-  ->ignore
 
   map
   ->Map.onKeyDown(key => {

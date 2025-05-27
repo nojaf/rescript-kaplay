@@ -4,9 +4,23 @@ import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs";
 import * as Body$Kaplay from "@nojaf/rescript-kaplay/src/Components/Body.res.mjs";
 import * as GameContext from "./GameContext.res.mjs";
+import * as Move$Kaplay from "@nojaf/rescript-kaplay/src/Components/Move.res.mjs";
+import * as Rect$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rect.res.mjs";
 import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.mjs";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
+import * as Rotate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rotate.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
+import * as Outline$Kaplay from "@nojaf/rescript-kaplay/src/Components/Outline.res.mjs";
+import * as OffScreen$Kaplay from "@nojaf/rescript-kaplay/src/Components/OffScreen.res.mjs";
+import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
+import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
+
+let score = "score";
+
+let Events = {
+  score: score,
+  gameOver: "gameOver"
+};
 
 Pos$Kaplay.Comp({});
 
@@ -20,6 +34,12 @@ Anchor$Kaplay.Comp({});
 
 Area$Kaplay.Comp({});
 
+Rotate$Kaplay.Comp({});
+
+OffScreen$Kaplay.Comp({});
+
+let tag = "bird";
+
 function make() {
   return GameContext.k.add([
     GameContext.k.pos(GameContext.k.center()),
@@ -29,26 +49,119 @@ function make() {
     GameContext.k.body(),
     GameContext.k.color(GameContext.k.Color.fromHex("#ffb86a")),
     GameContext.k.anchor("center"),
-    GameContext.k.area()
+    GameContext.k.area(),
+    GameContext.k.rotate(0),
+    GameContext.k.offscreen({
+      destroy: true
+    }),
+    tag
   ]);
 }
 
 let Bird = {
+  tag: tag,
   make: make
 };
+
+GameObjRaw$Kaplay.Comp({});
+
+Pos$Kaplay.Comp({});
+
+Move$Kaplay.Comp({});
+
+Area$Kaplay.Comp({});
+
+OffScreen$Kaplay.Comp({});
+
+Rect$Kaplay.Comp({});
+
+Color$Kaplay.Comp({});
+
+Outline$Kaplay.Comp({});
+
+let tag$1 = "pipe";
+
+function make$1(isTop, height) {
+  let x = GameContext.k.width() - 50;
+  let y = isTop ? 0 : GameContext.k.height() - height;
+  let pipe = GameContext.k.add([
+    GameContext.k.pos(x, y),
+    GameContext.k.rect(50, height),
+    GameContext.k.color(GameContext.k.Color.fromHex("#bbf451")),
+    GameContext.k.move(GameContext.k.Vec2.LEFT, 100),
+    GameContext.k.offscreen({
+      destroy: true
+    }),
+    GameContext.k.area(),
+    GameContext.k.outline(3, GameContext.k.Color.fromHex("#404040")),
+    tag$1
+  ]);
+  pipe.onCollide(tag, (_bird, _collision) => {
+    GameContext.k.debug.log("collision, game over");
+  });
+  if (isTop) {
+    let ctrl = {
+      contents: undefined
+    };
+    ctrl.contents = Primitive_option.some(pipe.onUpdate(() => {
+      if (pipe.pos.x >= GameContext.k.width() / 2) {
+        return;
+      }
+      let ctrl$1 = ctrl.contents;
+      if (ctrl$1 !== undefined) {
+        Primitive_option.valFromOption(ctrl$1).cancel();
+      }
+      pipe.trigger(score, 1);
+    }));
+  }
+  return pipe;
+}
+
+let Pipe = {
+  width: 50,
+  tag: tag$1,
+  make: make$1
+};
+
+function makeGameState() {
+  return {
+    score: 0,
+    gameOver: false
+  };
+}
 
 function scene() {
   GameContext.k.loadSprite("pidgeotto", "sprites/pidgeotto-rb.png");
   GameContext.k.setBackground(GameContext.k.Color.fromHex("#cefafe"));
-  GameContext.k.setGravity(9.8);
-  make();
+  GameContext.k.setGravity(100);
+  let gameState = {
+    score: 0,
+    gameOver: false
+  };
+  let bird = make();
+  GameContext.k.onKeyRelease(key => {
+    if (key !== "space") {
+      return;
+    }
+    bird.jump(150);
+    bird.rotateBy(-15);
+    GameContext.k.tween(-15, 0, 0.5, extra => {
+      bird.angle = extra;
+    });
+  });
+  GameContext.k.on(score, tag$1, (_pipe, score) => {
+    gameState.score = gameState.score + score | 0;
+    GameContext.k.debug.log("score: " + gameState.score.toString());
+  });
+  make$1(true, 400);
+  make$1(false, 400);
 }
 
-let x = "err";
-
 export {
+  Events,
   Bird,
+  Pipe,
+  makeGameState,
   scene,
-  x,
 }
 /*  Not a pure module */

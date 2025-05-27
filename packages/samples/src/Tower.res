@@ -248,8 +248,7 @@ module Tower = {
     })
     ->ignore
 
-    bubble
-    ->Bubble.onCollide(Tags.enemy, (enemy: Charmander.t, _) => {
+    bubble->Bubble.onCollide(Tags.enemy, (enemy: Charmander.t, _) => {
       bubble->Bubble.destroy
       enemy->Charmander.hurt(1)
       switch enemy->Charmander.get(Tags.solidHeart)->Array.at(0) {
@@ -260,7 +259,6 @@ module Tower = {
         }
       }
     })
-    ->ignore
   }
 
   let make = () => {
@@ -274,11 +272,9 @@ module Tower = {
 
     let viewport: Viewport.t = tower->add(Viewport.make())
 
-    viewport
-    ->Viewport.onCollide(Tags.enemy, (enemy: Charmander.t, _) => {
+    viewport->Viewport.onCollide(Tags.enemy, (enemy: Charmander.t, _) => {
       viewport.inSight->Map.set(enemy->Charmander.getId, enemy)
     })
-    ->ignore
 
     viewport
     ->Viewport.onCollideEnd(Tags.enemy, (enemy: Charmander.t) => {

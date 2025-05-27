@@ -2,6 +2,7 @@
 
 import * as Tower from "./Tower.res.mjs";
 import * as Squirtle from "./Squirtle.res.mjs";
+import * as FlappyBird from "./FlappyBird.res.mjs";
 import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs";
 import * as GameContext from "./GameContext.res.mjs";
@@ -84,6 +85,8 @@ GameContext.k.scene("sentry", SentrySample.scene);
 
 GameContext.k.scene("tower", Tower.scene);
 
+GameContext.k.scene("flappy-bird", FlappyBird.scene);
+
 let buttons = [
   make$1("squirtle", "squirtle", 60),
   make$1("middle-earth", "middle-earth", 120),
@@ -97,6 +100,8 @@ buttons.forEach(button => {
     GameContext.k.go(button.scene);
   });
 });
+
+GameContext.k.go("flappy-bird");
 
 export {
   Text,

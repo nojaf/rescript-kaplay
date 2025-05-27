@@ -58,6 +58,7 @@ k->Context.scene("middle-earth", MiddleEarth.scene)
 k->Context.scene("path-finding", PathFinding.scene)
 k->Context.scene("sentry", SentrySample.scene)
 k->Context.scene("tower", Tower.scene)
+k->Context.scene("flappy-bird", FlappyBird.scene)
 
 let buttons = [
   Button.make("squirtle", "squirtle", 60.),
@@ -74,3 +75,5 @@ buttons->Array.forEach(button => {
   })
   ->ignore
 })
+
+k->Context.go("flappy-bird")

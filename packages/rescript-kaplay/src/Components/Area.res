@@ -3,8 +3,15 @@ module Comp = (
     type t
   },
 ) => {
+  /** `onCollide(t, tag, callback)`
+   Register an event runs once when collide with another game obj with certain tag.
+   */
   @send
-  external onCollide: (T.t, string, ('t, Collision.t) => unit) => KEventController.t = "onCollide"
+  external onCollide: (T.t, string, ('t, Collision.t) => unit) => unit = "onCollide"
+
+  @send
+  external onCollideWithController: (T.t, string, ('t, Collision.t) => unit) => KEventController.t =
+    "onCollide"
 
   @send
   external onCollideEnd: (T.t, 'tag, 't => unit) => KEventController.t = "onCollideEnd"
