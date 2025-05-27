@@ -244,3 +244,6 @@ module Level = {
 
 @send
 external addLevel: (t, array<string>, levelOptions) => Level.t = "addLevel"
+
+@send
+external setBackground: (t, color) => unit = "setBackground"
