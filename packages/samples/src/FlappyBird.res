@@ -11,6 +11,11 @@ module Events = {
   let gameOver = "gameOver"
 }
 
+module Sounds = {
+  let score = "score"
+  let die = "die"
+}
+
 module Bird = {
   type t
 
@@ -24,11 +29,12 @@ module Bird = {
   include OffScreen.Comp({type t = t})
 
   let tag = "bird"
+  let spriteName = "pidgeotto"
 
   let make = () => {
     k->Context.add([
       k->addPosFromVec2(k->Context.center),
-      k->addSprite("pidgeotto", ~options={flipX: true}),
+      k->addSprite(spriteName, ~options={flipX: true}),
       k->addBody,
       k->addColor(k->Context.colorFromHex("#ffb86a")),
       k->addAnchorCenter,
@@ -107,10 +113,10 @@ let makeGameState = (): gameState => {
 }
 
 let scene = () => {
-  k->Context.loadSprite("pidgeotto", "sprites/pidgeotto-rb.png")
+  k->Context.loadSprite(Bird.spriteName, "sprites/pidgeotto-rb.png")
   // Check https://achtaitaipai.github.io/pfxr/ to make your own sounds
-  k->Context.loadSound("score", "sounds/score.wav")
-  k->Context.loadSound("die", "sounds/die.wav")
+  k->Context.loadSound(Sounds.score, "sounds/score.wav")
+  k->Context.loadSound(Sounds.die, "sounds/die.wav")
   k->Context.setBackground(k->Context.colorFromHex("#cefafe"))
 
   k->Context.setGravity(100.)
@@ -139,12 +145,12 @@ let scene = () => {
     if !birdIsColliding {
       gameState.score = gameState.score + score
       k.debug->Debug.log("score: " ++ Int.toString(gameState.score))
-      let _ = k->Context.play("score")
+      let _ = k->Context.play(Sounds.score)
     }
   })
 
   k->Context.on(~event=Events.gameOver, ~tag=Pipe.tag, (_pipe: Pipe.t, _) => {
-    let _ = k->Context.play("die")
+    let _ = k->Context.play(Sounds.die)
   })
 
   let _pipe = Pipe.make(true, 400.)

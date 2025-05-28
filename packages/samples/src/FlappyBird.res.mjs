@@ -24,6 +24,15 @@ let Events = {
   gameOver: gameOver
 };
 
+let score$1 = "score";
+
+let die = "die";
+
+let Sounds = {
+  score: score$1,
+  die: die
+};
+
 Pos$Kaplay.Comp({});
 
 Sprite$Kaplay.Comp({});
@@ -42,10 +51,12 @@ OffScreen$Kaplay.Comp({});
 
 let tag = "bird";
 
+let spriteName = "pidgeotto";
+
 function make() {
   return GameContext.k.add([
     GameContext.k.pos(GameContext.k.center()),
-    GameContext.k.sprite("pidgeotto", {
+    GameContext.k.sprite(spriteName, {
       flipX: true
     }),
     GameContext.k.body(),
@@ -62,6 +73,7 @@ function make() {
 
 let Bird = {
   tag: tag,
+  spriteName: spriteName,
   make: make
 };
 
@@ -134,9 +146,9 @@ function makeGameState() {
 }
 
 function scene() {
-  GameContext.k.loadSprite("pidgeotto", "sprites/pidgeotto-rb.png");
-  GameContext.k.loadSound("score", "sounds/score.wav");
-  GameContext.k.loadSound("die", "sounds/die.wav");
+  GameContext.k.loadSprite(spriteName, "sprites/pidgeotto-rb.png");
+  GameContext.k.loadSound(score$1, "sounds/score.wav");
+  GameContext.k.loadSound(die, "sounds/die.wav");
   GameContext.k.setBackground(GameContext.k.Color.fromHex("#cefafe"));
   GameContext.k.setGravity(100);
   let gameState = {
@@ -154,18 +166,18 @@ function scene() {
       bird.angle = extra;
     });
   });
-  GameContext.k.on(score, tag$1, (_pipe, score) => {
+  GameContext.k.on(score, tag$1, (_pipe, score$2) => {
     let birdIsColliding = bird.getCollisions().some(param => true);
     if (!birdIsColliding) {
-      gameState.score = gameState.score + score | 0;
+      gameState.score = gameState.score + score$2 | 0;
       GameContext.k.debug.log("score: " + gameState.score.toString());
-      GameContext.k.play("score");
+      GameContext.k.play(score$1);
       return;
     }
     
   });
   GameContext.k.on(gameOver, tag$1, (_pipe, param) => {
-    GameContext.k.play("die");
+    GameContext.k.play(die);
   });
   make$1(true, 400);
   make$1(false, 400);
@@ -173,6 +185,7 @@ function scene() {
 
 export {
   Events,
+  Sounds,
   Bird,
   Pipe,
   makeGameState,
