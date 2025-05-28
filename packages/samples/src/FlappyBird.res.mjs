@@ -17,9 +17,11 @@ import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameOb
 
 let score = "score";
 
+let gameOver = "gameOver";
+
 let Events = {
   score: score,
-  gameOver: "gameOver"
+  gameOver: gameOver
 };
 
 Pos$Kaplay.Comp({});
@@ -88,7 +90,7 @@ function make$1(isTop, height) {
     GameContext.k.pos(x, y),
     GameContext.k.rect(50, height),
     GameContext.k.color(GameContext.k.Color.fromHex("#bbf451")),
-    GameContext.k.move(GameContext.k.Vec2.LEFT, 100),
+    GameContext.k.move(GameContext.k.Vec2.LEFT, 200),
     GameContext.k.offscreen({
       destroy: true
     }),
@@ -97,7 +99,7 @@ function make$1(isTop, height) {
     tag$1
   ]);
   pipe.onCollide(tag, (_bird, _collision) => {
-    GameContext.k.debug.log("collision, game over");
+    pipe.trigger(gameOver, undefined);
   });
   if (isTop) {
     let ctrl = {
@@ -120,6 +122,7 @@ function make$1(isTop, height) {
 let Pipe = {
   width: 50,
   tag: tag$1,
+  speed: 200,
   make: make$1
 };
 
@@ -132,6 +135,8 @@ function makeGameState() {
 
 function scene() {
   GameContext.k.loadSprite("pidgeotto", "sprites/pidgeotto-rb.png");
+  GameContext.k.loadSound("score", "sounds/score.wav");
+  GameContext.k.loadSound("die", "sounds/die.wav");
   GameContext.k.setBackground(GameContext.k.Color.fromHex("#cefafe"));
   GameContext.k.setGravity(100);
   let gameState = {
@@ -150,8 +155,17 @@ function scene() {
     });
   });
   GameContext.k.on(score, tag$1, (_pipe, score) => {
-    gameState.score = gameState.score + score | 0;
-    GameContext.k.debug.log("score: " + gameState.score.toString());
+    let birdIsColliding = bird.getCollisions().some(param => true);
+    if (!birdIsColliding) {
+      gameState.score = gameState.score + score | 0;
+      GameContext.k.debug.log("score: " + gameState.score.toString());
+      GameContext.k.play("score");
+      return;
+    }
+    
+  });
+  GameContext.k.on(gameOver, tag$1, (_pipe, param) => {
+    GameContext.k.play("die");
   });
   make$1(true, 400);
   make$1(false, 400);

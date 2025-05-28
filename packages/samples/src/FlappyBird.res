@@ -54,6 +54,7 @@ module Pipe = {
 
   let width = 50.
   let tag = "pipe"
+  let speed = 200.
 
   let make = (isTop: bool, height: float): t => {
     let x = k->Context.width - width
@@ -63,7 +64,7 @@ module Pipe = {
         k->addPos(x, y),
         k->addRect(width, height),
         k->addColor(k->Context.colorFromHex("#bbf451")),
-        k->addMove(k->Context.vec2Left, 100.),
+        k->addMove(k->Context.vec2Left, speed),
         k->addOffScreen(~options={destroy: true}),
         k->addArea,
         k->addOutline(~width=3, ~color=k->Context.colorFromHex("#404040")),
@@ -71,7 +72,7 @@ module Pipe = {
       ])
 
     pipe->onCollide(Bird.tag, (_bird: Bird.t, _collision) => {
-      k.debug->Debug.log("collision, game over")
+      trigger(pipe, Events.gameOver, ())
     })
 
     if isTop {
@@ -107,6 +108,9 @@ let makeGameState = (): gameState => {
 
 let scene = () => {
   k->Context.loadSprite("pidgeotto", "sprites/pidgeotto-rb.png")
+  // Check https://achtaitaipai.github.io/pfxr/ to make your own sounds
+  k->Context.loadSound("score", "sounds/score.wav")
+  k->Context.loadSound("die", "sounds/die.wav")
   k->Context.setBackground(k->Context.colorFromHex("#cefafe"))
 
   k->Context.setGravity(100.)
@@ -131,8 +135,16 @@ let scene = () => {
   ->ignore
 
   k->Context.on(~event=Events.score, ~tag=Pipe.tag, (_pipe: Pipe.t, score: int) => {
-    gameState.score = gameState.score + score
-    k.debug->Debug.log("score: " ++ Int.toString(gameState.score))
+    let birdIsColliding = bird->Bird.getCollisions->Array.some(_ => true)
+    if !birdIsColliding {
+      gameState.score = gameState.score + score
+      k.debug->Debug.log("score: " ++ Int.toString(gameState.score))
+      let _ = k->Context.play("score")
+    }
+  })
+
+  k->Context.on(~event=Events.gameOver, ~tag=Pipe.tag, (_pipe: Pipe.t, _) => {
+    let _ = k->Context.play("die")
   })
 
   let _pipe = Pipe.make(true, 400.)

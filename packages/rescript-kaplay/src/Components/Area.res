@@ -31,6 +31,12 @@ Register an event runs once when hovered.
   @send
   external onHover: (T.t, string, unit => unit) => KEventController.t = "onHover"
 
+  /**
+  Get all collisions currently happening.
+ */
+  @send
+  external getCollisions: T.t => array<Collision.t> = "getCollisions"
+
   type areaCompOptions = {
     /** Only Rect and Polygon are supported */
     shape?: Math.Shape.t,

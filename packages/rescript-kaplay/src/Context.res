@@ -136,6 +136,7 @@ type loadSpriteOptions = {
 @send
 external loadSprite: (t, string, string, ~options: loadSpriteOptions=?) => unit = "loadSprite"
 
+/** Use for short sound effects, use `loadMusic` for background music. */
 @send
 external loadSound: (t, string, string) => unit = "loadSound"
 
