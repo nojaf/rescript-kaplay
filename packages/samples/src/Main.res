@@ -65,6 +65,7 @@ let buttons = [
   Button.make("path-finding", "path-finding", 180.),
   Button.make("sentry", "sentry", 240.),
   Button.make("tower", "tower", 300.),
+  Button.make("flappy-bird", FlappyBird.Scenes.game, 360.),
 ]
 
 buttons->Array.forEach(button => {
@@ -74,5 +75,3 @@ buttons->Array.forEach(button => {
   })
   ->ignore
 })
-
-k->Context.go(FlappyBird.Scenes.game)

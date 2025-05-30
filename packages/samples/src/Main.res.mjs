@@ -90,7 +90,8 @@ let buttons = [
   make$1("middle-earth", "middle-earth", 120),
   make$1("path-finding", "path-finding", 180),
   make$1("sentry", "sentry", 240),
-  make$1("tower", "tower", 300)
+  make$1("tower", "tower", 300),
+  make$1("flappy-bird", FlappyBird.Scenes.game, 360)
 ];
 
 buttons.forEach(button => {
@@ -98,8 +99,6 @@ buttons.forEach(button => {
     GameContext.k.go(button.scene);
   });
 });
-
-GameContext.k.go(FlappyBird.Scenes.game);
 
 export {
   Text,
