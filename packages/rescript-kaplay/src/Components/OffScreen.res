@@ -3,6 +3,12 @@ module Comp = (
     type t
   },
 ) => {
+  /**
+   `onExitScreen(context, handler)` register an event that runs when object goes out of view.
+   */
+  @send
+  external onExitScreen: (T.t, unit => unit) => unit = "onExitScreen"
+
   type offscreenOptions = {
     hide?: bool,
     pause?: bool,

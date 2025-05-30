@@ -3,6 +3,20 @@ type t = {
   mutable y: float,
 }
 
+/**
+`Vec2.x(vec2)` get the x coordinate of the vector
+This is the same as `vec2.x` but more convenient to use when piping.
+ */
+@get
+external x: t => float = "x"
+
+/**
+`Vec2.y(vec2)` get the y coordinate of the vector
+This is the same as `vec2.y` but more convenient to use when piping.
+ */
+@get
+external y: t => float = "y"
+
 @send
 external add: (t, t) => t = "add"
 

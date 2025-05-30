@@ -3,6 +3,23 @@ module Comp = (
     type t
   },
 ) => {
+  type anchor =
+    | @as("topleft") TopLeft
+    | @as("top") Top
+    | @as("topright") TopRight
+    | @as("left") Left
+    | @as("center") Center
+    | @as("right") Right
+    | @as("botleft") BottomLeft
+    | @as("bot") Bottom
+    | @as("botright") BottomRight
+
+  @send
+  external addAnchor: (Context.t, anchor) => Types.comp = "anchor"
+
   @send
   external addAnchorCenter: (Context.t, @as("center") _) => Types.comp = "anchor"
+
+  @send
+  external addAnchorBottomLeft: (Context.t, @as("botleft") _) => Types.comp = "anchor"
 }

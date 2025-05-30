@@ -85,8 +85,6 @@ GameContext.k.scene("sentry", SentrySample.scene);
 
 GameContext.k.scene("tower", Tower.scene);
 
-GameContext.k.scene("flappy-bird", FlappyBird.scene);
-
 let buttons = [
   make$1("squirtle", "squirtle", 60),
   make$1("middle-earth", "middle-earth", 120),
@@ -101,7 +99,7 @@ buttons.forEach(button => {
   });
 });
 
-GameContext.k.go("flappy-bird");
+GameContext.k.go(FlappyBird.Scenes.game);
 
 export {
   Text,

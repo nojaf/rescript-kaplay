@@ -39,6 +39,14 @@ external scene: (t, string, 'a => unit) => unit = "scene"
 @send
 external go: (t, string, ~data: 'a=?) => unit = "go"
 
+/**
+`go(context, sceneName, ~data=?)`
+
+Go to a scene with data passed to the scene.
+*/
+@send
+external goWithData: (t, string, 'a) => unit = "go"
+
 @send
 external setCamPos: (t, Vec2.t) => unit = "setCamPos"
 
@@ -51,8 +59,21 @@ external clamp: (t, int, int, int) => int = "clamp"
 @send
 external clampFloat: (t, float, float, float) => float = "clampFloat"
 
+/**
+`wait(context, seconds, callback)`
+
+Run the function after n seconds.
+*/
 @send
-external wait: (t, float, unit => unit) => TimerController.t = "wait"
+external wait: (t, float, unit => unit) => unit = "wait"
+
+/**
+`wait(context, seconds, callback)`
+
+Run the function after n seconds.
+*/
+@send
+external waitWithController: (t, float, unit => unit) => TimerController.t = "wait"
 
 /** Get the delta time in seconds since last frame. */
 @send
@@ -62,7 +83,10 @@ external dt: t => float = "dt"
 external colorFromHex: (t, string) => color = "fromHex"
 
 @send
-external onClick: (t, unit => unit) => KEventController.t = "onClick"
+external onClick: (t, unit => unit) => unit = "onClick"
+
+@send
+external onClickWithController: (t, unit => unit) => KEventController.t = "onClick"
 
 @send
 external onClickWithTag: (t, string, 't => unit) => KEventController.t = "onClick"
@@ -83,7 +107,13 @@ external onKeyDown: (t, key => unit) => KEventController.t = "onKeyDown"
  Lifting the key up
  */
 @send
-external onKeyRelease: (t, key => unit) => KEventController.t = "onKeyRelease"
+external onKeyRelease: (t, key => unit) => unit = "onKeyRelease"
+
+/**
+ Lifting the key up
+ */
+@send
+external onKeyReleaseWithController: (t, key => unit) => KEventController.t = "onKeyRelease"
 
 @send
 external isKeyDown: (t, key) => bool = "isKeyDown"
