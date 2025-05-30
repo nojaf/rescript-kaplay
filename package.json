@@ -5,17 +5,18 @@
     "packages/*"
   ],
   "dependencies": {
-    "@astrojs/starlight": "^0.34.3",
     "rescript": "https://pkg.pr.new/rescript-lang/rescript@352fa02b9a758e8de80f12d9da363b47b75084e7"
   },
   "devDependencies": {
-    "astro": "^5.8.0",
+    "@astrojs/starlight": "^0.34.3",
+    "@types/bun": "^1.2.15",
+    "astro": "^5.8.1",
     "micromark": "^4.0.2",
     "prettier-plugin-astro": "^0.14.1",
     "starlight-theme-flexoki": "^0.1.0"
   },
   "scripts": {
-    "docs": "bunx --bun astro dev",
+    "docs": "bunx --bun astro dev --verbose",
     "watch": "rewatch watch",
     "fmt": "bun scripts/format.js"
   }

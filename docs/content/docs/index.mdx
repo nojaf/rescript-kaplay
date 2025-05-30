@@ -17,7 +17,7 @@ hero:
 tableOfContents: false
 ---
 
-import { Tabs, TabItem, Code } from "@astrojs/starlight/components";
+import { Tabs, TabItem, Code, Aside } from "@astrojs/starlight/components";
 import { formatRescriptCode } from "../../format";
 
 {/* [![NPM Version](https://img.shields.io/npm/v/@rescript/webapi/experimental)](https://www.npmjs.com/package/@rescript/webapi) */}
@@ -46,6 +46,11 @@ export const rescriptJson = `
 `;
 
 <Code lang="json" code={rescriptJson} ins={[3, 6]}></Code>
+
+<Aside type="caution">
+  You are expected to install KAPLAY yourself. These bindings are for [version
+  4000+](https://v4000.kaplayjs.com/doc/kaplay/)
+</Aside>
 
 ## Usage
 

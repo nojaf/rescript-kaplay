@@ -3,27 +3,60 @@ module Comp = (
     type t
   },
 ) => {
-  @send
-  external hurt: (T.t, int) => unit = "hurt"
+  @get
+  external getHp: T.t => int = "hp"
 
-  @send
-  external heal: (T.t, int) => unit = "heal"
+  @set
+  external setHp: (T.t, int) => unit = "hp"
 
-  @send
-  external hp: T.t => int = "hp"
+  @get
+  external getMaxHp: T.t => int = "maxHp"
 
-  @send
-  external setHP: (T.t, int) => unit = "setHP"
+  @set
+  external setMaxHp: (T.t, int) => unit = "maxHp"
 
-  @send
-  external onHurt: (T.t, int => unit) => KEventController.t = "onHurt"
+  @get
+  external getDead: T.t => bool = "dead"
 
+  /**
+ `onHurt(t, deltaHP => unit)` register an event that runs when the hp is lowered.
+ */
   @send
-  external onHeal: (T.t, (~amount: int=?) => unit) => KEventController.t = "onHeal"
+  external onHurt: (T.t, int => unit) => unit = "onHurt"
 
+  /**
+ `hurt(t, deltaHP => unit)` register an event that runs when the hp is lowered.
+ */
   @send
-  external onDeath: (T.t, unit => unit) => KEventController.t = "onDeath"
+  external onHurtWithController: (T.t, int => unit) => KEventController.t = "onHurt"
 
+  /**
+ `onHeal(t, deltaHP => unit)` register an event that runs when the hp is increased.
+ */
+  @send
+  external onHeal: (T.t, int => unit) => unit = "onHeal"
+
+  /**
+ `onHeal(t, deltaHP => unit)` register an event that runs when the hp is increased.
+ */
+  @send
+  external onHealWithController: (T.t, int => unit) => KEventController.t = "onHeal"
+
+  /**
+ `onDeath(t, unit => unit)` register an event that runs when the hp becomes zero.
+ */
+  @send
+  external onDeath: (T.t, unit => unit) => unit = "onDeath"
+
+  /**
+ `onDeath(t, unit => unit)` register an event that runs when the hp becomes zero.
+ */
+  @send
+  external onDeathWithController: (T.t, unit => unit) => KEventController.t = "onDeath"
+
+  /**
+ `addHealth(context, hp, ~maxHp=?)` handles health related logic and events.
+ */
   @send
   external addHealth: (Context.t, int, ~maxHp: int=?) => Types.comp = "health"
 }

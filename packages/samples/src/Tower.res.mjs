@@ -120,7 +120,7 @@ function make$2() {
     GameContext.k.health(3),
     enemy
   ]);
-  let hp = charmander.hp();
+  let hp = charmander.hp;
   for (let i = 1; i <= hp; ++i) {
     charmander.add(make$1(25 - i * 15, -35));
   }
@@ -249,7 +249,7 @@ Body$Kaplay.Comp({});
 
 function fireHomingBullet(tower, viewport, target) {
   let maxDistance = viewport.radius;
-  let bulletSpeed = GameContext.k.vec2(300);
+  let bulletSpeed = GameContext.k.vec2(500);
   let homingVelocity = target.worldPos().sub(tower.worldPos()).unit().scale(bulletSpeed);
   let bubble = tower.add(make$5(homingVelocity, 0.2));
   bubble.onUpdate(() => {
@@ -267,7 +267,7 @@ function fireHomingBullet(tower, viewport, target) {
   });
   bubble.onCollide(enemy, (enemy, param) => {
     bubble.destroy();
-    enemy.hurt(1);
+    enemy.hp = enemy.hp - 1 | 0;
     let heart = enemy.get(solidHeart).at(0);
     if (heart === undefined) {
       return;

@@ -98,15 +98,14 @@ module Charmander = {
       tag(Tags.enemy),
     ])
 
-    let hp = charmander->hp
+    let hp = charmander->getHp
     for i in 1 to hp {
       charmander
       ->add(Heart.make(~x=25. - Int.toFloat(i) * 15., ~y=-35.))
       ->ignore
     }
 
-    charmander
-    ->onHurt(_ => {
+    charmander->onHurt(_ => {
       let tc = k->tween(
         ~from=1.,
         ~to_=0.5,
@@ -129,7 +128,6 @@ module Charmander = {
         ->ignore
       })
     })
-    ->ignore
 
     charmander
     ->onDeath(() => {
@@ -223,7 +221,7 @@ module Tower = {
 
   let fireHomingBullet = (tower: t, viewport: Viewport.t, target: Charmander.t) => {
     let maxDistance = viewport->Viewport.getRadius
-    let bulletSpeed = k->vec2FromXY(300.)
+    let bulletSpeed = k->vec2FromXY(500.)
     let homingStrength = 0.1
     let homingVelocity =
       target->Charmander.worldPos->Vec2.sub(tower->worldPos)->Vec2.unit->Vec2.scale(bulletSpeed)
@@ -250,7 +248,7 @@ module Tower = {
 
     bubble->Bubble.onCollide(Tags.enemy, (enemy: Charmander.t, _) => {
       bubble->Bubble.destroy
-      enemy->Charmander.hurt(1)
+      enemy->Charmander.setHp(enemy->Charmander.getHp - 1)
       switch enemy->Charmander.get(Tags.solidHeart)->Array.at(0) {
       | None => ()
       | Some(heart) => {

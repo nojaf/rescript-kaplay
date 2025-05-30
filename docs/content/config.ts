@@ -1,6 +1,7 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import { defineCollection, z } from "astro:content";
+import { docsLoader } from "@astrojs/starlight/loaders";
 import { docsSchema } from "@astrojs/starlight/schema";
 import { Glob, $ } from "bun";
 import { micromark } from "micromark";
@@ -156,8 +157,7 @@ const apiDocs = defineCollection({
     filePath: z.string(),
   }),
   loader: async () => {
-    const inputDir =
-      "/Users/nojaf/Projects/rescript-kaplay/packages/rescript-kaplay/src";
+    const inputDir = "./packages/rescript-kaplay/src";
     const glob = new Glob(`**/*.res`);
 
     const collectionEntries: any[] = [];
@@ -177,6 +177,6 @@ const apiDocs = defineCollection({
 });
 
 export const collections = {
-  docs: defineCollection({ schema: docsSchema() }),
+  docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
   apiDocs,
 };
