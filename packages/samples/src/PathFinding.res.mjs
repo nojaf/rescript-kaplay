@@ -3,6 +3,7 @@
 import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as GameContext from "./GameContext.res.mjs";
 import * as Rect$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rect.res.mjs";
+import * as Text$Kaplay from "@nojaf/rescript-kaplay/src/Components/Text.res.mjs";
 import * as Tile$Kaplay from "@nojaf/rescript-kaplay/src/Components/Tile.res.mjs";
 import * as Agent$Kaplay from "@nojaf/rescript-kaplay/src/Components/Agent.res.mjs";
 import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.mjs";
@@ -110,9 +111,29 @@ let CharmanderTile = {
   make: make$3
 };
 
+Text$Kaplay.Comp({});
+
+Pos$Kaplay.Comp({});
+
+Anchor$Kaplay.Comp({});
+
+function make$4() {
+  return GameContext.k.add([
+    GameContext.k.text("Press space to start", {
+      size: 20
+    }),
+    GameContext.k.pos(GameContext.k.width() - 20, GameContext.k.height() - 20),
+    GameContext.k.anchor("botright")
+  ]);
+}
+
+let Text = {
+  make: make$4
+};
+
 function scene() {
-  GameContext.k.loadSprite("squirtle", "/sprites/squirtle-rb.png");
-  GameContext.k.loadSprite("charmander", "/sprites/charmander-rb.png");
+  GameContext.k.loadSprite("squirtle", "sprites/squirtle-rb.png");
+  GameContext.k.loadSprite("charmander", "sprites/charmander-rb.png");
   GameContext.k.loadMusic("beast-in-black", "sounds/beast-in-black.mp3");
   let level = GameContext.k.addLevel([
     "##########",
@@ -130,6 +151,7 @@ function scene() {
   });
   let squirtle = level.spawn(make$2(), GameContext.k.vec2(1, 1));
   let charmander = level.spawn(make$3(), GameContext.k.vec2(7, 4));
+  make$4();
   GameContext.k.onKeyPress(key => {
     if (key !== "space") {
       return;
@@ -148,6 +170,7 @@ export {
   WallTile,
   SquirtleTile,
   CharmanderTile,
+  Text,
   scene,
 }
 /*  Not a pure module */

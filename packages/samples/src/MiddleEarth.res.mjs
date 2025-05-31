@@ -69,7 +69,7 @@ let $$Map = {
 };
 
 function scene() {
-  GameContext.k.loadSprite("bg", "middle-earth.webp");
+  GameContext.k.loadSprite("bg", "sprites/middle-earth.webp");
   let map = make();
   GameContext.k.onTouchStart((pos, _touch) => {
     lastTouchStart.contents = pos;

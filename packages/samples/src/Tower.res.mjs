@@ -319,9 +319,9 @@ function onSceneLoad() {
 }
 
 function scene() {
-  GameContext.k.loadSprite("charmander", "/sprites/charmander-rb.png");
-  GameContext.k.loadSprite("squirtle", "/sprites/squirtle-rb.png");
-  GameContext.k.loadSprite("heart", "/sprites/heart.png", {
+  GameContext.k.loadSprite("charmander", "sprites/charmander-rb.png");
+  GameContext.k.loadSprite("squirtle", "sprites/squirtle-rb.png");
+  GameContext.k.loadSprite("heart", "sprites/heart.png", {
     sliceX: 2,
     sliceY: 1,
     anims: {

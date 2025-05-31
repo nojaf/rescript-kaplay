@@ -29,6 +29,10 @@ export default defineConfig({
           slug: "game-object",
         },
         {
+          label: "Samples",
+          link: "./samples",
+        },
+        {
           label: "API reference",
           link: "./api-reference",
         },

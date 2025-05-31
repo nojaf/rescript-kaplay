@@ -82,9 +82,25 @@ module CharmanderTile = {
   }
 }
 
+module Text = {
+  type t
+
+  include Text.Comp({type t = t})
+  include Pos.Comp({type t = t})
+  include Anchor.Comp({type t = t})
+
+  let make = (): t => {
+    k->Context.add([
+      addText(k, "Press space to start", ~options={size: 20.}),
+      addPos(k, k->Context.width - 20., k->Context.height - 20.),
+      addAnchor(k, BottomRight),
+    ])
+  }
+}
+
 let scene = () => {
-  k->loadSprite("squirtle", "/sprites/squirtle-rb.png")
-  k->loadSprite("charmander", "/sprites/charmander-rb.png")
+  k->loadSprite("squirtle", "sprites/squirtle-rb.png")
+  k->loadSprite("charmander", "sprites/charmander-rb.png")
   k->loadMusic("beast-in-black", "sounds/beast-in-black.mp3")
 
   let level = k->addLevel(
@@ -108,6 +124,8 @@ let scene = () => {
 
   let squirtle = level->Level.spawn(SquirtleTile.make(), k->vec2(1., 1.))
   let charmander = level->Level.spawn(CharmanderTile.make(), k->vec2(7., 4.))
+
+  let _text = Text.make()
 
   k
   ->onKeyPress(key => {

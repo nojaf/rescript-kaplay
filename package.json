@@ -16,7 +16,8 @@
     "starlight-theme-flexoki": "^0.1.0"
   },
   "scripts": {
-    "docs": "bunx --bun astro dev --verbose",
+    "docs": "bunx --bun astro dev",
+    "docs:build": "bun run scripts/build-docs.js",
     "watch": "rewatch watch",
     "fmt": "bun scripts/format.js"
   }

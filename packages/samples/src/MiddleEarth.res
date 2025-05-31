@@ -73,7 +73,7 @@ module Map = {
 }
 
 let scene = () => {
-  k->loadSprite("bg", "middle-earth.webp")
+  k->loadSprite("bg", "sprites/middle-earth.webp")
 
   let map = Map.make()
 

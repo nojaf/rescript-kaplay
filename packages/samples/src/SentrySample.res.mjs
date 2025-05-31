@@ -101,12 +101,18 @@ let Wall = {
 
 Text$Kaplay.Comp({});
 
+Anchor$Kaplay.Comp({});
+
 Pos$Kaplay.Comp({});
 
 function make$3() {
-  return GameContext.k.add([GameContext.k.text("Move underneath Flareon to be spotted", {
+  return GameContext.k.add([
+    GameContext.k.text("Move underneath Flareon (red) to be spotted", {
       size: 20
-    })]);
+    }),
+    GameContext.k.pos(GameContext.k.width() - 20, GameContext.k.height() - 20),
+    GameContext.k.anchor("botright")
+  ]);
 }
 
 let Text = {
@@ -114,8 +120,8 @@ let Text = {
 };
 
 function scene() {
-  GameContext.k.loadSprite("squirtle", "/sprites/squirtle-rb.png");
-  GameContext.k.loadSprite("flareon", "/sprites/flareon-rb.png");
+  GameContext.k.loadSprite("squirtle", "sprites/squirtle-rb.png");
+  GameContext.k.loadSprite("flareon", "sprites/flareon-rb.png");
   let squirtle = make();
   let flareon = make$1(squirtle);
   make$2();

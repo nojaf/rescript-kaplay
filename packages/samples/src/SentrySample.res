@@ -79,17 +79,22 @@ module Text = {
   type t
 
   include Text.Comp({type t = t})
-
+  include Anchor.Comp({type t = t})
   include Pos.Comp({type t = t})
 
   let make = () => {
-    k->Context.add([k->addText("Move underneath Flareon to be spotted", ~options={size: 20.})])
+    k->Context.add([
+      //
+      k->addText("Move underneath Flareon (red) to be spotted", ~options={size: 20.}),
+      k->addPos(k->Context.width - 20., k->Context.height - 20.),
+      k->addAnchor(BottomRight),
+    ])
   }
 }
 
 let scene = () => {
-  k->loadSprite("squirtle", "/sprites/squirtle-rb.png")
-  k->loadSprite("flareon", "/sprites/flareon-rb.png")
+  k->loadSprite("squirtle", "sprites/squirtle-rb.png")
+  k->loadSprite("flareon", "sprites/flareon-rb.png")
 
   let squirtle = Squirtle.make()
   let flareon = Flareon.make(squirtle)

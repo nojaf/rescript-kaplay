@@ -3,6 +3,8 @@ type easingMap = {linear: easeFunc}
 
 type t = {debug: Debug.t, easings: easingMap}
 
+type htmlCanvasElement
+
 /**
 Initialize KAPLAY context. The starting point of all KAPLAY games.
 */
@@ -13,6 +15,7 @@ type kaplayOptions = {
   background?: string,
   scale?: float,
   letterbox?: bool,
+  canvas?: htmlCanvasElement,
 }
 
 @module("kaplay")

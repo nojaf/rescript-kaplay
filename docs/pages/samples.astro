@@ -1,0 +1,32 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import { LinkButton } from "@astrojs/starlight/components";
+
+const frontmatter = {
+  title: "Samples",
+};
+---
+
+<StarlightPage frontmatter={frontmatter} headings={[]}>
+  <p>These are the samples for the rescript-kaplay package.</p>
+  <p>
+    You can find the source code for the samples in the <a
+      href="https://github.com/nojaf/rescript-kaplay/tree/main/packages/samples"
+      >rescript-kaplay</a
+    > repository.
+  </p>
+  <LinkButton
+    href="#"
+    onclick="window.location.reload(); return false;"
+    variant="secondary">Reload to view the main menu 😅</LinkButton
+  >
+  <canvas id="docs-canvas"></canvas>
+  <script type="module">
+    import "../../packages/samples/src/Main.res.mjs";
+  </script>
+</StarlightPage>
+<style>
+  canvas {
+    min-height: 60vh;
+  }
+</style>

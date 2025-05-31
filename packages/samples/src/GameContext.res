@@ -9,12 +9,24 @@ external screenHeight: int = "height"
 @scope("Math")
 external min: (int, int) => int = "min"
 
-let k = kaplay(
-  ~initOptions={
-    // width: min(720, screenWidth),
-    // height: min(360, screenHeight),
-    global: false,
-    background: "#05df72",
-    scale: 1.,
-  },
-)
+@scope("document") @return(nullable)
+external getElementById: string => option<htmlCanvasElement> = "getElementById"
+
+// The documentation has a canvas tag when used.
+let maybeCanvas = getElementById("docs-canvas")
+
+let initOptions = {
+  global: false,
+  background: "#05df72",
+  scale: 1.,
+}
+
+let initOptions = switch maybeCanvas {
+| Some(canvas) => {
+    ...initOptions,
+    canvas,
+  }
+| None => initOptions
+}
+
+let k = kaplay(~initOptions)
