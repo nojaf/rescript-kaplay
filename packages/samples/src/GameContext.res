@@ -30,3 +30,6 @@ let initOptions = switch maybeCanvas {
 }
 
 let k = kaplay(~initOptions)
+
+@scope("import.meta.env")
+external baseUrl: string = "BASE_URL"

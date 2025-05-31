@@ -312,11 +312,11 @@ let onSceneLoad = () => {
 
 let scene = (): unit => {
   //k.debug->Debug.setInspect(true)
-  k->loadSprite("charmander", "sprites/charmander-rb.png")
-  k->loadSprite("squirtle", "sprites/squirtle-rb.png")
+  k->loadSprite("charmander", `${baseUrl}/sprites/charmander-rb.png`)
+  k->loadSprite("squirtle", `${baseUrl}/sprites/squirtle-rb.png`)
   k->loadSprite(
     "heart",
-    "sprites/heart.png",
+    `${baseUrl}/sprites/heart.png`,
     ~options={
       sliceX: 2,
       sliceY: 1,

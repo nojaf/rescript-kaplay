@@ -132,9 +132,9 @@ let Text = {
 };
 
 function scene() {
-  GameContext.k.loadSprite("squirtle", "sprites/squirtle-rb.png");
-  GameContext.k.loadSprite("charmander", "sprites/charmander-rb.png");
-  GameContext.k.loadMusic("beast-in-black", "sounds/beast-in-black.mp3");
+  GameContext.k.loadSprite("squirtle", import.meta.env.BASE_URL + "/sprites/squirtle-rb.png");
+  GameContext.k.loadSprite("charmander", import.meta.env.BASE_URL + "/sprites/charmander-rb.png");
+  GameContext.k.loadMusic("beast-in-black", import.meta.env.BASE_URL + "/sounds/beast-in-black.mp3");
   let level = GameContext.k.addLevel([
     "##########",
     "#        #",

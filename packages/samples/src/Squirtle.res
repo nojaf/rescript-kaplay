@@ -67,7 +67,7 @@ let scene = () => {
 
   k->loadSprite(
     "squirtle",
-    "sprites/squirtle.png",
+    `${baseUrl}/sprites/squirtle.png`,
     ~options={
       frames: [
         mkSquirtleQuad(0., 0., 34., 39.),

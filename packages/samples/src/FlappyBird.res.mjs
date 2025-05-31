@@ -85,15 +85,22 @@ function make() {
   bird.onExitScreen(() => {
     bird.trigger(gameOver, undefined);
   });
-  GameContext.k.onKeyRelease(key => {
-    if (key !== "space") {
-      return;
-    }
+  let fly = bird => {
     bird.jump(100);
     bird.rotateBy(-15);
     GameContext.k.tween(-15, 0, 0.5, extra => {
       bird.angle = extra;
     });
+  };
+  GameContext.k.onKeyRelease(key => {
+    if (key === "space") {
+      return fly(bird);
+    }
+    
+  });
+  GameContext.k.onTouchEnd((param, param$1) => {
+    console.log("touch end");
+    fly(bird);
   });
   return bird;
 }
@@ -214,9 +221,9 @@ function makeGameState() {
 }
 
 function scene() {
-  GameContext.k.loadSprite(spriteName, "sprites/pidgeotto-rb.png");
-  GameContext.k.loadSound(score$1, "sounds/score.wav");
-  GameContext.k.loadSound(die, "sounds/die.wav");
+  GameContext.k.loadSprite(spriteName, import.meta.env.BASE_URL + "/sprites/pidgeotto-rb.png");
+  GameContext.k.loadSound(score$1, import.meta.env.BASE_URL + "/sounds/score.wav");
+  GameContext.k.loadSound(die, import.meta.env.BASE_URL + "/sounds/die.wav");
   GameContext.k.setBackground(GameContext.k.Color.fromHex("#cefafe"));
   GameContext.k.setGravity(100);
   let gameState = {

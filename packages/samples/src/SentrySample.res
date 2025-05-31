@@ -93,8 +93,8 @@ module Text = {
 }
 
 let scene = () => {
-  k->loadSprite("squirtle", "sprites/squirtle-rb.png")
-  k->loadSprite("flareon", "sprites/flareon-rb.png")
+  k->loadSprite("squirtle", `${baseUrl}/sprites/squirtle-rb.png`)
+  k->loadSprite("flareon", `${baseUrl}/sprites/flareon-rb.png`)
 
   let squirtle = Squirtle.make()
   let flareon = Flareon.make(squirtle)

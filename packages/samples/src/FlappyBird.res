@@ -59,18 +59,27 @@ module Bird = {
       bird->trigger(Events.gameOver, ())
     })
 
+    let fly = (bird: t) => {
+      bird->jump(100.)
+      bird->rotateBy(-15.)
+      k
+      ->Context.tween(~from=-15., ~to_=0., ~duration=0.5, ~setValue=setAngle(bird, ...))
+      ->ignore
+    }
+
     k->Context.onKeyRelease(key => {
       switch key {
-      | Space => {
-          bird->jump(100.)
-          bird->rotateBy(-15.)
-          k
-          ->Context.tween(~from=-15., ~to_=0., ~duration=0.5, ~setValue=setAngle(bird, ...))
-          ->ignore
-        }
+      | Space => fly(bird)
       | _ => ()
       }
     })
+
+    k
+    ->Context.onTouchEnd((_, _) => {
+      Console.log("touch end")
+      fly(bird)
+    })
+    ->ignore
 
     bird
   }
@@ -183,10 +192,10 @@ let makeGameState = (): gameState => {
 }
 
 let scene = () => {
-  k->Context.loadSprite(Bird.spriteName, "sprites/pidgeotto-rb.png")
+  k->Context.loadSprite(Bird.spriteName, `${baseUrl}/sprites/pidgeotto-rb.png`)
   // Check https://achtaitaipai.github.io/pfxr/ to make your own sounds
-  k->Context.loadSound(Sounds.score, "sounds/score.wav")
-  k->Context.loadSound(Sounds.die, "sounds/die.wav")
+  k->Context.loadSound(Sounds.score, `${baseUrl}/sounds/score.wav`)
+  k->Context.loadSound(Sounds.die, `${baseUrl}/sounds/die.wav`)
   k->Context.setBackground(k->Context.colorFromHex("#cefafe"))
 
   k->Context.setGravity(100.)

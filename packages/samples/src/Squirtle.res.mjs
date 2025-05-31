@@ -67,7 +67,7 @@ function scene() {
     height: 39
   };
   let mkSquirtleQuad = (x, y, w, h) => GameContext.k.quad(x / squirtleSpritesheetDimensions.width, y / squirtleSpritesheetDimensions.height, w / squirtleSpritesheetDimensions.width, h / squirtleSpritesheetDimensions.height);
-  GameContext.k.loadSprite("squirtle", "sprites/squirtle.png", {
+  GameContext.k.loadSprite("squirtle", import.meta.env.BASE_URL + "/sprites/squirtle.png", {
     anims: {
       idle: {
         frames: [0]

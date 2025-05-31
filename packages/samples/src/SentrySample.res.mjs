@@ -120,8 +120,8 @@ let Text = {
 };
 
 function scene() {
-  GameContext.k.loadSprite("squirtle", "sprites/squirtle-rb.png");
-  GameContext.k.loadSprite("flareon", "sprites/flareon-rb.png");
+  GameContext.k.loadSprite("squirtle", import.meta.env.BASE_URL + "/sprites/squirtle-rb.png");
+  GameContext.k.loadSprite("flareon", import.meta.env.BASE_URL + "/sprites/flareon-rb.png");
   let squirtle = make();
   let flareon = make$1(squirtle);
   make$2();

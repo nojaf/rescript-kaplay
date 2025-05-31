@@ -99,9 +99,9 @@ module Text = {
 }
 
 let scene = () => {
-  k->loadSprite("squirtle", "sprites/squirtle-rb.png")
-  k->loadSprite("charmander", "sprites/charmander-rb.png")
-  k->loadMusic("beast-in-black", "sounds/beast-in-black.mp3")
+  k->loadSprite("squirtle", `${baseUrl}/sprites/squirtle-rb.png`)
+  k->loadSprite("charmander", `${baseUrl}/sprites/charmander-rb.png`)
+  k->loadMusic("beast-in-black", `${baseUrl}/sounds/beast-in-black.mp3`)
 
   let level = k->addLevel(
     [
@@ -140,5 +140,4 @@ let scene = () => {
     | _ => ()
     }
   })
-  ->ignore
 }

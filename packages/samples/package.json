@@ -17,7 +17,6 @@
     "@nojaf/rescript-kaplay": "workspace:^"
   },
   "devDependencies": {
-    "@nojaf/vite-plugin-rescript": "0.2.0",
     "vite": "6.3.5"
   },
   "trustedDependencies": [
