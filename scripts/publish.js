@@ -25,10 +25,16 @@ if (semver.gt(lastVersion, lastPublishedVersion)) {
   // Update version in package.json
   const packageJson = await Bun.file(`${libraryDir}/package.json`).json();
   packageJson.version = lastVersion;
-  await Bun.write(`${libraryDir}/package.json`, JSON.stringify(packageJson, null, 2));
+  await Bun.write(
+    `${libraryDir}/package.json`,
+    JSON.stringify(packageJson, null, 2),
+  );
 
   // Grab latest release notes
-  const notes = await $`bunx changelog --latest-release-full`.cwd(libraryDir).text().then(v => v.trim());
+  const notes = await $`bunx changelog --latest-release-full`
+    .cwd(libraryDir)
+    .text()
+    .then((v) => v.trim());
 
   const tag = `v${lastVersion}`;
 
@@ -46,11 +52,13 @@ if (semver.gt(lastVersion, lastPublishedVersion)) {
 
     console.log(`Creating GitHub release for ${tag}`);
     console.log(notes);
-    await $`gh release create ${tag} --title ${lastVersion} --notes "${notes}" --verify-tag`.cwd(libraryDir);
+    await $`gh release create ${tag} --title ${lastVersion} --notes "${notes}" --verify-tag`.cwd(
+      libraryDir,
+    );
   }
 } else {
   console.log(
     `Last version in changelog ${lastVersion} is not greater than last published version on npm ${lastPublishedVersion}`,
   );
-  await $`gh release list`
+  await $`gh release list`;
 }
