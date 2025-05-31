@@ -52,4 +52,5 @@ if (semver.gt(lastVersion, lastPublishedVersion)) {
   console.log(
     `Last version in changelog ${lastVersion} is not greater than last published version on npm ${lastPublishedVersion}`,
   );
+  await $`gh release list`
 }

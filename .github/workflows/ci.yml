@@ -40,6 +40,7 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_CONFIG_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: bun run release
 
   deploy-docs:
