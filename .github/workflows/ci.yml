@@ -28,7 +28,7 @@ jobs:
         run: bun install
 
       - name: Build documentation
-        run: bun run build:docs
+        run: bun run docs:build
 
       - name: Upload documentation
         uses: actions/upload-pages-artifact@v3
