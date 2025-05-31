@@ -127,8 +127,7 @@ let scene = () => {
 
   let _text = Text.make()
 
-  k
-  ->onKeyPress(key => {
+  k->onKeyPress(key => {
     switch key {
     | Space =>
       let target = squirtle->SquirtleTile.getPos

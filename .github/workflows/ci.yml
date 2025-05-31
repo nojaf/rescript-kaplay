@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Check version
+        run: bun run scripts/version-check.js
+
       - name: Build documentation
         run: bun run docs:build
 
