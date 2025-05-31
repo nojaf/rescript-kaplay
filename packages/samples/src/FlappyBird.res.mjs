@@ -130,7 +130,7 @@ Outline$Kaplay.Comp({});
 let tag$1 = "pipe";
 
 function make$1(gap) {
-  let x = GameContext.k.width() - 50;
+  let x = GameContext.k.width();
   let gapHeight = GameContext.k.height() * gap;
   let remainingHeight = GameContext.k.height() - gapHeight;
   let topPipeHeight = GameContext.k.rand(0.20, 0.80) * remainingHeight;

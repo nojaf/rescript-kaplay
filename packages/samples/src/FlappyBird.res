@@ -104,7 +104,7 @@ module Pipes = {
  `Pipes.make(gap)` create a pipe with a gap of `gap` procent.
  */
   let make = (gap: float) => {
-    let x = k->Context.width - width
+    let x = k->Context.width
     let gapHeight = k->Context.height * gap
     let remainingHeight = k->Context.height - gapHeight
     let topPipeHeight = k->Context.randf(0.20, 0.80) *. remainingHeight
