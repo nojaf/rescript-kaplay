@@ -9,7 +9,14 @@
     "res:dev": "rescript -w"
   },
   "peerDependencies": {
-    "kaplay": "^3001.0.18",
+    "kaplay": "^4000.0.0-alpha.19",
     "rescript": "^12.0.0-alpha.13"
-  }
+  },
+  "files": [
+    "src/**/*.res",
+    "rescript.json",
+    "CHANGELOG.md",
+    "README.md",
+    "LICENSE.md"
+  ]
 }

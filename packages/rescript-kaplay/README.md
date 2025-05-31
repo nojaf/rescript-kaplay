@@ -1,15 +1,25 @@
-# rescript-kaplay
+# ReScript bindings for KAPLAY
 
-To install dependencies:
+[ReScript](https://rescript-lang.org/) bindings for [KAPLAY v4000+](https://v4000.kaplayjs.com/)
 
-```bash
-bun install
+Install
+
+```shell
+npm i @nojaf/rescript-kaplay
 ```
 
-To run:
+rescript.json:
 
-```bash
-bun run index.ts
+```json
+{
+  "bs-dependencies": [
+    "@nojaf/rescript-kaplay",
+  ]
+}
 ```
 
-This project was created using `bun init` in bun v1.2.13. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+You are expected to install KAPLAY yourself!
+
+```shell
+npm i kaplay@next
+```

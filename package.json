@@ -11,14 +11,19 @@
     "@astrojs/starlight": "^0.34.3",
     "@types/bun": "^1.2.15",
     "astro": "^5.8.1",
+    "keep-a-changelog": "^2.6.2",
     "micromark": "^4.0.2",
     "prettier-plugin-astro": "^0.14.1",
+    "semver": "^7.7.2",
     "starlight-theme-flexoki": "^0.1.0"
   },
   "scripts": {
     "docs": "bunx --bun astro dev",
     "docs:build": "bun run scripts/build-docs.js",
     "watch": "rewatch watch",
-    "fmt": "bun scripts/format.js"
-  }
+    "fmt": "bun scripts/format.js",
+    "dry-release": "bun run scripts/publish.js --dry-run",
+    "release": "bun run scripts/publish.js"
+  },
+  "packageManager": "bun@1.2.15"
 }

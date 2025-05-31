@@ -36,6 +36,10 @@ jobs:
         with:
           path: ./dist
 
+      - name: Publish to NPM (if new version)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: bun run release
+
   deploy-docs:
     needs: build
     runs-on: ubuntu-latest
