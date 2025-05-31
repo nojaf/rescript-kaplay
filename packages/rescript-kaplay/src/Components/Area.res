@@ -23,7 +23,19 @@ module Comp = (
 Register an event runs when clicked
  */
   @send
-  external onClick: (T.t, unit => unit) => KEventController.t = "onClick"
+  external onClick: (T.t, unit => unit) => unit = "onClick"
+
+  /**
+Register an event runs when clicked
+ */
+  @send
+  external onClickWithController: (T.t, unit => unit) => KEventController.t = "onClick"
+
+  /**
+Register an event runs once when hovered.
+ */
+  @send
+  external onHoverWithController: (T.t, string, unit => unit) => unit = "onHover"
 
   /**
 Register an event runs once when hovered.

@@ -10,7 +10,10 @@ module Comp = (
   external isGrounded: T.t => bool = "isGrounded"
 
   @send
-  external onGround: (T.t, unit => unit) => KEventController.t = "onGround"
+  external onGround: (T.t, unit => unit) => unit = "onGround"
+
+  @send
+  external onGroundWithController: (T.t, unit => unit) => KEventController.t = "onGround"
 
   type bodyOptions = {isStatic?: bool}
 

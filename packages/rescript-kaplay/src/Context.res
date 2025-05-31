@@ -95,13 +95,25 @@ external onClickWithTag: (t, string, 't => unit) => KEventController.t = "onClic
  Hitting the key
  */
 @send
-external onKeyPress: (t, key => unit) => KEventController.t = "onKeyPress"
+external onKeyPress: (t, key => unit) => unit = "onKeyPress"
+
+/**
+ Hitting the key
+ */
+@send
+external onKeyPressWithController: (t, key => unit) => KEventController.t = "onKeyPress"
 
 /**
  Holding the key down
  */
 @send
-external onKeyDown: (t, key => unit) => KEventController.t = "onKeyDown"
+external onKeyDown: (t, key => unit) => unit = "onKeyDown"
+
+/**
+ Holding the key down
+ */
+@send
+external onKeyDownWithController: (t, key => unit) => KEventController.t = "onKeyDown"
 
 /**
  Lifting the key up
