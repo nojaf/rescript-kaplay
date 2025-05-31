@@ -22,14 +22,6 @@ if (semver.gt(lastVersion, lastPublishedVersion)) {
     `Last version in changelog ${lastVersion} is greater than last published version on npm ${lastPublishedVersion}`,
   );
 
-  // Update version in package.json
-  const packageJson = await Bun.file(`${libraryDir}/package.json`).json();
-  packageJson.version = lastVersion;
-  await Bun.write(
-    `${libraryDir}/package.json`,
-    JSON.stringify(packageJson, null, 2),
-  );
-
   // Grab latest release notes
   const notes = await $`bunx changelog --latest-release-full`
     .cwd(libraryDir)

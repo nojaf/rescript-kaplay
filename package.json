@@ -22,6 +22,7 @@
     "docs:build": "bun run scripts/build-docs.js",
     "watch": "rewatch watch",
     "fmt": "bun scripts/format.js",
+    "set-version": "bun run scripts/set-version.js",
     "dry-release": "bun run scripts/publish.js --dry-run",
     "release": "bun run scripts/publish.js"
   },
