@@ -42,7 +42,7 @@ if (semver.gt(lastVersion, lastPublishedVersion)) {
     console.log(notes);
   } else {
     console.log(`Publishing ${lastVersion} to NPM`);
-    await $`bun publish`.cwd(libraryDir);
+    await $`bun publish --access public`.cwd(libraryDir);
 
     console.log(`Creating GitHub release for ${tag}`);
     console.log(notes);
