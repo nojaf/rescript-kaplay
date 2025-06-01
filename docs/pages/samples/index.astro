@@ -1,6 +1,11 @@
 ---
+import { getCollection } from "astro:content";
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
-import { LinkButton } from "@astrojs/starlight/components";
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+const samples = await getCollection("samples").then((docs) =>
+  docs.sort((a, b) => a.data.id.localeCompare(b.data.id)),
+);
 
 const frontmatter = {
   title: "Samples",
@@ -18,16 +23,14 @@ const frontmatter = {
       >rescript-kaplay</a
     > repository.
   </p>
-  <LinkButton
-    href="#"
-    onclick="window.location.reload(); return false;"
-    variant="secondary">Reload to view the main menu 😅</LinkButton
-  >
-  <canvas id="docs-canvas"></canvas>
-  <script src="../../packages/samples/src/Main.res.mjs"></script>
+  <CardGrid>
+    {
+      samples.map((sample) => (
+        <LinkCard
+          title={sample.data.id}
+          href={`/rescript-kaplay/samples/${sample.data.id}`}
+        />
+      ))
+    }
+  </CardGrid>
 </StarlightPage>
-<style>
-  canvas {
-    min-height: 60vh;
-  }
-</style>

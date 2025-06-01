@@ -176,7 +176,30 @@ const apiDocs = defineCollection({
   },
 });
 
+const samples = defineCollection({
+  schema: z.object({
+    id: z.string(),
+    filePath: z.string(),
+  }),
+  loader: async () => {
+    const inputDir = path.join(__dirname, "../../packages/samples/src");
+    const glob = new Glob(`*.res`);
+
+    const collectionEntries: any[] = [];
+    for await (const file of glob.scan(inputDir)) {
+      const filePath = path.join(inputDir, file.replace(".res", ".res.mjs"));
+      collectionEntries.push({
+        id: path.parse(file).name,
+        filePath,
+      });
+    }
+
+    return collectionEntries;
+  },
+});
+
 export const collections = {
   docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
   apiDocs,
+  samples,
 };

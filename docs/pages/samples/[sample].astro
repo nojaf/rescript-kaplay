@@ -1,0 +1,31 @@
+---
+import { getCollection, getEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const samples = await getCollection("samples").then((docs) =>
+    docs.sort((a, b) => a.data.id.localeCompare(b.data.id)),
+  );
+
+  return samples.map((sample) => {
+    return {
+      params: {
+        sample: sample.id,
+      },
+    };
+  });
+}
+
+const { sample } = Astro.params;
+const sampleEntry = await getEntry("samples", sample);
+---
+
+<html>
+  <head>
+    <title>Rescript Kaplay - {sampleEntry.data.id}</title>
+    <link rel="icon" type="image/png" href="/rescript-kaplay/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <script is:inline type="module" src={sampleEntry.data.filePath}></script>
+  </body>
+</html>
