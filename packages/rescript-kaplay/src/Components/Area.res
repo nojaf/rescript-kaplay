@@ -35,13 +35,25 @@ Register an event runs when clicked
 Register an event runs once when hovered.
  */
   @send
-  external onHoverWithController: (T.t, string, unit => unit) => unit = "onHover"
+  external onHover: (T.t, unit => unit) => unit = "onHover"
 
   /**
 Register an event runs once when hovered.
  */
   @send
-  external onHover: (T.t, string, unit => unit) => KEventController.t = "onHover"
+  external onHoverWithController: (T.t, unit => unit) => KEventController.t = "onHover"
+
+  /**
+ Register an event runs once when unhovered.
+ */
+  @send
+  external onHoverEnd: (T.t, unit => unit) => unit = "onHoverEnd"
+
+  /**
+   Register an event runs once when unhovered.
+ */
+  @send
+  external onHoverEndWithController: (T.t, unit => unit) => KEventController.t = "onHoverEnd"
 
   /**
   Get all collisions currently happening.

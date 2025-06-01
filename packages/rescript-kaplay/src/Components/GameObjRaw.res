@@ -58,4 +58,10 @@ module Comp = (
  */
   @send
   external trigger: (T.t, string, 'arg) => unit = "trigger"
+
+  /**
+ `use(t, comp)` add a game component to this game object.
+ Useful for adding conditional components after creation.
+ */
+  external use: (T.t, comp) => unit = "use"
 }
