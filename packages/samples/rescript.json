@@ -4,6 +4,10 @@
     {
       "dir": "src",
       "subdirs": false
+    },
+    {
+      "dir": "src/aux",
+      "subdirs": false
     }
   ],
   "bs-dependencies": [

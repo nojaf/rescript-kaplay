@@ -1,5 +1,15 @@
 open Kaplay
-open GameContext
+
+@scope("import.meta.env")
+external baseUrl: string = "BASE_URL"
+
+let k = Context.kaplay(
+  ~initOptions={
+    background: "#cefafe",
+    global: false,
+    scale: 1.,
+  },
+)
 
 type gameState = {
   mutable score: int,
@@ -21,6 +31,7 @@ module Sounds = {
 }
 
 module Scenes = {
+  let menu = "menu"
   let game = "flappy-bird"
   let gameOver = "gameOver"
 }
@@ -42,10 +53,11 @@ module Bird = {
   let spriteName = "pidgeotto"
 
   let make = () => {
+    let height = k->Context.height / 15.
     let bird: t =
       k->Context.add([
         k->addPosFromVec2(k->Context.center),
-        k->addSprite(spriteName, ~options={flipX: true}),
+        k->addSprite(spriteName, ~options={flipX: true, height}),
         k->addBody,
         k->addColor(k->Context.colorFromHex("#ffb86a")),
         k->addAnchorCenter,
@@ -76,7 +88,6 @@ module Bird = {
 
     k
     ->Context.onTouchEnd((_, _) => {
-      Console.log("touch end")
       fly(bird)
     })
     ->ignore
@@ -97,7 +108,6 @@ module Pipes = {
   include Color.Comp({type t = t})
   include Outline.Comp({type t = t})
 
-  let width = 50.
   let tag = "pipe"
   let speed = 200.
   /**
@@ -105,6 +115,7 @@ module Pipes = {
  */
   let make = (gap: float) => {
     let x = k->Context.width
+    let width = x / 20.
     let gapHeight = k->Context.height * gap
     let remainingHeight = k->Context.height - gapHeight
     let topPipeHeight = k->Context.randf(0.20, 0.80) *. remainingHeight
@@ -191,12 +202,30 @@ let makeGameState = (): gameState => {
   }
 }
 
-let scene = () => {
+let menu = () => {
+  open Menu
+  make(
+    k,
+    "Flappy Bird",
+    [
+      {label: "Play", action: () => k->Context.go(Scenes.game)},
+      {
+        label: "Play fullscreen",
+        action: () => {
+          k->Context.setFullscreen(true)
+          k->Context.go(Scenes.game)
+        },
+      },
+    ],
+    ~hoverColor="#0069a8",
+  )
+}
+
+let game = () => {
   k->Context.loadSprite(Bird.spriteName, `${baseUrl}/sprites/pidgeotto-rb.png`)
   // Check https://achtaitaipai.github.io/pfxr/ to make your own sounds
   k->Context.loadSound(Sounds.score, `${baseUrl}/sounds/score.wav`)
   k->Context.loadSound(Sounds.die, `${baseUrl}/sounds/die.wav`)
-  k->Context.setBackground(k->Context.colorFromHex("#cefafe"))
 
   k->Context.setGravity(100.)
 
@@ -243,16 +272,20 @@ let scene = () => {
 }
 
 let gameOver = (score: int) => {
-  let centerX = k->Context.center->Vec2.x
-  let y = k->Context.height / 4.
-  let _title = Text.make("Game Over", centerX, y)
-  let _score = Text.make("Score: " ++ Int.toString(score), centerX, y + 100.)
-  let _replay = Text.make("(Click to replay)", centerX, y + 200.)
-
-  k->Context.onClick(() => {
-    k->Context.go(Scenes.game)
-  })
+  open Menu
+  make(
+    k,
+    "Game Over",
+    [
+      {label: "Score: " ++ Int.toString(score)},
+      {label: "Replay", action: () => k->Context.go(Scenes.game)},
+      {label: "Menu", action: () => k->Context.go(Scenes.menu)},
+    ],
+    ~hoverColor="#0069a8",
+  )
 }
 
-k->Context.scene(Scenes.game, scene)
+k->Context.scene(Scenes.menu, menu)
+k->Context.scene(Scenes.game, game)
 k->Context.scene(Scenes.gameOver, gameOver)
+k->Context.go(Scenes.menu)

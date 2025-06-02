@@ -13,10 +13,15 @@
       }
 
       html,
-      body,
-      canvas {
+      body {
         height: 100%;
         overflow: clip;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
     </style>
   </head>
@@ -35,6 +40,6 @@
         abortController.abort();
       }
     </script> -->
-    <script type="module" src="/src/Main.res.mjs"></script>
+    <script type="module" src="/src/FlappyBird.res.mjs"></script>
   </body>
 </html>
