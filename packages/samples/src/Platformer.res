@@ -1,7 +1,62 @@
 open Kaplay
 open Kaplay.Context
 
-open GameContext
+@scope("import.meta.env")
+external baseUrl: string = "BASE_URL"
+
+@scope("window")
+external innerWidth: float = "innerWidth"
+
+@scope("window")
+external innerHeight: float = "innerHeight"
+
+let scale = min(innerWidth / 800., innerHeight / 400.)
+
+let k = Context.kaplay(
+  ~initOptions={
+    //
+    background: "#dff2fe",
+    global: false,
+    width: 800,
+    height: 400,
+    scale,
+  },
+)
+
+module GameBounds = {
+  type t
+
+  include Pos.Comp({type t = t})
+  include Area.Comp({type t = t})
+  include Body.Comp({type t = t})
+
+  let make = () => {
+    let leftPos = k->Context.vec2Zero
+    let _left = k->Context.add([
+      addPosFromVec2(k, leftPos),
+      addArea(
+        k,
+        ~options={
+          shape: k->Context.mathRect(leftPos, 1., k->Context.height),
+        },
+      ),
+      addBody(k, ~options={isStatic: true}),
+    ])
+
+    let rightPos = k->Context.vec2(k->Context.width - 1., 0.)
+
+    let _right = k->Context.add([
+      addPosFromVec2(k, rightPos),
+      addArea(
+        k,
+        ~options={
+          shape: k->Context.mathRect(k->Context.vec2Zero, 1., k->Context.width - 1.),
+        },
+      ),
+      addBody(k, ~options={isStatic: true}),
+    ])
+  }
+}
 
 module Squirtle = {
   type t
@@ -10,6 +65,10 @@ module Squirtle = {
   include Sprite.Comp({type t = t})
   include Area.Comp({type t = t})
   include Body.Comp({type t = t})
+  include OffScreen.Comp({type t = t})
+
+  let tag = "squirtle"
+  let jumpSpeed = 222.
 
   let make = (~x, ~y) => {
     k->Context.add([
@@ -23,7 +82,7 @@ module Squirtle = {
       ),
       addArea(k),
       addBody(k),
-      tag("squirtle"),
+      Context.tag(tag),
     ])
   }
 }
@@ -37,10 +96,10 @@ module Ground = {
   include Color.Comp({type t = t})
   include Body.Comp({type t = t})
 
-  let make = () => {
+  let make = (~x, ~y, ~w, ~h) => {
     k->Context.add([
-      addPos(k, 0., k->height - 24.),
-      addRect(k, k->width, 24.),
+      addPos(k, x, y),
+      addRect(k, w, h),
       addColor(k, k->colorFromHex("#D97744")),
       addArea(k),
       addBody(k, ~options={isStatic: true}),
@@ -48,9 +107,39 @@ module Ground = {
   }
 }
 
+module Coin = {
+  type t
+
+  include GameObjRaw.Comp({type t = t})
+  include Pos.Comp({type t = t})
+  include Area.Comp({type t = t})
+  include Sprite.Comp({type t = t})
+  include Z.Comp({type t = t})
+
+  let height = 20.
+
+  let spawn = (~x, ~y) => {
+    let coin: t = k->Context.add([
+      //
+      addPos(k, x, y),
+      addArea(k),
+      addSprite(k, "coin", ~options={anim: "spin", height}),
+      addZ(k, -1),
+    ])
+
+    coin->onCollide(Squirtle.tag, (_squirtle, _) => {
+      coin->destroy
+      k->Context.play("score")->ignore
+    })
+
+    ()
+  }
+}
+
 let scene = () => {
   k->setGravity(250.)
-  k.debug->Debug.setInspect(true)
+
+  k->Context.loadSound("score", `${baseUrl}/sounds/score.wav`)
 
   let squirtleSpritesheetDimensions = {
     "width": 167.,
@@ -84,13 +173,45 @@ let scene = () => {
     },
   )
 
-  let _ground = Ground.make()
+  let mkCoinQuad = (x: float, w: float) => k->quad(x / 384., 0., w / 384., 1.)
 
-  let squirtle = Squirtle.make(~x=200., ~y=90.)
+  k->loadSprite(
+    "coin",
+    `${baseUrl}/sprites/coin.png`,
+    ~options={
+      frames: [
+        mkCoinQuad(0., 70.),
+        mkCoinQuad(92., 48.),
+        mkCoinQuad(180., 31.),
+        mkCoinQuad(250., 49.),
+        mkCoinQuad(320., 64.),
+      ],
+      anims: dict{
+        "spin": {frames: [0, 1, 2, 3, 4], loop: true},
+      },
+    },
+  )
 
-  k.debug->Debug.log(squirtle->Squirtle.numFrames->Int.toString)
+  let _gameBounds = GameBounds.make()
+  let ground = Ground.make(~x=0., ~y=k->height - 24., ~w=k->width, ~h=24.)
+  let _floatingGround = Ground.make(
+    //
+    ~x=k->Context.width / 3.,
+    ~y=k->height - 4. * 24.,
+    ~w=k->Context.width / 6.,
+    ~h=24.,
+  )
 
+  let squirtle = Squirtle.make(~x=200., ~y=k->Context.height * 0.6)
   squirtle->Squirtle.play("idle")
+
+  Coin.spawn(
+    ~x=k->Context.width / 2.,
+    ~y=k->Context.randf(
+      k->Context.height - Coin.height - Squirtle.jumpSpeed + squirtle->Squirtle.getHeight,
+      k->Context.height - Coin.height - ground->Ground.getHeight,
+    ),
+  )
 
   let speed = 200.
 
@@ -108,7 +229,7 @@ let scene = () => {
         }
       | Space => {
           squirtle->Squirtle.play("jump")
-          squirtle->Squirtle.jump(222.)
+          squirtle->Squirtle.jump(Squirtle.jumpSpeed)
         }
       | _ => ()
       }
@@ -155,8 +276,6 @@ let scene = () => {
 
   k
   ->onClickWithTag("squirtle", squirtle => {
-    //   k.debug->Debug.log("squirtle clicked")
-    // squirtle->GameObj.play("walk")
     let current = squirtle->Squirtle.getFrame
     let max = squirtle->Squirtle.numFrames
     squirtle->Squirtle.setFrame((current + 1) % max)
@@ -164,4 +283,5 @@ let scene = () => {
   ->ignore
 }
 
-let x = 799
+k->Context.scene("game", scene)
+k->Context.go("game")

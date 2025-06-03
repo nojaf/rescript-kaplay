@@ -179,7 +179,7 @@ const apiDocs = defineCollection({
 const samples = defineCollection({
   schema: z.object({
     id: z.string(),
-    filePath: z.string(),
+    source: z.string(),
   }),
   loader: async () => {
     const inputDir = path.join(
@@ -191,9 +191,11 @@ const samples = defineCollection({
     const collectionEntries: any[] = [];
     for await (const file of glob.scan(inputDir)) {
       const filePath = path.join(inputDir, file.replace(".res", ".res.mjs"));
+      const source =
+        await $`bunx esbuild ${filePath} --bundle --minify --format=esm --define:import.meta.env.BASE_URL='"${import.meta.env.BASE_URL}"'`.text();
       collectionEntries.push({
         id: path.parse(file).name,
-        filePath,
+        source,
       });
     }
 

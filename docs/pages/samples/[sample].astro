@@ -26,6 +26,25 @@ const sampleEntry = await getEntry("samples", sample);
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
-    <script is:inline type="module" src={sampleEntry.data.filePath}></script>
+    <script type="module" set:html={sampleEntry.data.source} />
   </body>
 </html>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overflow: clip;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+</style>

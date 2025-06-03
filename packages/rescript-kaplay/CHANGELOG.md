@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Add
+### Added
 - `use` binding for `GameObjRaw`
 - getters and setters for `width` and `height` in `Rect`
 
