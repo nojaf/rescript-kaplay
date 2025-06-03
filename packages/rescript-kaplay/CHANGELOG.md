@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - correct `onHover` bindings for `Area`
 
+### Fixed
+- correct `clampFloat` import
+
 ## [0.1.0] - 2025-05-31
 
 Initial version

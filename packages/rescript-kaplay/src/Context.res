@@ -61,7 +61,7 @@ external getCamPos: t => Vec2.t = "getCamPos"
 external clamp: (t, int, int, int) => int = "clamp"
 
 @send
-external clampFloat: (t, float, float, float) => float = "clampFloat"
+external clampFloat: (t, float, float, float) => float = "clamp"
 
 /**
 `wait(context, seconds, callback)`
@@ -135,13 +135,24 @@ external onKeyReleaseWithController: (t, key => unit) => KEventController.t = "o
 external isKeyDown: (t, key) => bool = "isKeyDown"
 
 @send
-external onTouchStart: (t, (Vec2.t, touch) => unit) => KEventController.t = "onTouchStart"
+external onTouchStart: (t, (Vec2.t, touch) => unit) => unit = "onTouchStart"
 
 @send
-external onTouchMove: (t, (Vec2.t, touch) => unit) => KEventController.t = "onTouchMove"
+external onTouchStartWithController: (t, (Vec2.t, touch) => unit) => KEventController.t =
+  "onTouchStart"
 
 @send
-external onTouchEnd: (t, (Vec2.t, touch) => unit) => KEventController.t = "onTouchEnd"
+external onTouchMove: (t, (Vec2.t, touch) => unit) => unit = "onTouchMove"
+
+@send
+external onTouchMoveWithController: (t, (Vec2.t, touch) => unit) => KEventController.t =
+  "onTouchMove"
+
+@send
+external onTouchEnd: (t, (Vec2.t, touch) => unit) => unit = "onTouchEnd"
+
+@send
+external onTouchEndWithController: (t, (Vec2.t, touch) => unit) => KEventController.t = "onTouchEnd"
 
 @send
 external onUpdate: (t, unit => unit) => unit = "onUpdate"
