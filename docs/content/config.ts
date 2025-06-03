@@ -1,10 +1,18 @@
 import path from "path";
+import { fileURLToPath } from "url";
 import { defineCollection, z } from "astro:content";
 import { docsLoader } from "@astrojs/starlight/loaders";
 import { docsSchema } from "@astrojs/starlight/schema";
 import { Glob, $ } from "bun";
 import { micromark } from "micromark";
-import { rescript_tools_exe } from "rescript/binaries";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const { rescript_tools_exe } = await import(
+  /* @vite-ignore */
+  path.join(__dirname, "../../node_modules/rescript/cli/common/bins.js")
+);
 
 function sanitizeModuleName(name: string) {
   return name
@@ -171,7 +179,7 @@ const apiDocs = defineCollection({
 const samples = defineCollection({
   schema: z.object({
     id: z.string(),
-    source: z.string(),
+    filePath: z.string(),
   }),
   loader: async () => {
     const inputDir = path.join(
@@ -183,12 +191,12 @@ const samples = defineCollection({
     const collectionEntries: any[] = [];
     for await (const file of glob.scan(inputDir)) {
       const filePath = path.join(inputDir, file.replace(".res", ".res.mjs"));
-      const source = await $`bunx esbuild --bundle ${filePath} --minify`.text();
       collectionEntries.push({
         id: path.parse(file).name,
-        source,
+        filePath,
       });
     }
+
     return collectionEntries;
   },
 });

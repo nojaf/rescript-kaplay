@@ -1,5 +1,4 @@
 import { $, Glob } from "bun";
-
 const glob = new Glob("**/src/**/*.res");
 
 await $`bunx prettier --log-level warn --write ./docs package.json astro.config.mjs scripts`;
