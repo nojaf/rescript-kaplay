@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Add
 - `use` binding for `GameObjRaw`
+- getters and setters for `width` and `height` in `Rect`
 
 ### Changed
 - correct `onHover` bindings for `Area`

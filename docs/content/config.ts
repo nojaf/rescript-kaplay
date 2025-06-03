@@ -4,7 +4,7 @@ import { docsLoader } from "@astrojs/starlight/loaders";
 import { docsSchema } from "@astrojs/starlight/schema";
 import { Glob, $ } from "bun";
 import { micromark } from "micromark";
-import { rescript_tools_exe } from "rescript/binaries"
+import { rescript_tools_exe } from "rescript/binaries";
 
 function sanitizeModuleName(name: string) {
   return name
@@ -174,7 +174,10 @@ const samples = defineCollection({
     source: z.string(),
   }),
   loader: async () => {
-    const inputDir = path.join(import.meta.dirname, "../../packages/samples/src");
+    const inputDir = path.join(
+      import.meta.dirname,
+      "../../packages/samples/src",
+    );
     const glob = new Glob(`*.res`);
 
     const collectionEntries: any[] = [];
