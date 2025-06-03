@@ -16,6 +16,7 @@ type kaplayOptions = {
   scale?: float,
   letterbox?: bool,
   canvas?: htmlCanvasElement,
+  crisp?: bool,
 }
 
 @module("kaplay")
