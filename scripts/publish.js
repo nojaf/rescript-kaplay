@@ -44,7 +44,7 @@ if (semver.gt(lastVersion, lastPublishedVersion)) {
 
     console.log(`Creating GitHub release for ${tag}`);
     console.log(notes);
-    await $`gh release create ${tag} --title ${lastVersion} --notes "${notes}" --verify-tag`.cwd(
+    await $`gh release create ${tag} --title ${lastVersion} --notes "${notes}"`.cwd(
       libraryDir,
     );
   }
