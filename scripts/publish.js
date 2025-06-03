@@ -11,11 +11,11 @@ const lastVersion = await $`bunx changelog --latest-release`
   .text()
   .then((v) => v.trim());
 
-const lastPublishedVersion =
-  await $`bunx npm view --json @nojaf/rescript-kaplay`
-    .json()
-    .then((info) => info.versions.findLast((_) => true))
-    .catch((_) => "0.0.0");
+const lastPublishedVersion = await $`bun pm view --json @nojaf/rescript-kaplay`
+  .json()
+  .then((info) => {
+    return info.version;
+  });
 
 if (semver.gt(lastVersion, lastPublishedVersion)) {
   console.log(
