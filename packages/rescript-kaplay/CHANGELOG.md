@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `use` binding for `GameObjRaw`
 - getters and setters for `width` and `height` in `Rect`
 - `crisp` to `Context.kaplayOptions`
+- `paused` and `stop` to `AudioPlay`
 
 ### Changed
 - correct `onHover` bindings for `Area`
