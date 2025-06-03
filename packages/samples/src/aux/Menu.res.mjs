@@ -48,15 +48,12 @@ let Text = {
 };
 
 function make$1(k, title, menuItems, color, hoverColor) {
-  let canvasHeight = k.height();
-  let scaleFactor = canvasHeight / 500;
   let centerX = k.width() / 2;
   let topY = k.height() / 4;
-  let space = 70 * scaleFactor;
-  make(k, title, centerX, topY, "center", color, 36 * scaleFactor, undefined, undefined);
+  make(k, title, centerX, topY, "center", color, 60, undefined, undefined);
   menuItems.forEach((menuItem, index) => {
-    let y = topY + (index + 1 | 0) * space;
-    make(k, menuItem.label, centerX, y, "center", color, 24 * scaleFactor, menuItem.action, Stdlib_Option.flatMap(menuItem.action, param => hoverColor));
+    let y = topY + index * 75 + 100;
+    make(k, menuItem.label, centerX, y, "center", color, 24, menuItem.action, Stdlib_Option.flatMap(menuItem.action, param => hoverColor));
   });
 }
 

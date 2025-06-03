@@ -7,7 +7,10 @@ let k = Context.kaplay(
   ~initOptions={
     background: "#cefafe",
     global: false,
-    scale: 1.,
+    scale,
+    crisp: true,
+    width: 800,
+    height: 400,
   },
 )
 
@@ -53,11 +56,10 @@ module Bird = {
   let spriteName = "pidgeotto"
 
   let make = () => {
-    let height = k->Context.height / 15.
     let bird: t =
       k->Context.add([
         k->addPosFromVec2(k->Context.center),
-        k->addSprite(spriteName, ~options={flipX: true, height}),
+        k->addSprite(spriteName, ~options={flipX: true, height: 35.}),
         k->addBody,
         k->addColor(k->Context.colorFromHex("#ffb86a")),
         k->addAnchorCenter,
@@ -115,7 +117,7 @@ module Pipes = {
  */
   let make = (gap: float) => {
     let x = k->Context.width
-    let width = x / 20.
+    let width = 40.
     let gapHeight = k->Context.height * gap
     let remainingHeight = k->Context.height - gapHeight
     let topPipeHeight = k->Context.randf(0.20, 0.80) *. remainingHeight
@@ -186,7 +188,7 @@ module Text = {
     k->Context.add([
       k->addPos(x, y),
       k->addColor(k->Context.colorFromHex("#024a70")),
-      k->addText(text),
+      k->addText(text, ~options={size: 24.}),
       k->addZ(1),
       k->addAnchor(anchor),
     ])

@@ -1,20 +1,8 @@
 open Kaplay
 open Kaplay.Context
 
-@scope("import.meta.env")
-external baseUrl: string = "BASE_URL"
-
-@scope("window")
-external innerWidth: float = "innerWidth"
-
-@scope("window")
-external innerHeight: float = "innerHeight"
-
-let scale = min(innerWidth / 800., innerHeight / 400.)
-
 let k = Context.kaplay(
   ~initOptions={
-    //
     background: "#dff2fe",
     global: false,
     width: 800,

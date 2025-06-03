@@ -56,24 +56,19 @@ type menuItem = {
 }
 
 let make = (k, title, menuItems, ~color=?, ~hoverColor=?) => {
-  // Calculate font size with this base
-  let baseCanvasHeight = 500.
-  let canvasHeight = k->Context.height
-  let scaleFactor = canvasHeight / baseCanvasHeight
-
   let centerX = k->Context.width / 2.
   let topY = k->Context.height / 4.
-  let space = 70. * scaleFactor
-  let _ = Text.make(k, title, ~x=centerX, ~y=topY, Text.Center, ~size=36. * scaleFactor, ~color?)
+  let space = 75.
+  let _ = Text.make(k, title, ~x=centerX, ~y=topY, Text.Center, ~size=60., ~color?)
   menuItems->Array.forEachWithIndex((menuItem, index) => {
-    let y = topY + (index + 1 :> float) * space
+    let y = topY + (index :> float) * space + 100.
     let _ = Text.make(
       k,
       menuItem.label,
       ~x=centerX,
       ~y,
       Text.Center,
-      ~size=24. * scaleFactor,
+      ~size=24.,
       ~color?,
       ~hoverColor=?menuItem.action->Option.flatMap(_ => hoverColor),
       ~action=?menuItem.action,

@@ -12,5 +12,6 @@
   ],
   "bs-dependencies": [
     "@nojaf/rescript-kaplay"
-  ]
+  ],
+  "bsc-flags":["-open Base"]
 }
