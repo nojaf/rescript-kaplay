@@ -5,7 +5,7 @@
     "packages/*"
   ],
   "dependencies": {
-    "rescript": "https://pkg.pr.new/rescript-lang/rescript@352fa02b9a758e8de80f12d9da363b47b75084e7"
+    "rescript": "https://pkg.pr.new/rescript-lang/rescript@a5b8f7a"
   },
   "devDependencies": {
     "@astrojs/starlight": "^0.34.3",
