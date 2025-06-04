@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Added
 - `mousePos`, `onMousePress`, `onMouseMove` & `onMouseRelease` in `Context`
+- `PatrolComp`
 
 ## [0.2.0] - 2025-06-03
 ### Added
