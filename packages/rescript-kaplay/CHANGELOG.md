@@ -4,8 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [0.2.0] - 2025-06-03
+## [Unreleased]
+### Added
+- `mousePos`, `onMousePress`, `onMouseMove` & `onMouseRelease` in `Context`
 
+## [0.2.0] - 2025-06-03
 ### Added
 - `use` binding for `GameObjRaw`
 - getters and setters for `width` and `height` in `Rect`
@@ -19,5 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - correct `clampFloat` import
 
 ## [0.1.0] - 2025-05-31
-
 Initial version
+
+[Unreleased]: https://example.com/compare/v0.2.0...HEAD
+[0.2.0]: https://example.com/compare/v0.1.0...v0.2.0
+[0.1.0]: https://example.com/releases/tag/v0.1.0

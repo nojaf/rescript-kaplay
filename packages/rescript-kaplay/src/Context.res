@@ -343,3 +343,51 @@ external onWithController: (
   ~tag: string,
   ('t, 'arg) => unit,
 ) => KEventController.t = "on"
+
+/**
+ Get current mouse position (without camera transform).
+ */
+@send
+external mousePos: t => Vec2.t = "mousePos"
+
+/**
+ Register an event that runs whenever user presses a mouse button.
+ */
+@send
+external onMousePress: (t, mouseButton => unit) => unit = "onMousePress"
+
+/**
+ Register an event that runs whenever user presses a mouse button.
+ */
+@send
+external onMousePressWithController: (t, mouseButton => unit) => KEventController.t = "onMousePress"
+
+/**
+`onMouseMove(context, (pos, delta) => unit)`
+
+Register an event that runs whenever user moves the mouse.
+*/
+@send
+external onMouseMove: (t, (Vec2.t, Vec2.t) => unit) => unit = "onMouseMove"
+
+/**
+`onMouseMove(context, (pos, delta) => KEventController.t)`
+
+Register an event that runs whenever user moves the mouse.
+*/
+@send
+external onMouseMoveWithController: (t, (Vec2.t, Vec2.t) => unit) => KEventController.t =
+  "onMouseMove"
+
+/**
+ Register an event that runs whenever user releases a mouse button.
+ */
+@send
+external onMouseRelease: (t, mouseButton => unit) => unit = "onMouseRelease"
+
+/**
+ Register an event that runs whenever user releases a mouse button.
+ */
+@send
+external onMouseReleaseWithController: (t, mouseButton => unit) => KEventController.t =
+  "onMouseRelease"

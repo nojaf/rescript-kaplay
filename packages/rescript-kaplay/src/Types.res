@@ -25,3 +25,11 @@ type component<'t> = {
   destroy?: @this ('t => unit),
   inspect?: @this ('t => unit),
 }
+
+@unboxed
+type mouseButton =
+  | @as("left") Left
+  | @as("right") Right
+  | @as("middle") Middle
+  | @as("back") Back
+  | @as("forward") Forward
