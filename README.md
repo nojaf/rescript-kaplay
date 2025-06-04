@@ -1,3 +1,5 @@
+[![NPM Version](https://img.shields.io/npm/v/@nojaf/rescript-kaplay/latest)](https://www.npmjs.com/package/@nojaf/rescript-kaplay)
+
 # ReScript Bindings for KAPLAY
 
 [ReScript](https://rescript-lang.org/) bindings for [KAPLAY v4000+](https://v4000.kaplayjs.com/)
