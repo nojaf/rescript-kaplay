@@ -38,8 +38,18 @@ module Comp = (
   @send
   external onUpdateWithController: (T.t, unit => unit) => KEventController.t = "onUpdate"
 
+  /**
+  Add a game object from an array of components.
+ */
   @send
-  external add: (T.t, array<comp>) => 't = "add"
+  external addFromComponents: (T.t, array<comp>) => 't = "add"
+
+  /**
+ Add a game object from another game object.
+ Use at your own risk, you need to ensure you do pass an actual game object.
+ */
+  @send
+  external addFromGameObj: (T.t, 't) => 't = "add"
 
   @send
   external destroy: T.t => unit = "destroy"

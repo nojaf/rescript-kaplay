@@ -3,6 +3,9 @@ module Comp = (
     type t
   },
 ) => {
+  /**
+   `addOutline(context, ~width=?, ~color=?, ~opacity=?)` adds an outline to the component.
+   */
   @send
   external addOutline: (
     Context.t,
