@@ -42,14 +42,7 @@ module Comp = (
   Add a game object from an array of components.
  */
   @send
-  external addFromComponents: (T.t, array<comp>) => 't = "add"
-
-  /**
- Add a game object from another game object.
- Use at your own risk, you need to ensure you do pass an actual game object.
- */
-  @send
-  external addFromGameObj: (T.t, 't) => 't = "add"
+  external addChild: (T.t, array<comp>) => 't = "add"
 
   @send
   external destroy: T.t => unit = "destroy"

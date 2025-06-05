@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 ### Changed
-- Split `GameObjRaw.add` to `addFromComponents` and `addFromGameObj`
+- Rename `GameObjRaw.add` to `addChild`
 
 ## [0.3.0] - 2025-06-04
 ### Added
