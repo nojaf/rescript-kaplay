@@ -24,4 +24,4 @@ type t<'gameObj> = {
   drawInspect?:@this ('gameObj => unit),
 }
 
-external create: t<'gameObj> => Types.comp = "%identity"
+external make: t<'gameObj> => Types.comp = "%identity"
