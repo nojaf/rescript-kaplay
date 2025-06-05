@@ -79,5 +79,5 @@ Attaches an event handler which is called when all the animation channels have f
 `addAnimate(context, ~options=?) => comp` to animate properties.
  */
   @send
-  external addAnimate: (Context.t, T.t, ~options: animateCompOpt=?) => Types.comp = "animate"
+  external addAnimate: (Context.t, ~options: animateCompOpt=?) => Types.comp = "animate"
 }
