@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Added
 - `Animate` component
+- `Polygon` component
 
 ### Changed
 - Moved `easeFunc` & `easeMap` to `Types`
