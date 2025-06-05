@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `Animate` component
 - `Polygon` component
 - `CustomComponent` module for [https://v4000.kaplayjs.com/guides/custom_components/](custom components)
+- `drawLines` in `Context`
 
 ### Changed
 - Moved `easeFunc` & `easeMap` to `Types`

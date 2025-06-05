@@ -21,7 +21,7 @@ type t<'gameObj> = {
   /** Debug info for inspect mode. */
   inspect?: @this ('gameObj => Null.t<string>),
   /** Draw debug info in inspect mode */
-  drawInspect?:@this ('gameObj => unit),
+  drawInspect?: @this ('gameObj => unit),
 }
 
 external make: t<'gameObj> => Types.comp = "%identity"

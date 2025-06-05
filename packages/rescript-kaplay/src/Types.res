@@ -48,3 +48,18 @@ type interpolation =
   | @as("linear") Linear
   | @as("slerp") Slerp
   | @as("spline") Spline
+
+/** Line join style for drawing operations */
+@unboxed
+type lineJoin =
+  | @as("none") None
+  | @as("round") Round
+  | @as("bevel") Bevel
+  | @as("miter") Miter
+
+/** Line cap style for drawing operations */
+@unboxed
+type lineCap =
+  | @as("none") None
+  | @as("round") Round
+  | @as("square") Square

@@ -388,3 +388,27 @@ external onMouseRelease: (t, mouseButton => unit) => unit = "onMouseRelease"
 @send
 external onMouseReleaseWithController: (t, mouseButton => unit) => KEventController.t =
   "onMouseRelease"
+
+/** Options for drawing connected lines */
+type drawLinesOptions = {
+  /** The points that should be connected with a line */
+  pts: array<Vec2.t>,
+  pos?: Vec2.t,
+  color?: Types.color,
+  opacity?: float,
+  /** The width, or thickness of the lines */
+  width?: float,
+  /** The radius of each corner. Individual corner radii */
+  radius?: array<float>,
+  /** Line join style (default "none") */
+  join?: lineJoin,
+  /** Line cap style (default "none") */
+  cap?: lineCap,
+  /** Line bias, the position of the line relative to its center (default 0) */
+  bias?: float,
+  /** Maximum miter length, anything longer becomes bevel */
+  miterLimit?: float,
+}
+
+@send
+external drawLines: (t, drawLinesOptions) => unit = "drawLines"
