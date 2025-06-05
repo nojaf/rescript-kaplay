@@ -16,7 +16,7 @@ module Comp = (
     /** Loops, Default is undefined aka infinite */
     loops?: int,
     /** Behavior when reaching the end of the animation. Default is forward. */
-    timeDirection?: Types.timeDirection,
+    direction?: Types.timeDirection,
     /** Interpolation function. Default is linear interpolation */
     interpolation?: Types.interpolation,
     /** Timestamps in percent for the given keys, if omitted, keys are equally spaced. */
