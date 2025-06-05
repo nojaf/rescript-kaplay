@@ -228,7 +228,7 @@ module Tower = {
       target->Charmander.worldPos->Vec2.sub(tower->worldPos)->Vec2.unit->Vec2.scale(bulletSpeed)
     let homingTimer = 0.2
 
-    let bubble: Bubble.t = tower->addFromComponents(Bubble.make(homingVelocity, homingTimer))
+    let bubble: Bubble.t = tower->addChild(Bubble.make(homingVelocity, homingTimer))
 
     bubble
     ->Bubble.onUpdate(() => {

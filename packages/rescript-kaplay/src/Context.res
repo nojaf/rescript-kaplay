@@ -1,5 +1,4 @@
-type easeFunc = float => float
-type easingMap = {linear: easeFunc}
+open Types
 
 type t = {debug: Debug.t, easings: easingMap}
 
@@ -21,8 +20,6 @@ type kaplayOptions = {
 
 @module("kaplay")
 external kaplay: (~initOptions: kaplayOptions=?) => t = "default"
-
-open Types
 
 @send
 external add: (t, array<comp>) => 't = "add"

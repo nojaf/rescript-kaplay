@@ -33,3 +33,18 @@ type mouseButton =
   | @as("middle") Middle
   | @as("back") Back
   | @as("forward") Forward
+
+@unboxed
+type timeDirection =
+  | @as("forward") Forward
+  | @as("reverse") Reverse
+  | @as("ping-pong") PingPong
+
+type easeFunc = float => float
+type easingMap = {linear: easeFunc}
+
+type interpolation =
+  | @as("none") None
+  | @as("linear") Linear
+  | @as("slerp") Slerp
+  | @as("spline") Spline
