@@ -15,17 +15,6 @@ type quad
 
 type touch
 
-/** Definition of a custom component */
-type component<'t> = {
-  id: string,
-  update?: @this ('t => unit),
-  require?: array<string>,
-  add?: @this ('t => unit),
-  draw?: @this ('t => unit),
-  destroy?: @this ('t => unit),
-  inspect?: @this ('t => unit),
-}
-
 @unboxed
 type mouseButton =
   | @as("left") Left
@@ -63,3 +52,42 @@ type lineCap =
   | @as("none") None
   | @as("round") Round
   | @as("square") Square
+
+@unboxed
+type cursor =
+  | @as("auto") Auto
+  | @as("default") Default
+  | @as("none") None
+  | @as("context-menu") ContextMenu
+  | @as("help") Help
+  | @as("pointer") Pointer
+  | @as("progress") Progress
+  | @as("wait") Wait
+  | @as("cell") Cell
+  | @as("crosshair") Crosshair
+  | @as("text") Text
+  | @as("vertical-text") VerticalText
+  | @as("alias") Alias
+  | @as("copy") Copy
+  | @as("move") Move
+  | @as("no-drop") NoDrop
+  | @as("not-allowed") NotAllowed
+  | @as("grab") Grab
+  | @as("grabbing") Grabbing
+  | @as("all-scroll") AllScroll
+  | @as("col-resize") ColResize
+  | @as("row-resize") RowResize
+  | @as("n-resize") NResize
+  | @as("e-resize") EResize
+  | @as("s-resize") SResize
+  | @as("w-resize") WResize
+  | @as("ne-resize") NeResize
+  | @as("nw-resize") NwResize
+  | @as("se-resize") SeResize
+  | @as("sw-resize") SwResize
+  | @as("ew-resize") EwResize
+  | @as("ns-resize") NsResize
+  | @as("nesw-resize") NeswResize
+  | @as("nwse-resize") NwseResize
+  | @as("zoom-int") ZoomIn
+  | @as("zoom-out") ZoomOut

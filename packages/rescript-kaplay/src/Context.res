@@ -273,7 +273,13 @@ external randi: (t, int, int) => int = "randi"
 @send
 external randf: (t, float, float) => float = "rand"
 
-external customComponent: component<'t> => comp = "%identity"
+/** Convert degrees to radians */
+@send
+external deg2rad: (t, float) => float = "deg2rad"
+
+/** Convert radians to degrees */
+@send
+external rad2deg: (t, float) => float = "rad2deg"
 
 type playOptions = {
   /** The start time, in seconds. */
@@ -421,3 +427,9 @@ type drawLinesOptions = {
 
 @send
 external drawLines: (t, drawLinesOptions) => unit = "drawLines"
+
+@send
+external getCursor: t => cursor = "getCursor"
+
+@send
+external setCursor: (t, cursor) => unit = "setCursor"
