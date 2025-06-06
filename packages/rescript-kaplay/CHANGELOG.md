@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `CustomComponent` module for [https://v4000.kaplayjs.com/guides/custom_components/](custom components)
 - `drawLines` in `Context`
 - `addColorFromHex` and `addColorFromRgb` in `Color` component
+- `Shader` component
+- `UVQuad` component
+- `loadShader` and `time` to `Context`
 
 ### Changed
 - Moved `easeFunc` & `easeMap` to `Types`

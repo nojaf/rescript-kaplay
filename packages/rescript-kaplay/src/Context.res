@@ -80,6 +80,10 @@ external waitWithController: (t, float, unit => unit) => TimerController.t = "wa
 @send
 external dt: t => float = "dt"
 
+/** Get the total time in seconds since beginning. */
+@send
+external time: t => float = "time"
+
 @send @scope("Color")
 external colorFromHex: (t, string) => color = "fromHex"
 
@@ -200,6 +204,11 @@ external loadMusic: (t, string, string) => unit = "loadMusic"
 
 @send
 external loadBean: (t, ~name: string=?) => unit = "loadBean"
+/**
+ loadShader(Context.t, name, shader code)
+ */
+@send
+external loadShader: (t, string, ~vert: string=?, ~frag: string=?) => unit = "loadShader"
 
 @get @scope("Vec2")
 external vec2Zero: t => Vec2.t = "ZERO"
