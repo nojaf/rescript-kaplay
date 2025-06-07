@@ -107,7 +107,7 @@ module Charmander = {
     }
 
     charmander->onHurt(_ => {
-      let tc = k->tween(
+      let tc = k->tweenWithController(
         ~from=1.,
         ~to_=0.5,
         ~duration=0.1,
