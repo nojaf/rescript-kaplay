@@ -243,6 +243,21 @@ external width: t => float = "width"
 @send
 external height: t => float = "height"
 
+/**
+ Transform a point from screen position (relative to the screen) to world position (relative to the root).
+
+ ```res
+ let mousePos = k->Context.mousePos
+ let worldPos = k->Context.toWorld(mousePos)
+ ```
+ */
+@send
+external toWorld: (t, Vec2.t) => Vec2.t = "toWorld"
+
+/** Transform a point from world position (relative to the root) to screen position (relative to the screen). */
+@send
+external toScreen: (t, Vec2.t) => Vec2.t = "toScreen"
+
 /** Run the function every n seconds. */
 @send
 external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) => TimerController.t =

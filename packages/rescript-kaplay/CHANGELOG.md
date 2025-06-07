@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - `deg2rad` and `rad2deg` in `Context`
 - `tweenWithController` in `Context`
+- `toWorld` and `toScreen` in `Context`
 
 ### Removed
 - `Types.component`, use `CustomComponent.t`
