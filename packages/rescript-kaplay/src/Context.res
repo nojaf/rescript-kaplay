@@ -290,7 +290,7 @@ type playOptions = {
 external play: (t, string, ~options: playOptions=?) => AudioPlay.t = "play"
 
 /** 
-`tween(context, from, to, duration in seconds, setValue, easeFunc=?)` 
+`tween(context, from, to, duration in seconds, setValue, easeFunc=?) => unit` 
 
 Useful to change a property of a Game Object over time.
 ```ReScript
@@ -305,6 +305,30 @@ k
 */
 @send
 external tween: (
+  t,
+  ~from: 'v,
+  ~to_: 'v,
+  ~duration: float,
+  ~setValue: 'v => unit,
+  ~easeFunc: easeFunc=?,
+) => unit = "tween"
+
+/** 
+`tween(context, from, to, duration in seconds, setValue, easeFunc=?) => TweenController.t` 
+
+Useful to change a property of a Game Object over time.
+```ReScript
+k
+->Context.tween(
+  ~from=-15.,
+  ~to_=0.,
+  ~duration=0.5,
+  ~setValue=Bird.setAngle(bird, ...),
+)
+```
+*/
+@send
+external tweenWithController: (
   t,
   ~from: 'v,
   ~to_: 'v,

@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Added
 - `deg2rad` and `rad2deg` in `Context`
+- `tweenWithController` in `Context`
 
 ### Removed
 - `Types.component`, use `CustomComponent.t`
+
 
 ## [0.5.0] - 2025-06-06
 ### Added
