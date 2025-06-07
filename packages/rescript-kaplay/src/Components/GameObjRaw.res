@@ -8,6 +8,14 @@ module Comp = (
   @get
   external getId: T.t => int = "id"
 
+  /** Get all children game objects. Be careful with the generic type you use. */
+  @get
+  external getChildren: T.t => array<'child> = "children"
+
+  /** Remove all children. */
+  @send
+  external removeAll: T.t => unit = "removeAll"
+
   /**
    Check if game object has a certain component.
    */

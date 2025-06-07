@@ -6,13 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 ### Added
-- `deg2rad` and `rad2deg` in `Context`
-- `tweenWithController` in `Context`
-- `toWorld` and `toScreen` in `Context`
+- `deg2rad` and `rad2deg` to `Context`
+- `tweenWithController` to `Context`
+- `toWorld` and `toScreen` to `Context`
+- `getChildren` and `removeAll` to `GameObjRaw`
 
 ### Removed
 - `Types.component`, use `CustomComponent.t`
-
 
 ## [0.5.0] - 2025-06-06
 ### Added
