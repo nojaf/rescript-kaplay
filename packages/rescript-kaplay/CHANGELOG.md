@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `tweenWithController` to `Context`
 - `toWorld` and `toScreen` to `Context`
 - `getChildren` and `removeAll` to `GameObjRaw`
+- `Timer` component
+- `animation` to `Animate`
 
 ### Removed
 - `Types.component`, use `CustomComponent.t`

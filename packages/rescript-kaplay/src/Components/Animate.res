@@ -10,6 +10,15 @@ module Comp = (
     relative?: bool,
   }
 
+  type animation = {
+    /** Pauses playing the animation */
+    mutable paused: bool,
+    /** Move the animation to a specific point in time */
+    seek: float => unit,
+    /** Returns the duration of the animation */
+    duration: float,
+  }
+
   type animateOpt = {
     /** Duration of the animation in seconds */
     duration: float,
@@ -74,6 +83,9 @@ Attaches an event handler which is called when all the animation channels have f
   @send
   external onAnimateChannelFinishedWithController: (T.t, string => unit) => KEventController.t =
     "onAnimateChannelFinished"
+
+  @get
+  external getAnimation: T.t => animation = "animation"
 
   /**
 `addAnimate(context, ~options=?) => comp` to animate properties.
