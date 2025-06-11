@@ -22,4 +22,7 @@ module Comp = (
 
   @send
   external addAnchorBottomLeft: (Context.t, @as("botleft") _) => Types.comp = "anchor"
+
+  @send
+  external addAnchorFromVec2: (Context.t, Vec2.t) => Types.comp = "anchor"
 }
