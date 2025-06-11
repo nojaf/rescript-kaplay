@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+### Changed
+- `width` to float for `Outline`
+
 ## [0.6.0] - 2025-06-10
 ### Added
 - `deg2rad` and `rad2deg` to `Context`
@@ -57,4 +61,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [0.1.0] - 2025-05-31
 Initial version
-

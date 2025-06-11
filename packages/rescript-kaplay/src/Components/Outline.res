@@ -9,7 +9,7 @@ module Comp = (
   @send
   external addOutline: (
     Context.t,
-    ~width: int=?,
+    ~width: float=?,
     ~color: Types.color=?,
     ~opacity: float=?,
   ) => Types.comp = "outline"
