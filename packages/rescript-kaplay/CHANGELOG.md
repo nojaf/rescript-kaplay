@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Added
 - `addAnchorFromVec2` to `Anchor`
+- `colorFromRGB` to `Context`
 
 ### Changed
 - `width` to float for `Outline`

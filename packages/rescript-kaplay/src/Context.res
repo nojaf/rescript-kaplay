@@ -87,6 +87,12 @@ external time: t => float = "time"
 @send @scope("Color")
 external colorFromHex: (t, string) => color = "fromHex"
 
+let colorFromRGB: (t, int, int, int) => color = %raw(`
+function (k, r, g, b) {
+    return new k.Color(r,g,b);
+}
+`)
+
 @send
 external onClick: (t, unit => unit) => unit = "onClick"
 
