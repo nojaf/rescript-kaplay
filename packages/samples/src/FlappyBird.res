@@ -131,7 +131,7 @@ module Pipes = {
         k->addMove(k->Context.vec2Left, speed),
         k->addOffScreen(~options={destroy: true}),
         k->addArea,
-        k->addOutline(~width=3, ~color=k->Context.colorFromHex("#404040")),
+        k->addOutline(~width=3., ~color=k->Context.colorFromHex("#404040")),
         Context.tag(tag),
       ])
 
@@ -142,7 +142,7 @@ module Pipes = {
         k->addColor(k->Context.colorFromHex("#bbf451")),
         k->addMove(k->Context.vec2Left, speed),
         k->addArea,
-        k->addOutline(~width=3, ~color=k->Context.colorFromHex("#404040")),
+        k->addOutline(~width=3., ~color=k->Context.colorFromHex("#404040")),
         Context.tag(tag),
       ])
 

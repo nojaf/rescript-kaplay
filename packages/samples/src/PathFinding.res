@@ -27,7 +27,7 @@ module EmptyTile = {
       //
       addRect(k, tileSize, tileSize),
       addTile(k),
-      addOutline(k, ~width=1, ~color=k->colorFromHex("#000000")),
+      addOutline(k, ~width=1., ~color=k->colorFromHex("#000000")),
     ]
   }
 }
@@ -44,7 +44,7 @@ module WallTile = {
     [
       addRect(k, tileSize, tileSize),
       addTile(k),
-      addOutline(k, ~width=1, ~color=k->colorFromHex("#0AC0B0"), ~opacity=1.),
+      addOutline(k, ~width=1., ~color=k->colorFromHex("#0AC0B0"), ~opacity=1.),
       addColor(k, k->colorFromHex("#46ecd5")),
     ]
   }
