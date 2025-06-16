@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Added
 - Add `onDraw` and `drawXYZ` to `Context`
+- `Rect`, `Circle` and `Polygon` to `Math`
+- More `keys` in `Types`
+- `screenPos` to `Pos`
+
+
+### Removed
+- `Context.mathRect`, use `Math.Rect.make` instead
+- `Context.mathCircle`, use `Math.Circle.make` instead
+- `Context.mathPolygon`, use `Math.Polygon.make` instead
 
 ## [0.7.0] - 2025-06-16
 ### Added

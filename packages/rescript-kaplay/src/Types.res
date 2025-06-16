@@ -2,12 +2,81 @@ type comp
 
 @unboxed
 type key =
+  | @as("f1") F1
+  | @as("f2") F2
+  | @as("f3") F3
+  | @as("f4") F4
+  | @as("f5") F5
+  | @as("f6") F6
+  | @as("f7") F7
+  | @as("f8") F8
+  | @as("f9") F9
+  | @as("f10") F10
+  | @as("f11") F11
+  | @as("f12") F12
+  | @as("`") Backtick
+  | @as("1") One
+  | @as("2") Two
+  | @as("3") Three
+  | @as("4") Four
+  | @as("5") Five
+  | @as("6") Six
+  | @as("7") Seven
+  | @as("8") Eight
+  | @as("9") Nine
+  | @as("0") Zero
+  | @as("-") Minus
+  | @as("+") Plus
+  | @as("=") Equals
+  | @as("q") Q
+  | @as("w") W
+  | @as("e") E
+  | @as("r") R
+  | @as("t") T
+  | @as("y") Y
+  | @as("u") U
+  | @as("i") I
+  | @as("o") O
+  | @as("p") P
+  | @as("[") LeftBracket
+  | @as("]") RightBracket
+  | @as("\\") BackwardSlash
+  | @as("a") A
+  | @as("s") S
+  | @as("d") D
+  | @as("f") F
+  | @as("g") G
+  | @as("h") H
+  | @as("j") J
+  | @as("k") K
+  | @as("l") L
+  | @as(";") Semicolon
+  | @as("'") Quote
+  | @as("z") Z
+  | @as("x") X
+  | @as("c") C
+  | @as("v") V
+  | @as("b") B
+  | @as("n") N
+  | @as("m") M
+  | @as(",") Comma
+  | @as(".") Period
+  | @as("/") ForwardSlash
+  | @as("escape") Escape
+  | @as("backspace") Backspace
+  | @as("enter") Enter
+  | @as("tab") Tab
+  | @as("control") Control
+  | @as("alt") Alt
+  | @as("meta") Meta
+  | @as("space") Space
+  | @as(" ") SingleSpace
   | @as("left") Left
   | @as("right") Right
   | @as("up") Up
   | @as("down") Down
-  | @as("space") Space
-  | @as("enter") Enter
+  | @as("shift") Shift
+  | @as("string") String(string)
 
 type color
 
@@ -100,15 +169,20 @@ type blendMode =
   | @as("overlay") Overlay
 
 type outline = {
-  width?: float,
-  color?: color,
-  opacity?: float,
-  join?: lineJoin,
-  miterLimit?: float,
-  cap?: lineCap,
+  mutable width?: float,
+  mutable color?: color,
+  mutable opacity?: float,
+  mutable join?: lineJoin,
+  mutable miterLimit?: float,
+  mutable cap?: lineCap,
 }
 
 type textAlign =
   | @as("left") Left
   | @as("center") Center
   | @as("right") Right
+
+type shape
+type rect
+type circle
+type polygon

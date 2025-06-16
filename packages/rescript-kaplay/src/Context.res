@@ -297,25 +297,6 @@ external toScreen: (t, Vec2.t) => Vec2.t = "toScreen"
 external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) => TimerController.t =
   "loop"
 
-let mathRect: (t, Vec2.t, float, float) => Math.Shape.t = %raw(`
-function (k, pos, width, height) {
-    return new k.Rect(pos, width, height);
-}
-`)
-
-/** center, radius */
-let mathCircle: (t, Vec2.t, float) => Math.Shape.t = %raw(`
-function (k, center, radius) {
-    return new k.Circle(center, radius);
-}
-`)
-
-let mathPolygon: (t, array<Vec2.t>) => Math.Shape.t = %raw(`
-function (k,  points) {
-    return new k.Polygon(points);
-}
-`)
-
 @send
 external randi: (t, int, int) => int = "randi"
 

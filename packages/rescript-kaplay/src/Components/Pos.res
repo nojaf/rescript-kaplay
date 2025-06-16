@@ -12,6 +12,12 @@ module Comp = (
   @send
   external setWorldPos: (T.t, Vec2.t) => unit = "worldPos"
 
+  @send
+  external screenPos: T.t => Vec2.t = "screenPos"
+
+  @send
+  external setScreenPos: (T.t, Vec2.t) => unit = "screenPos"
+
   @get
   external getPos: T.t => Vec2.t = "pos"
 

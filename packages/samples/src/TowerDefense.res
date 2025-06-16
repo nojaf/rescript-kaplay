@@ -9,7 +9,7 @@ module Tags = {
   let solidHeart = "solid-heart"
 }
 
-let circlePolygon = (center: Vec2.t, radius: float, ~segments: int=32): Kaplay.Math.Shape.t => {
+let circlePolygon = (center: Vec2.t, radius: float, ~segments: int=32): Types.shape => {
   let points = Array.fromInitializer(~length=segments, idx => {
     let theta = Int.toFloat(idx) / Int.toFloat(segments) * 2. * Stdlib_Math.Constants.pi
     k->vec2(
@@ -18,7 +18,7 @@ let circlePolygon = (center: Vec2.t, radius: float, ~segments: int=32): Kaplay.M
       center.y + Stdlib_Math.sin(theta) * radius,
     )
   })
-  mathPolygon(k, points)
+  Math.Polygon.make(k, points)->Math.Polygon.asShape
 }
 
 @send

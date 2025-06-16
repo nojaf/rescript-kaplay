@@ -1,5 +1,6 @@
 open Kaplay
-open Kaplay.Context
+
+module Rectangle = Kaplay.Math.Rect
 
 let k = Context.kaplay(
   ~initOptions={
@@ -25,7 +26,7 @@ module GameBounds = {
       addArea(
         k,
         ~options={
-          shape: k->Context.mathRect(leftPos, 1., k->Context.height),
+          shape: k->Rectangle.make(leftPos, 1., k->Context.height)->Rectangle.asShape,
         },
       ),
       addBody(k, ~options={isStatic: true}),
@@ -38,7 +39,9 @@ module GameBounds = {
       addArea(
         k,
         ~options={
-          shape: k->Context.mathRect(k->Context.vec2Zero, 1., k->Context.width - 1.),
+          shape: k
+          ->Rectangle.make(k->Context.vec2Zero, 1., k->Context.width - 1.)
+          ->Rectangle.asShape,
         },
       ),
       addBody(k, ~options={isStatic: true}),
@@ -88,7 +91,7 @@ module Ground = {
     k->Context.add([
       addPos(k, x, y),
       addRect(k, w, h),
-      addColor(k, k->colorFromHex("#D97744")),
+      addColor(k, k->Context.colorFromHex("#D97744")),
       addArea(k),
       addBody(k, ~options={isStatic: true}),
     ])
@@ -125,7 +128,7 @@ module Coin = {
 }
 
 let scene = () => {
-  k->setGravity(250.)
+  k->Context.setGravity(250.)
 
   k->Context.loadSound("score", `${baseUrl}/sounds/score.wav`)
 
@@ -135,14 +138,14 @@ let scene = () => {
   }
 
   let mkSquirtleQuad = (x: float, y: float, w: float, h: float) =>
-    k->quad(
+    k->Context.quad(
       x / squirtleSpritesheetDimensions["width"],
       y / squirtleSpritesheetDimensions["height"],
       w / squirtleSpritesheetDimensions["width"],
       h / squirtleSpritesheetDimensions["height"],
     )
 
-  k->loadSprite(
+  k->Context.loadSprite(
     "squirtle",
     `${baseUrl}/sprites/squirtle.png`,
     ~options={
@@ -154,16 +157,16 @@ let scene = () => {
         mkSquirtleQuad(137., 0., 30., 39.),
       ],
       anims: dict{
-        "idle": ({frames: [0]}: loadSpriteAnimation),
+        "idle": ({frames: [0]}: Context.loadSpriteAnimation),
         "walk": {frames: [1, 2, 3, 2], loop: true, speed: 12.},
         "jump": {frames: [4], loop: false},
       },
     },
   )
 
-  let mkCoinQuad = (x: float, w: float) => k->quad(x / 384., 0., w / 384., 1.)
+  let mkCoinQuad = (x: float, w: float) => k->Context.quad(x / 384., 0., w / 384., 1.)
 
-  k->loadSprite(
+  k->Context.loadSprite(
     "coin",
     `${baseUrl}/sprites/coin.png`,
     ~options={
@@ -175,17 +178,17 @@ let scene = () => {
         mkCoinQuad(320., 64.),
       ],
       anims: dict{
-        "spin": {frames: [0, 1, 2, 3, 4], loop: true},
+        "spin": {Context.frames: [0, 1, 2, 3, 4], loop: true},
       },
     },
   )
 
   let _gameBounds = GameBounds.make()
-  let ground = Ground.make(~x=0., ~y=k->height - 24., ~w=k->width, ~h=24.)
+  let ground = Ground.make(~x=0., ~y=k->Context.height - 24., ~w=k->Context.width, ~h=24.)
   let _floatingGround = Ground.make(
     //
     ~x=k->Context.width / 3.,
-    ~y=k->height - 4. * 24.,
+    ~y=k->Context.height - 4. * 24.,
     ~w=k->Context.width / 6.,
     ~h=24.,
   )
@@ -204,7 +207,7 @@ let scene = () => {
   let speed = 200.
 
   k
-  ->onKeyPress(key => {
+  ->Context.onKeyPress(key => {
     if squirtle->Squirtle.isGrounded {
       switch key {
       | Left => {
@@ -232,17 +235,17 @@ let scene = () => {
   ->ignore
 
   k
-  ->onKeyDown(key => {
+  ->Context.onKeyDown(key => {
     switch key {
-    | Left => squirtle->Squirtle.move(k->vec2(-speed, 0.))
-    | Right => squirtle->Squirtle.move(k->vec2(speed, 0.))
+    | Left => squirtle->Squirtle.move(k->Context.vec2(-speed, 0.))
+    | Right => squirtle->Squirtle.move(k->Context.vec2(speed, 0.))
     | _ => ()
     }
   })
   ->ignore
 
   k
-  ->onKeyRelease(key => {
+  ->Context.onKeyRelease(key => {
     switch key {
     | Left
     | Right if squirtle->Squirtle.isGrounded =>
@@ -254,7 +257,7 @@ let scene = () => {
 
   squirtle
   ->Squirtle.onGround(() => {
-    if k->isKeyDown(Left) || k->isKeyDown(Right) {
+    if k->Context.isKeyDown(Left) || k->Context.isKeyDown(Right) {
       squirtle->Squirtle.play("walk")
     } else {
       squirtle->Squirtle.play("idle")
@@ -263,7 +266,7 @@ let scene = () => {
   ->ignore
 
   k
-  ->onClickWithTag("squirtle", squirtle => {
+  ->Context.onClickWithTag("squirtle", squirtle => {
     let current = squirtle->Squirtle.getFrame
     let max = squirtle->Squirtle.numFrames
     squirtle->Squirtle.setFrame((current + 1) % max)

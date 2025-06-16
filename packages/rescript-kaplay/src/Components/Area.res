@@ -63,7 +63,7 @@ Register an event runs once when hovered.
 
   type areaCompOptions = {
     /** Only Rect and Polygon are supported */
-    shape?: Math.Shape.t,
+    shape?: Types.shape,
     offset?: Vec2.t,
     scale?: float,
   }

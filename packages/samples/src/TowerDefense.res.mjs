@@ -6,6 +6,7 @@ import * as Z$Kaplay from "@nojaf/rescript-kaplay/src/Components/Z.res.mjs";
 import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs";
 import * as Body$Kaplay from "@nojaf/rescript-kaplay/src/Components/Body.res.mjs";
+import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Move$Kaplay from "@nojaf/rescript-kaplay/src/Components/Move.res.mjs";
 import * as Rect$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rect.res.mjs";
 import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.mjs";
@@ -14,7 +15,6 @@ import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res
 import * as Circle$Kaplay from "@nojaf/rescript-kaplay/src/Components/Circle.res.mjs";
 import * as Health$Kaplay from "@nojaf/rescript-kaplay/src/Components/Health.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
-import * as Context$Kaplay from "@nojaf/rescript-kaplay/src/Context.res.mjs";
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as OffScreen$Kaplay from "@nojaf/rescript-kaplay/src/Components/OffScreen.res.mjs";
 import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
@@ -45,7 +45,7 @@ function circlePolygon(center, radius, segmentsOpt) {
     let theta = idx / segments * 2 * Math.PI;
     return k.vec2(center.x + Math.cos(theta) * radius, center.y + Math.sin(theta) * radius);
   });
-  return Context$Kaplay.mathPolygon(k, points);
+  return Math$Kaplay.Polygon.make(k, points);
 }
 
 function tryHeadOfMap(map) {

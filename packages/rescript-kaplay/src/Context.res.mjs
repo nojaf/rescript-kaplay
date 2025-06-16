@@ -5,25 +5,10 @@ let colorFromRGB = (function (k, r, g, b) {
     return new k.Color(r,g,b);
 });
 
-let mathRect = (function (k, pos, width, height) {
-    return new k.Rect(pos, width, height);
-});
-
-let mathCircle = (function (k, center, radius) {
-    return new k.Circle(center, radius);
-});
-
-let mathPolygon = (function (k,  points) {
-    return new k.Polygon(points);
-});
-
 let Level = {};
 
 export {
   colorFromRGB,
-  mathRect,
-  mathCircle,
-  mathPolygon,
   Level,
 }
 /* No side effect */

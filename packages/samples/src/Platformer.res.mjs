@@ -6,11 +6,11 @@ import * as Z$Kaplay from "@nojaf/rescript-kaplay/src/Components/Z.res.mjs";
 import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs";
 import * as Body$Kaplay from "@nojaf/rescript-kaplay/src/Components/Body.res.mjs";
+import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Rect$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rect.res.mjs";
 import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.mjs";
 import * as Primitive_int from "rescript/lib/es6/Primitive_int.js";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
-import * as Context$Kaplay from "@nojaf/rescript-kaplay/src/Context.res.mjs";
 import * as OffScreen$Kaplay from "@nojaf/rescript-kaplay/src/Components/OffScreen.res.mjs";
 import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
@@ -34,7 +34,7 @@ function make() {
   k.add([
     k.pos(leftPos),
     k.area({
-      shape: Primitive_option.some(Context$Kaplay.mathRect(k, leftPos, 1, k.height()))
+      shape: Primitive_option.some(Math$Kaplay.Rect.make(k, leftPos, 1, k.height()))
     }),
     k.body({
       isStatic: true
@@ -44,7 +44,7 @@ function make() {
   k.add([
     k.pos(rightPos),
     k.area({
-      shape: Primitive_option.some(Context$Kaplay.mathRect(k, k.Vec2.ZERO, 1, k.width() - 1))
+      shape: Primitive_option.some(Math$Kaplay.Rect.make(k, k.Vec2.ZERO, 1, k.width() - 1))
     }),
     k.body({
       isStatic: true
@@ -209,7 +209,14 @@ function scene() {
   spawn(k.width() / 2, k.rand(k.height() - 20 - 222 + squirtle.height, k.height() - 20 - ground.height));
   k.onKeyPress(key => {
     if (squirtle.isGrounded()) {
+      if (key !== "f1" && key !== "shift" && key !== "f2" && key !== "down" && key !== "f3" && key !== "up" && key !== "f4" && key !== "right" && key !== "f5" && key !== "left" && key !== "f6" && key !== " " && key !== "f7" && key !== "space" && key !== "f8" && key !== "meta" && key !== "f9" && key !== "alt" && key !== "f10" && key !== "control" && key !== "f11" && key !== "tab" && key !== "f12" && key !== "enter" && key !== "`" && key !== "backspace" && key !== "1" && key !== "escape" && key !== "2" && key !== "/" && key !== "3" && key !== "." && key !== "4" && key !== "," && key !== "5" && key !== "m" && key !== "6" && key !== "n" && key !== "7" && key !== "b" && key !== "8" && key !== "v" && key !== "9" && key !== "c" && key !== "0" && key !== "x" && key !== "-" && key !== "z" && key !== "+" && key !== "'" && key !== "=" && key !== ";" && key !== "q" && key !== "l" && key !== "w" && key !== "k" && key !== "e" && key !== "j" && key !== "r" && key !== "h" && key !== "t" && key !== "g" && key !== "y" && key !== "f" && key !== "u" && key !== "d" && key !== "i" && key !== "s" && key !== "o" && key !== "a" && key !== "p" && key !== "\\" && key !== "[" && key !== "]") {
+        return;
+      }
       switch (key) {
+        case "space" :
+          squirtle.play("jump");
+          squirtle.jump(222);
+          return;
         case "left" :
           squirtle.play("walk");
           squirtle.flipX = false;
@@ -218,14 +225,13 @@ function scene() {
           squirtle.play("walk");
           squirtle.flipX = true;
           return;
-        case "space" :
-          squirtle.play("jump");
-          squirtle.jump(222);
-          return;
         default:
           return;
       }
     } else {
+      if (key !== "f1" && key !== "shift" && key !== "f2" && key !== "down" && key !== "f3" && key !== "up" && key !== "f4" && key !== "right" && key !== "f5" && key !== "left" && key !== "f6" && key !== " " && key !== "f7" && key !== "space" && key !== "f8" && key !== "meta" && key !== "f9" && key !== "alt" && key !== "f10" && key !== "control" && key !== "f11" && key !== "tab" && key !== "f12" && key !== "enter" && key !== "`" && key !== "backspace" && key !== "1" && key !== "escape" && key !== "2" && key !== "/" && key !== "3" && key !== "." && key !== "4" && key !== "," && key !== "5" && key !== "m" && key !== "6" && key !== "n" && key !== "7" && key !== "b" && key !== "8" && key !== "v" && key !== "9" && key !== "c" && key !== "0" && key !== "x" && key !== "-" && key !== "z" && key !== "+" && key !== "'" && key !== "=" && key !== ";" && key !== "q" && key !== "l" && key !== "w" && key !== "k" && key !== "e" && key !== "j" && key !== "r" && key !== "h" && key !== "t" && key !== "g" && key !== "y" && key !== "f" && key !== "u" && key !== "d" && key !== "i" && key !== "s" && key !== "o" && key !== "a" && key !== "p" && key !== "\\" && key !== "[" && key !== "]") {
+        return;
+      }
       switch (key) {
         case "left" :
           squirtle.flipX = false;
@@ -239,6 +245,9 @@ function scene() {
     }
   });
   k.onKeyDown(key => {
+    if (key !== "f1" && key !== "shift" && key !== "f2" && key !== "down" && key !== "f3" && key !== "up" && key !== "f4" && key !== "right" && key !== "f5" && key !== "left" && key !== "f6" && key !== " " && key !== "f7" && key !== "space" && key !== "f8" && key !== "meta" && key !== "f9" && key !== "alt" && key !== "f10" && key !== "control" && key !== "f11" && key !== "tab" && key !== "f12" && key !== "enter" && key !== "`" && key !== "backspace" && key !== "1" && key !== "escape" && key !== "2" && key !== "/" && key !== "3" && key !== "." && key !== "4" && key !== "," && key !== "5" && key !== "m" && key !== "6" && key !== "n" && key !== "7" && key !== "b" && key !== "8" && key !== "v" && key !== "9" && key !== "c" && key !== "0" && key !== "x" && key !== "-" && key !== "z" && key !== "+" && key !== "'" && key !== "=" && key !== ";" && key !== "q" && key !== "l" && key !== "w" && key !== "k" && key !== "e" && key !== "j" && key !== "r" && key !== "h" && key !== "t" && key !== "g" && key !== "y" && key !== "f" && key !== "u" && key !== "d" && key !== "i" && key !== "s" && key !== "o" && key !== "a" && key !== "p" && key !== "\\" && key !== "[" && key !== "]") {
+      return;
+    }
     switch (key) {
       case "left" :
         squirtle.move(k.vec2(- 200, 0));
@@ -251,6 +260,9 @@ function scene() {
     }
   });
   k.onKeyRelease(key => {
+    if (key !== "f1" && key !== "shift" && key !== "f2" && key !== "down" && key !== "f3" && key !== "up" && key !== "f4" && key !== "right" && key !== "f5" && key !== "left" && key !== "f6" && key !== " " && key !== "f7" && key !== "space" && key !== "f8" && key !== "meta" && key !== "f9" && key !== "alt" && key !== "f10" && key !== "control" && key !== "f11" && key !== "tab" && key !== "f12" && key !== "enter" && key !== "`" && key !== "backspace" && key !== "1" && key !== "escape" && key !== "2" && key !== "/" && key !== "3" && key !== "." && key !== "4" && key !== "," && key !== "5" && key !== "m" && key !== "6" && key !== "n" && key !== "7" && key !== "b" && key !== "8" && key !== "v" && key !== "9" && key !== "c" && key !== "0" && key !== "x" && key !== "-" && key !== "z" && key !== "+" && key !== "'" && key !== "=" && key !== ";" && key !== "q" && key !== "l" && key !== "w" && key !== "k" && key !== "e" && key !== "j" && key !== "r" && key !== "h" && key !== "t" && key !== "g" && key !== "y" && key !== "f" && key !== "u" && key !== "d" && key !== "i" && key !== "s" && key !== "o" && key !== "a" && key !== "p" && key !== "\\" && key !== "[" && key !== "]") {
+      return;
+    }
     switch (key) {
       case "left" :
       case "right" :
@@ -282,7 +294,10 @@ k.scene("game", scene);
 
 k.go("game");
 
+let Rectangle;
+
 export {
+  Rectangle,
   k,
   GameBounds,
   Squirtle,
