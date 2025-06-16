@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - `addAnchorFromVec2` to `Anchor`
 - `colorFromRGB` to `Context`
+- `getSprite` to `Context`
+- `spriteAtlasPadding` to `kaplayOptions`
 
 ### Changed
 - `width` to float for `Outline`

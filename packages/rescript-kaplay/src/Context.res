@@ -16,6 +16,9 @@ type kaplayOptions = {
   letterbox?: bool,
   canvas?: htmlCanvasElement,
   crisp?: bool,
+  pixelDensity?: float,
+  /** Padding used when adding sprites to texture atlas. */
+  spriteAtlasPadding?: int,
 }
 
 @module("kaplay")
@@ -195,10 +198,14 @@ type loadSpriteOptions = {
   anims?: Dict.t<loadSpriteAnimation>,
   anim?: string,
   frames?: array<quad>,
+  singular?: bool,
 }
 
 @send
 external loadSprite: (t, string, string, ~options: loadSpriteOptions=?) => unit = "loadSprite"
+
+@send
+external getSprite: (t, string) => Asset.t<SpriteData.t> = "getSprite"
 
 /** Use for short sound effects, use `loadMusic` for background music. */
 @send
@@ -210,6 +217,7 @@ external loadMusic: (t, string, string) => unit = "loadMusic"
 
 @send
 external loadBean: (t, ~name: string=?) => unit = "loadBean"
+
 /**
  loadShader(Context.t, name, shader code)
  */
