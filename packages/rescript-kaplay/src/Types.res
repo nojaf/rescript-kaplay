@@ -91,3 +91,24 @@ type cursor =
   | @as("nwse-resize") NwseResize
   | @as("zoom-int") ZoomIn
   | @as("zoom-out") ZoomOut
+
+type blendMode =
+  | @as("normal") Normal
+  | @as("add") Add
+  | @as("multiply") Multiply
+  | @as("screen") Screen
+  | @as("overlay") Overlay
+
+type outline = {
+  width?: float,
+  color?: color,
+  opacity?: float,
+  join?: lineJoin,
+  miterLimit?: float,
+  cap?: lineCap,
+}
+
+type textAlign =
+  | @as("left") Left
+  | @as("center") Center
+  | @as("right") Right

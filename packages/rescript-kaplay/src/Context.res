@@ -170,6 +170,26 @@ external onUpdate: (t, unit => unit) => unit = "onUpdate"
 @send
 external onUpdateWithController: (t, unit => unit) => KEventController.t = "onUpdate"
 
+/**
+`onDraw(context, () => unit)`
+
+ Register an event that runs every frame (~60 times per second) 
+ (this is the same as onUpdate but all draw events are run after update events, 
+ drawXXX() functions only work in this phase).
+ */
+@send
+external onDraw: (t, unit => unit) => unit = "onDraw"
+
+/**
+ `onDraw(context, () => unit) => KEventController.t`
+
+ Register an event that runs every frame (~60 times per second) 
+ (this is the same as onUpdate but all draw events are run after update events, 
+ drawXXX() functions only work in this phase).
+ */
+@send
+external onDrawWithController: (t, unit => unit) => KEventController.t = "onDraw"
+
 /** Register an event that runs when all assets finished loading. */
 @send
 external onLoad: (t, unit => unit) => unit = "onLoad"
@@ -457,6 +477,86 @@ external onMouseRelease: (t, mouseButton => unit) => unit = "onMouseRelease"
 external onMouseReleaseWithController: (t, mouseButton => unit) => KEventController.t =
   "onMouseRelease"
 
+type renderProps = {
+  pos?: Vec2.t,
+  scale?: Vec2.t,
+  angle?: float,
+  color?: color,
+  opacity?: float,
+  fixed?: bool,
+  blendMode?: blendMode,
+  outline?: outline,
+}
+
+type drawSpriteInfo
+external makeDrawSpriteInfoFromString: string => drawSpriteInfo = "%identity"
+external makeDrawSpriteInfoFromSpriteData: SpriteData.t => drawSpriteInfo = "%identity"
+external makeDrawSpriteInfoFromAsset: Asset.t<SpriteData.t> => drawSpriteInfo = "%identity"
+
+type drawAnchor
+external makeDrawAnchorFromString: string => drawAnchor = "%identity"
+external makeDrawAnchorFromVec2: Vec2.t => drawAnchor = "%identity"
+
+type drawSpriteOptions = {
+  ...renderProps,
+  sprite: drawSpriteInfo,
+  frame?: int,
+  width?: float,
+  height?: float,
+  tiled?: bool,
+  quad?: quad,
+  anchor?: drawAnchor,
+}
+
+@send
+external drawSprite: (t, drawSpriteOptions) => unit = "drawSprite"
+
+type drawTextFontInfo
+external makeDrawTextFontInfoFromString: string => drawTextFontInfo = "%identity"
+
+type drawTextOptions = {
+  ...renderProps,
+  text: string,
+  font?: drawTextFontInfo,
+  size?: float,
+  align?: textAlign,
+  width?: float,
+  lineSpacing?: float,
+  letterSpacing?: float,
+  anchor?: drawAnchor,
+  transform?: unknown,
+  styles?: Dict.t<unknown>,
+  indentAll?: bool,
+}
+
+@send
+external drawText: (t, drawTextOptions) => unit = "drawText"
+
+type drawRectOptions = {
+  ...renderProps,
+  width?: float,
+  height?: float,
+  gradient?: (color, color),
+  horizontal?: bool,
+  fill?: bool,
+  radius?: array<float>,
+  anchor?: drawAnchor,
+}
+
+@send
+external drawRect: (t, drawRectOptions) => unit = "drawRect"
+
+type drawLineOptions = {
+  p1: Vec2.t,
+  p2: Vec2.t,
+  width?: float,
+  color?: color,
+  opacity?: float,
+}
+
+@send
+external drawLine: (t, drawLineOptions) => unit = "drawLine"
+
 /** Options for drawing connected lines */
 type drawLinesOptions = {
   /** The points that should be connected with a line */
@@ -480,6 +580,92 @@ type drawLinesOptions = {
 
 @send
 external drawLines: (t, drawLinesOptions) => unit = "drawLines"
+
+type drawCurveOptions = {
+  ...renderProps,
+  segments?: array<float>,
+  width?: float,
+}
+
+@send
+external drawCurve: (t, float => Vec2.t, drawCurveOptions) => unit = "drawCurve"
+
+type drawBezierOptions = {
+  ...drawCurveOptions,
+  pt1: Vec2.t,
+  pt2: Vec2.t,
+  pt3: Vec2.t,
+  pt4: Vec2.t,
+}
+
+@send
+external drawBezier: (t, drawBezierOptions) => unit = "drawBezier"
+
+type drawTriangleOptions = {
+  ...renderProps,
+  p1: Vec2.t,
+  p2: Vec2.t,
+  p3: Vec2.t,
+  fill?: bool,
+  radius?: float,
+}
+
+@send
+external drawTriangle: (t, drawTriangleOptions) => unit = "drawTriangle"
+
+type drawCircleOptions = {
+  pos?: Vec2.t,
+  scale?: Vec2.t,
+  color?: color,
+  opacity?: float,
+  fixed?: bool,
+  blendMode?: blendMode,
+  outline?: outline,
+  radius: float,
+  start?: float,
+  fill?: bool,
+  gradient?: (color, color),
+  resolution?: float,
+  anchor?: drawAnchor,
+}
+
+@send
+external drawCircle: (t, drawCircleOptions) => unit = "drawCircle"
+
+type drawEllipseOptions = {
+  ...renderProps,
+  radiusX: float,
+  radiusY: float,
+  start?: float,
+  fill?: bool,
+  gradient?: (color, color),
+  resolution?: float,
+  anchor?: drawAnchor,
+}
+
+@send
+external drawEllipse: (t, drawEllipseOptions) => unit = "drawEllipse"
+
+type drawPolygonOptions = {
+  ...renderProps,
+  pts: array<Vec2.t>,
+  fill?: bool,
+  indices?: array<float>,
+  offset?: Vec2.t,
+  radius?: array<float>,
+  colors?: array<color>,
+  uv?: array<Vec2.t>,
+  tex?: Texture.t,
+  triangulate?: bool,
+}
+
+@send
+external drawPolygon: (t, drawPolygonOptions) => unit = "drawPolygon"
+
+type drawQuadOptions = {
+  ...renderProps,
+  p1: Vec2.t,
+}
 
 @send
 external getCursor: t => cursor = "getCursor"
