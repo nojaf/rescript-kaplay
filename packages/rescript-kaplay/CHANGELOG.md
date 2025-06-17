@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `Rect`, `Circle` and `Polygon` to `Math`
 - More `keys` in `Types`
 - `screenPos` to `Pos`
-
+- `circle`, `rect`, `polygon` (math shapes) to `Types`
 
 ### Removed
 - `Context.mathRect`, use `Math.Rect.make` instead
