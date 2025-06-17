@@ -348,7 +348,10 @@ k.loadSprite("heart", import.meta.env.BASE_URL + "/sprites/heart.png", {
 
 k.onLoad(onSceneLoad);
 
+let Polygon;
+
 export {
+  Polygon,
   k,
   Tags,
   circlePolygon,

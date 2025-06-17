@@ -1,6 +1,8 @@
 open Kaplay
 open Kaplay.Context
 
+module Polygon = Kaplay.Math.Polygon
+
 let k = Context.kaplay(~initOptions={width: 800, height: 400, scale, background: "#f0f9ff"})
 
 module Tags = {
@@ -18,7 +20,7 @@ let circlePolygon = (center: Vec2.t, radius: float, ~segments: int=32): Types.sh
       center.y + Stdlib_Math.sin(theta) * radius,
     )
   })
-  Math.Polygon.make(k, points)->Math.Polygon.asShape
+  Polygon.make(k, points)->Polygon.asShape
 }
 
 @send
