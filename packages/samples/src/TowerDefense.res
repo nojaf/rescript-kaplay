@@ -23,11 +23,8 @@ let circlePolygon = (center: Vec2.t, radius: float, ~segments: int=32): Types.sh
   Polygon.make(k, points)->Polygon.asShape
 }
 
-@send
-external iteratorFind: (Iterator.t<'t>, 't => bool) => option<'t> = "find"
-
 let tryHeadOfMap = map => {
-  map->Map.values->iteratorFind(_ => true)
+  map->Map.values->Iterator.find(_ => true)
 }
 
 module Path = {
