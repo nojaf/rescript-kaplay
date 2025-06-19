@@ -24,7 +24,7 @@ module Text = {
       k->Context.add([
         addPos(k, x, y),
         addText(k, text, ~options={size: size}),
-        addColor(k, k->Context.colorFromHex(color)),
+        addColor(k, k->Color.fromHex(color)),
         addAnchor(k, anchor),
         k->addArea,
       ])
@@ -38,10 +38,10 @@ module Text = {
     | None => ()
     | Some(hoverColor) => {
         text->onHover(() => {
-          text->setColor(k->Context.colorFromHex(hoverColor))
+          text->setColor(k->Color.fromHex(hoverColor))
         })
         text->onHoverEnd(() => {
-          text->setColor(k->Context.colorFromHex(color))
+          text->setColor(k->Color.fromHex(color))
         })
       }
     }

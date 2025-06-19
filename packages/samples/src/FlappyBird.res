@@ -61,7 +61,7 @@ module Bird = {
         k->addPosFromVec2(k->Context.center),
         k->addSprite(spriteName, ~options={flipX: true, height: 35.}),
         k->addBody,
-        k->addColor(k->Context.colorFromHex("#ffb86a")),
+        k->addColor(k->Color.fromHex("#ffb86a")),
         k->addAnchorCenter,
         k->addArea,
         k->addRotate(0.),
@@ -127,11 +127,11 @@ module Pipes = {
       k->Context.add([
         k->addPos(x, 0.),
         k->addRect(width, topPipeHeight),
-        k->addColor(k->Context.colorFromHex("#bbf451")),
+        k->addColor(k->Color.fromHex("#bbf451")),
         k->addMove(k->Context.vec2Left, speed),
         k->addOffScreen(~options={destroy: true}),
         k->addArea,
-        k->addOutline(~width=3., ~color=k->Context.colorFromHex("#404040")),
+        k->addOutline(~width=3., ~color=k->Color.fromHex("#404040")),
         Context.tag(tag),
       ])
 
@@ -139,10 +139,10 @@ module Pipes = {
       k->Context.add([
         k->addPos(x, k->Context.height - bottomPipeHeight),
         k->addRect(width, bottomPipeHeight),
-        k->addColor(k->Context.colorFromHex("#bbf451")),
+        k->addColor(k->Color.fromHex("#bbf451")),
         k->addMove(k->Context.vec2Left, speed),
         k->addArea,
-        k->addOutline(~width=3., ~color=k->Context.colorFromHex("#404040")),
+        k->addOutline(~width=3., ~color=k->Color.fromHex("#404040")),
         Context.tag(tag),
       ])
 
@@ -187,7 +187,7 @@ module Text = {
   let make = (text: string, x: float, y: float, ~anchor: anchor=Center) => {
     k->Context.add([
       k->addPos(x, y),
-      k->addColor(k->Context.colorFromHex("#024a70")),
+      k->addColor(k->Color.fromHex("#024a70")),
       k->addText(text, ~options={size: 24.}),
       k->addZ(1),
       k->addAnchor(anchor),

@@ -63,7 +63,7 @@ module Text = {
     k->Context.add([
       addPos(k, x, y),
       addText(k, text, ~options={size: 20.}),
-      addColor(k, k->Context.colorFromHex("#ffe62d")),
+      addColor(k, k->Color.fromHex("#ffe62d")),
     ])
   }
 }

@@ -78,7 +78,11 @@ type key =
   | @as("shift") Shift
   | @as("string") String(string)
 
-type color
+type color =  {
+  r: int,
+  g: int,
+  b: int,
+}
 
 type quad
 

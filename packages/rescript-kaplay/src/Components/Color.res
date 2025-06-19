@@ -1,17 +1,55 @@
+type t = Types.color
+
+@send @scope("Color")
+external fromHex: (Context.t, string) => t = "fromHex"
+
+let fromRGB: (Context.t, int, int, int) => t = %raw(`
+function (k, r, g, b) {
+    return new k.Color(r,g,b);
+}
+`)
+
+@send
+external darken: (t, float) => t = "darken"
+
+@send
+external lighten: (t, float) => t = "lighten"
+
+@send
+external invert: t => t = "invert"
+
+@send
+external mult: (t, t) => t = "mult"
+
+@send
+external lerp: (t, t, float) => t = "lerp"
+
+@send
+external toHSL: t => (float, float, float) = "toHSL"
+
+@send
+external eq: (t, t) => bool = "eq"
+
+@send
+external toHex: t => string = "toHex"
+
+@send
+external toArray: t => array<int> = "toArray"
+
 module Comp = (
   T: {
     type t
   },
 ) => {
   @get
-  external getColor: T.t => Types.color = "color"
+  external getColor: T.t => t = "color"
 
   @set
   external setColor: (T.t, Types.color) => unit = "color"
 
   /** Add a color from a color type */
   @send
-  external addColor: (Context.t, Types.color) => Types.comp = "color"
+  external addColor: (Context.t, t) => Types.comp = "color"
 
   /** Add a color from a hex string or css color name */
   @send

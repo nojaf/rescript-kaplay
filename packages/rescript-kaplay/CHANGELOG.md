@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - More `keys` in `Types`
 - `screenPos` to `Pos`
 - `circle`, `rect`, `polygon` (math shapes) to `Types`
+- `color` type instance bindings to `Color`
 
 ### Removed
 - `Context.mathRect`, use `Math.Rect.make` instead
 - `Context.mathCircle`, use `Math.Circle.make` instead
 - `Context.mathPolygon`, use `Math.Polygon.make` instead
+- `Context.colorFromHex`, use `Color.fromHex` instead
 
 ## [0.7.0] - 2025-06-16
 ### Added

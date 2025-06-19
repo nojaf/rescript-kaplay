@@ -38,7 +38,7 @@ module Path = {
     k->Context.add([
       k->addRect(k->width, 50.),
       k->addPos(0., 280.),
-      k->addColor(k->colorFromHex("#cad5e2")),
+      k->addColor(k->Color.fromHex("#cad5e2")),
     ])
   }
 }
@@ -88,7 +88,7 @@ module Charmander = {
           flipX: true,
         },
       ),
-      k->addColor(k->colorFromHex("#fe9441")),
+      k->addColor(k->Color.fromHex("#fe9441")),
       k->addPos(0., 300.),
       k->addArea,
       k->addAnchorCenter,
@@ -152,7 +152,7 @@ module Viewport = {
   let make = () => {
     [
       k->addCircle(200., ~options={fill: true}),
-      k->addColor(k->colorFromHex("#D1FEB8")),
+      k->addColor(k->Color.fromHex("#D1FEB8")),
       k->addOpacity(0.2),
       k->addArea(~options={shape: circlePolygon(k->vec2(0., 0.), 200., ~segments=32)}),
       defaultState({inSight: Map.make()}),
@@ -170,7 +170,7 @@ module Squirtle = {
     [
       k->addSprite("squirtle", ~options={height: 24., flipX: true}),
       k->addAnchorCenter,
-      k->addColor(k->colorFromHex("#00d3f2")),
+      k->addColor(k->Color.fromHex("#00d3f2")),
       k->addZ(5),
     ]
   }
@@ -190,9 +190,9 @@ module Bubble = {
   include Color.Comp({type t = t})
 
   let bubbleColors = [
-    k->colorFromHex("#00bcff"),
-    k->colorFromHex("#a2f4fd"),
-    k->colorFromHex("#155dfc"),
+    k->Color.fromHex("#00bcff"),
+    k->Color.fromHex("#a2f4fd"),
+    k->Color.fromHex("#155dfc"),
   ]
 
   let make = (homingVelocity: Vec2.t, homingTimer: float) => {
@@ -264,7 +264,7 @@ module Tower = {
       k->Context.add([
         k->addPos(k->width / 2., 200.),
         k->addCircle(30., ~options={fill: true}),
-        k->addColor(k->colorFromHex("#cefafe")),
+        k->addColor(k->Color.fromHex("#cefafe")),
         k->addBody,
       ])
 

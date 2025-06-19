@@ -27,7 +27,7 @@ module EmptyTile = {
       //
       addRect(k, tileSize, tileSize),
       addTile(k),
-      addOutline(k, ~width=1., ~color=k->colorFromHex("#000000")),
+      addOutline(k, ~width=1., ~color=k->Color.fromHex("#000000")),
     ]
   }
 }
@@ -44,8 +44,8 @@ module WallTile = {
     [
       addRect(k, tileSize, tileSize),
       addTile(k),
-      addOutline(k, ~width=1., ~color=k->colorFromHex("#0AC0B0"), ~opacity=1.),
-      addColor(k, k->colorFromHex("#46ecd5")),
+      addOutline(k, ~width=1., ~color=k->Color.fromHex("#0AC0B0"), ~opacity=1.),
+      addColor(k, k->Color.fromHex("#46ecd5")),
     ]
   }
 }
@@ -63,7 +63,7 @@ module SquirtleTile = {
     [
       addTile(k),
       addSprite(k, "squirtle", ~options={width: tileSize, height: tileSize}),
-      addColor(k, k->colorFromHex("#ADD8E6")),
+      addColor(k, k->Color.fromHex("#ADD8E6")),
       addAnchorCenter(k),
       addPos(k, tileSize / 2., tileSize / 2.),
       tag("squirtle"),
@@ -87,7 +87,7 @@ module CharmanderTile = {
       addAnchorCenter(k),
       addPos(k, tileSize / 2., tileSize / 2.),
       addTile(k),
-      addColor(k, k->colorFromHex("#FF746C")),
+      addColor(k, k->Color.fromHex("#FF746C")),
       addAgent(k, ~options={speed: 120., allowDiagonals: false}),
     ]
   }

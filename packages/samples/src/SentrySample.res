@@ -27,7 +27,7 @@ module Squirtle = {
       k->addSprite("squirtle"),
       k->addPos(100., 100.),
       k->addAnchorCenter,
-      k->addColor(k->colorFromHex("#ADD8E6")),
+      k->addColor(k->Color.fromHex("#ADD8E6")),
       k->addArea,
       k->addBody,
     ])
@@ -48,7 +48,7 @@ module Flareon = {
       k->addSprite("flareon"),
       k->addPos(450., 100.),
       k->addAnchorCenter,
-      k->addColor(k->colorFromHex("#FF746C")),
+      k->addColor(k->Color.fromHex("#FF746C")),
       k->addSentry(
         [squirtle],
         ~options={
@@ -75,7 +75,7 @@ module Wall = {
     k->Context.add([
       k->addRect(20., 200.),
       k->addPos(250., 0.),
-      k->addColor(k->colorFromHex("#D1E2F3")),
+      k->addColor(k->Color.fromHex("#D1E2F3")),
       k->addArea,
       k->addBody(~options={isStatic: true}),
     ])

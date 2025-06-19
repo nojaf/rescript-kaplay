@@ -91,7 +91,7 @@ module Ground = {
     k->Context.add([
       addPos(k, x, y),
       addRect(k, w, h),
-      addColor(k, k->Context.colorFromHex("#D97744")),
+      addColor(k, k->Color.fromHex("#D97744")),
       addArea(k),
       addBody(k, ~options={isStatic: true}),
     ])
