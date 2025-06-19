@@ -235,6 +235,9 @@ external loadBean: (t, ~name: string=?) => unit = "loadBean"
 @send
 external loadShader: (t, string, ~vert: string=?, ~frag: string=?) => unit = "loadShader"
 
+@send
+external loadFont: (t, string, string) => unit = "loadFont"
+
 @get @scope("Vec2")
 external vec2Zero: t => Vec2.t = "ZERO"
 

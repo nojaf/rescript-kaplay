@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `colorFromRGB` to `Context`
 - `getSprite` to `Context`
 - `spriteAtlasPadding` to `kaplayOptions`
+- `loadFont` to `Context`
 
 ### Changed
 - `width` to float for `Outline`
