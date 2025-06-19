@@ -36,6 +36,16 @@ external toHex: t => string = "toHex"
 @send
 external toArray: t => array<int> = "toArray"
 
+/* Constants */
+external red: Context.t => t = "RED"
+external green: Context.t => t = "GREEN"
+external blue: Context.t => t = "BLUE"
+external yellow: Context.t => t = "YELLOW"
+external magenta: Context.t => t = "MAGENTA"
+external cyan: Context.t => t = "CYAN"
+external white: Context.t => t = "WHITE"
+external black: Context.t => t = "BLACK"
+
 module Comp = (
   T: {
     type t
