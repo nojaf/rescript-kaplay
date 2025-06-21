@@ -9,6 +9,12 @@ module Comp = (
   @set
   external setText: (T.t, string) => unit = "text"
 
+  @get
+  external width: T.t => float = "width"
+
+  @get
+  external height: T.t => float = "height"
+
   type textAlign =
     | @as("left") Left
     | @as("center") Center
