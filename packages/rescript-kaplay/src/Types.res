@@ -103,7 +103,39 @@ type timeDirection =
   | @as("ping-pong") PingPong
 
 type easeFunc = float => float
-type easingMap = {linear: easeFunc}
+type easingMap = {
+  linear: easeFunc,
+  easeInSine: easeFunc,
+  easeOutSine: easeFunc,
+  easeInOutSine: easeFunc,
+  easeInQuad: easeFunc,
+  easeOutQuad: easeFunc,
+  easeInOutQuad: easeFunc,
+  easeInCubic: easeFunc,
+  easeOutCubic: easeFunc,
+  easeInOutCubic: easeFunc,
+  easeInQuart: easeFunc,
+  easeOutQuart: easeFunc,
+  easeInOutQuart: easeFunc,
+  easeInQuint: easeFunc,
+  easeOutQuint: easeFunc,
+  easeInOutQuint: easeFunc,
+  easeInExpo: easeFunc,
+  easeOutExpo: easeFunc,
+  easeInOutExpo: easeFunc,
+  easeInCirc: easeFunc,
+  easeOutCirc: easeFunc,
+  easeInOutCirc: easeFunc,
+  easeInBack: easeFunc,
+  easeOutBack: easeFunc,
+  easeInOutBack: easeFunc,
+  easeInElastic: easeFunc,
+  easeOutElastic: easeFunc,
+  easeInOutElastic: easeFunc,
+  easeInBounce: easeFunc,
+  easeOutBounce: easeFunc,
+  easeInOutBounce: easeFunc,
+}
 
 type interpolation =
   | @as("none") None
