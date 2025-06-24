@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Added
 - More easing functions to `Types.easingMap`
+- `Fixed` component
 
 ## [0.8.0] - 2025-06-23
 ### Added
