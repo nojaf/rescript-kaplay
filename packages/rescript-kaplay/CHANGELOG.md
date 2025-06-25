@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - More easing functions to `Types.easingMap`
 - `Fixed` component
+- `Layer` component
+- `setLayers` to `Context`
 
 ## [0.8.0] - 2025-06-23
 ### Added

@@ -384,6 +384,30 @@ external addLevel: (t, array<string>, levelOptions) => Level.t = "addLevel"
 external setBackground: (t, color) => unit = "setBackground"
 
 /**
+`setLayers(context, layers, defaultLayer)`
+
+Define the layer names. Should be called before any objects are made.
+*/
+@send
+external setLayers: (t, array<string>, string) => unit = "setLayers"
+
+/**
+`getLayers(context)`
+
+Get the layer names.
+*/
+@send
+external getLayers: t => null<array<string>> = "getLayers"
+
+/**
+`getDefaultLayer(context)`
+
+Get the default layer name.
+*/
+@send
+external getDefaultLayer: t => null<string> = "getDefaultLayer"
+
+/**
 `on(context, event, tag, (gameObject, arg) => unit)`
 
 Register an event on all game objs with certain tag.
