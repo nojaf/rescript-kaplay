@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `Fixed` component
 - `Layer` component
 - `setLayers` to `Context`
+- `fromHSL` to `Color`
 
 ## [0.8.0] - 2025-06-23
 ### Added

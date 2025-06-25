@@ -9,6 +9,9 @@ function (k, r, g, b) {
 }
 `)
 
+@send @scope("Color")
+external fromHSL: (Context.t, float, float, float) => t = "fromHSL"
+
 @send
 external darken: (t, float) => t = "darken"
 
