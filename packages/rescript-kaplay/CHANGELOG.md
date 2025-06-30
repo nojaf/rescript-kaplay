@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Added
 - More bindings for `Debug`
+- `State` component
 
 ## [0.9.0] - 2025-06-27
 ### Added
