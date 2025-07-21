@@ -9,14 +9,18 @@ module Comp = (
 Finite state machine.
   */
   @send
-  external addState: (Context.t, T.t, 't, array<'t>) => Types.comp = "addState"
+  external addState: (Context.t, T.t, string, array<string>) => Types.comp = "addState"
 
   /**
 `addStateWithTransitions(context, initialState, stateList, transitions)` returns `Types.comp`
 
-Transitions should be an object with keys and values of 't.
   */
   @send
-  external addStateWithTransitions: (Context.t, T.t, 't, array<'t>, {..}) => Types.comp =
-    "addStateWithTransitions"
+  external addStateWithTransitions: (
+    Context.t,
+    T.t,
+    string,
+    array<string>,
+    dict<string>,
+  ) => Types.comp = "addStateWithTransitions"
 }

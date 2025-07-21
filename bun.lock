@@ -22,7 +22,7 @@
       "version": "0.9.0",
       "peerDependencies": {
         "kaplay": "^4000.0.0-alpha.19",
-        "rescript": "^12.0.0-alpha.14",
+        "rescript": "^12.0.0-beta.2",
       },
     },
     "packages/samples": {

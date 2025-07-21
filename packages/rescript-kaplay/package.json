@@ -1,6 +1,6 @@
 {
   "name": "@nojaf/rescript-kaplay",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": false,
   "type": "module",
   "license": "MIT",
@@ -11,7 +11,7 @@
   },
   "peerDependencies": {
     "kaplay": "^4000.0.0-alpha.19",
-    "rescript": "^12.0.0-alpha.14"
+    "rescript": "^12.0.0-beta.2"
   },
   "files": [
     "src/**/*.res",
