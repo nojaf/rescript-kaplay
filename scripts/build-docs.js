@@ -6,7 +6,7 @@ const rootDir = `${currentDir}/..`;
 const samplesDir = `${currentDir}/../packages/samples`;
 
 // Compile ReScript
-await $`bunx rewatch`.cwd(rootDir);
+await $`bunx rescript`.cwd(rootDir);
 
 // Copy public folder assets to docs
 await cp(`${samplesDir}/public`, `${rootDir}/docs/public`, { recursive: true });
