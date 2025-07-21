@@ -8,9 +8,9 @@
     "rescript": "12.0.0-beta.2"
   },
   "devDependencies": {
-    "@astrojs/starlight": "^0.34.4",
-    "@types/bun": "^1.2.17",
-    "astro": "^5.10.0",
+    "@astrojs/starlight": "^0.34.8",
+    "@types/bun": "^1.2.19",
+    "astro": "^5.12.0",
     "keep-a-changelog": "^2.6.2",
     "micromark": "^4.0.2",
     "prettier-plugin-astro": "^0.14.1",
