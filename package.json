@@ -5,7 +5,7 @@
     "packages/*"
   ],
   "dependencies": {
-    "rescript": "12.0.0-alpha.14"
+    "rescript": "12.0.0-beta.2"
   },
   "devDependencies": {
     "@astrojs/starlight": "^0.34.4",
@@ -21,7 +21,7 @@
     "docs": "bunx --bun astro dev",
     "docs:build": "bun run scripts/build-docs.js",
     "watch": "rewatch watch",
-    "fmt": "bun scripts/format.js",
+    "fmt": "rescript format --all && prettier --log-level warn --write ./docs package.json astro.config.mjs scripts",
     "set-version": "bun run scripts/set-version.js",
     "dry-release": "bun run scripts/publish.js --dry-run",
     "release": "bun run scripts/publish.js"

@@ -28,7 +28,7 @@ dist-ssr
 **/lib/ocaml/
 .bsb.lock
 .merlin
-rewatch.lock
+rescript.lock
 
 # Astro
 .astro/
