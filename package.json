@@ -1,12 +1,5 @@
 {
   "name": "rescript-kaplay",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "dependencies": {
-    "rescript": "12.0.0-beta.2"
-  },
   "devDependencies": {
     "@astrojs/starlight": "^0.34.8",
     "@types/bun": "^1.2.19",
@@ -17,6 +10,8 @@
     "semver": "^7.7.2",
     "starlight-theme-flexoki": "^0.1.0"
   },
+  "packageManager": "bun@1.2.15",
+  "private": true,
   "scripts": {
     "docs": "bunx --bun astro dev",
     "docs:build": "bun run scripts/build-docs.js",
@@ -26,5 +21,10 @@
     "dry-release": "bun run scripts/publish.js --dry-run",
     "release": "bun run scripts/publish.js"
   },
-  "packageManager": "bun@1.2.15"
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "rescript": "^12.0.0-beta.4"
+  }
 }

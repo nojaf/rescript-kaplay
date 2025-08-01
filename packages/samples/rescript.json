@@ -6,8 +6,8 @@
       "subdirs": true
     }
   ],
-  "bs-dependencies": [
+  "dependencies": [
     "@nojaf/rescript-kaplay"
   ],
-  "bsc-flags":["-open Base"]
+  "compiler-flags":["-open Base"]
 }
