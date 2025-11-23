@@ -1,0 +1,175 @@
+---
+description: General ReScript best practices and guidelines
+globs: 
+alwaysApply: true
+---
+
+# ReScript Guidelines
+
+## Core Language Rules
+
+- You use the latest ReScript v12 rc.
+- Ensure suggestions match this version. Refer to the indexed ReScript manual.
+- Ensure any produced JSX matches the ReScript JSX syntax.
+- Never ever use the `Belt` or `Js` modules, these are legacy.
+- Always use the `JSON.t` type for json.
+- Favor the new `dict{}` pattern matching syntax for JSON object destructuring over `Dict.get()` calls.
+  ```rescript
+  // ✅ Preferred - concise and readable
+  let decodePokemonImage = (json: JSON.t) => {
+    switch json {
+    | JSON.Object(dict{"sprites": JSON.Object(dict{"front_default": JSON.String(url)})}) => Some(url)
+    | _ => None
+    }
+  }
+  
+  // ❌ Avoid - verbose and harder to read
+  let decodePokemonImage = (json: JSON.t) => {
+    switch json {
+    | JSON.Object(obj) =>
+      switch Dict.get(obj, "sprites") {
+      | Some(JSON.Object(sprites)) =>
+        switch Dict.get(sprites, "front_default") {
+        | Some(JSON.String(url)) => Some(url)
+        | _ => None
+        }
+      | _ => None
+      }
+    | _ => None
+    }
+  }
+  ```
+
+
+## Async & Promises
+
+- When dealing with promises, prefer using `async/await` syntax.
+
+## String Interpolation
+
+- Every expression inside an interpolated string is expected to be of type string. You can't do `\`age = ${42}\``.
+  You need to convert that number to a string. `\`age = ${(42)->Int.toString}\``
+
+## External Bindings & Method Calls
+
+- **`@send` Method Calls**: External bindings with `@send` that return a value do not require `()` to be invoked.
+  ```rescript
+  type t
+  
+  @send
+  external foo: t => string = "foo"
+  external i: t = "t"
+  let b = i->foo // Notice no `()` here!
+  ```
+
+- **`@send` with Optional Labeled Arguments**: When a `@send` method has optional labeled arguments, you cannot use `()` - omit the argument entirely or use labeled syntax. For example:
+  ```rescript
+  @send external trim: (t, ~options: trimOptions=?) => t = "trim"
+  // ✅ Correct - omit optional argument
+  instance->Sharp.trim
+  // ✅ Also correct - explicitly omit with ?
+  instance->Sharp.trim(~options=?)
+  // ❌ Wrong - empty () doesn't work with optional labeled args
+  instance->Sharp.trim()
+  ```
+
+## Module Functions
+
+- When you see `include` in ReScript source code, it means a [module function](https://rescript-lang.org/docs/manual/v12.0.0/module-functions) was used. This brings additional symbols into the current module scope that aren't visible in the original source.
+
+## Namespaces
+
+- ReScript uses namespaces (defined in `rescript.json`) to solve module naming conflicts. Since ReScript only allows one module name per project, namespaces let you have modules with the same name in different folders. In code, namespaces look like `MyNamespace.MyModule.myType`, but internally they're stored as `MyModule-MyNamespace.myType` during compilation.
+- **CRITICAL**: The `-` syntax (e.g., `Bun-RescriptBun`) is ONLY used internally by the compiler. In actual ReScript code, you must use the dot notation: `RescriptBun.Bun`. Never use the `-` syntax in ReScript source code - it will cause syntax errors.
+- **Namespace Access**: When using namespaced packages like `rescript-bun`, access modules using the namespace prefix: `RescriptBun.Bun.BunFile.t` not `Bun.BunFile.t`. The namespace is derived from the package name with proper capitalization.
+
+## Generic Type Parameters
+
+- ReScript does **not** support F#-style generic type parameters, either on the definition *or* the calling side.  
+  You can't write `let id<'a> = x => x` or call functions like `id<int>(5)`.  
+  Generics are always inferred automatically by the compiler.  
+  If you want to type a binding, put the type annotation **after** the pattern, not as a generic.  
+  For example:
+```rescript
+// ✅ Correct
+let id: int => int = x => x
+
+// ❌ Wrong (F# style)
+let id<'a> = x => x
+let y = id<int>(5)
+```
+
+## Code Style Preferences
+
+- When there is a switch or if/else expression, I prefer the first branch to be the smallest, UNLESS it would create unreachable code patterns:
+```res
+❌ 
+switch foo {
+  | Some(bar) => {
+    // long code block
+    0
+  }
+  | None => 1
+}
+
+✅
+switch foo {
+  // Put this branch first because it is the shorter branch, this is symbolic to an early return.
+  | None => 1
+  | Some(bar) => {
+    // long code block
+    0
+  }
+}
+
+// Exception: When pattern matching with specific vs catch-all patterns, put specific first
+✅
+switch json {
+  | JSON.Object(dict{"name": JSON.String(name)}) => Some(name)
+  | _ => None  // catch-all must come after specific patterns
+}
+```
+
+## External Bindings
+
+### `@new` Constructor Pattern
+
+When you see `@new` on an external function, it generates a JavaScript constructor call (`new ClassName(...)`) even if the return type is a ReScript record. This bridges ReScript's record-based type system with JavaScript's object-oriented runtime - you get the full JavaScript object with all its methods and properties at runtime, not just the record fields. For example, `WebAPI.File.make()` returns a `file` record type but generates `new File(...)` in JavaScript, giving you a proper File object with methods like `arrayBuffer()`, `text()`, etc. This pattern explains why different ReScript packages (like `@rescript/webapi` vs `rescript-bun`) can have equivalent functionality - they both use `@new` to create the same JavaScript objects, just with different ReScript type definitions.
+
+### `@module` Scoping
+
+The `@module("name")` attribute imports a symbol from a specific JavaScript module (like a node_modules package). A ReScript module name has no relation to npm module imports - an external binding inside a ReScript module will look in the global scope (like `window` in the browser) by default, not an npm package. Use `@module` when you need to import from an external npm package. For example:
+  ```rescript
+  @new @module("pocketbase")
+  external make: (~errData: unknown=?) => t = "ClientResponseError"
+  ```
+  Without `@module("pocketbase")`, ReScript would look for `ClientResponseError` in the global scope. With `@module("pocketbase")`, it imports `ClientResponseError` from the `pocketbase` npm package. Note: Globally available classes (like `File`, `Date`, etc.) don't need `@module` as they're accessed from the global scope.
+
+### Record Type vs Abstract Type with `@new`
+
+When using `@new` with a JavaScript class, you can use a record type as a convenience even though the runtime value is still an instance of that class. The record type provides compile-time type safety and convenient field access without needing `@get`/`@set` bindings:
+  ```rescript
+  type t = { status: int, url: string }
+  @new external make: unit => t = "SomeClass"
+  let obj = make() // Runtime: instance of SomeClass, Compile-time: record
+  let status = obj.status // Convenient field access via record
+  ```
+  You can still use abstract types with `@get`/`@set` if you prefer:
+  ```rescript
+  type t
+  @get external status: t => int = "status"
+  @new external make: unit => t = "SomeClass"
+  ```
+  The record approach is more convenient; the abstract type with `@get`/`@set` makes the class binding explicit.
+
+### Optional Record Fields in External Bindings
+
+When defining optional fields in records for external bindings, use `?` syntax:
+  ```rescript
+  type resizeOption = {
+    width: int,
+    height: int,
+    fit: string,
+    background?: {r: int, g: int, b: int, alpha: int},  // Optional field
+  }
+  ```

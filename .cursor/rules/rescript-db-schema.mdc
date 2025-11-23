@@ -1,0 +1,589 @@
+# ReScript Database Schema
+
+This document describes the SQLite database schema used by the ReScript MCP server. Use the `query_rescript_database` tool to execute SQL queries against this schema.
+
+## Database Tables
+
+### packages
+
+Stores information about ReScript packages (projects and dependencies).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key, auto-increment |
+| name | TEXT | Package name (UNIQUE, NOT NULL) |
+| path | TEXT | File system path to package (NOT NULL) |
+| rescript_json | TEXT | JSON string of rescript.json config (NOT NULL) |
+| config_hash | TEXT | Hash of compiler config (nullable) |
+
+**Indexes:**
+- Primary key on `id`
+- Unique index on `name`
+
+### modules
+
+Stores ReScript modules (top-level and nested).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key, auto-increment |
+| package_id | INTEGER | Foreign key to packages.id (NOT NULL) |
+| parent_module_id | INTEGER | Foreign key to modules.id for nested modules (nullable) |
+| name | TEXT | Module name (NOT NULL) |
+| qualified_name | TEXT | Fully qualified module name, e.g., "React.Children" or "DOMAPI-WebAPI" (UNIQUE, NOT NULL) |
+| source_file_path | TEXT | Path to source file (NOT NULL) |
+| compiled_file_path | TEXT | Path to compiled file (NOT NULL) |
+| file_hash | TEXT | Hash of source file content (nullable) |
+| is_auto_opened | INTEGER | 1 if module is auto-opened (via -open flag), 0 otherwise (default: 0) |
+
+**Foreign Keys:**
+- `package_id` → `packages(id)` ON DELETE CASCADE
+- `parent_module_id` → `modules(id)` ON DELETE CASCADE
+
+**Indexes:**
+- Primary key on `id`
+- Unique index on `qualified_name`
+- Index on `package_id`
+- Index on `parent_module_id`
+- Index on `compiled_file_path`
+- Index on `is_auto_opened`
+
+### types
+
+Stores type definitions (records, variants, abstract types, etc.).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key, auto-increment |
+| module_id | INTEGER | Foreign key to modules.id (NOT NULL) |
+| name | TEXT | Type name (NOT NULL) |
+| kind | TEXT | Type kind: "record", "variant", "abstract", etc. (nullable) |
+| signature | TEXT | Type signature string (nullable) |
+| detail | TEXT | JSON string with detailed type information (nullable) |
+
+**Foreign Keys:**
+- `module_id` → `modules(id)` ON DELETE CASCADE
+
+**Indexes:**
+- Primary key on `id`
+- Index on `module_id`
+
+### values
+
+Stores function and value definitions.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key, auto-increment |
+| module_id | INTEGER | Foreign key to modules.id (NOT NULL) |
+| name | TEXT | Value/function name (NOT NULL) |
+| return_type | TEXT | Return type string (nullable) |
+| param_count | INTEGER | Number of parameters (default: 0) |
+| signature | TEXT | Full function signature (nullable) |
+| detail | TEXT | JSON string with detailed value information (nullable) |
+
+**Foreign Keys:**
+- `module_id` → `modules(id)` ON DELETE CASCADE
+
+**Indexes:**
+- Primary key on `id`
+- Index on `module_id`
+
+### aliases
+
+Stores module aliases that redirect to other modules.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key, auto-increment |
+| source_module_id | INTEGER | Foreign key to modules.id (NOT NULL) |
+| alias_name | TEXT | Alias name (NOT NULL) |
+| alias_kind | TEXT | What the alias points to: "type", "value", "module" (NOT NULL) |
+| target_qualified_name | TEXT | Fully qualified name of target (NOT NULL) |
+| docstrings | TEXT | JSON array of docstrings (nullable) |
+
+**Foreign Keys:**
+- `source_module_id` → `modules(id)` ON DELETE CASCADE
+
+**Indexes:**
+- Primary key on `id`
+- Index on `alias_name`
+- Index on `source_module_id`
+
+### type_references
+
+Stores relationships between types and where they are referenced.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key, auto-increment |
+| source_type_id | INTEGER | Foreign key to types.id (nullable) |
+| source_value_id | INTEGER | Foreign key to values.id (nullable) |
+| referenced_type_name | TEXT | Name of referenced type (NOT NULL) |
+| referenced_module_name | TEXT | Module name of referenced type (nullable) |
+| context | TEXT | Context where reference appears, e.g., "parameter 0", "return type", "field name" (NOT NULL) |
+| position | INTEGER | Position in parameter list (nullable) |
+
+**Foreign Keys:**
+- `source_type_id` → `types(id)` ON DELETE CASCADE
+- `source_value_id` → `values(id)` ON DELETE CASCADE
+
+**Indexes:**
+- Primary key on `id`
+- Index on `source_type_id`
+- Index on `source_value_id`
+- Index on `referenced_type_name`
+
+### generic_type_parameters
+
+Stores generic type parameter information.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER | Primary key, auto-increment |
+| type_id | INTEGER | Foreign key to types.id (nullable) |
+| value_id | INTEGER | Foreign key to values.id (nullable) |
+| field_name | TEXT | Field name if parameter is in a record field (nullable) |
+| parameter_index | INTEGER | Index of parameter (NOT NULL) |
+| base_type | TEXT | Base type name, e.g., "Array" (NOT NULL) |
+| base_module | TEXT | Module name of base type (nullable) |
+| parameter_signature | TEXT | Full parameter signature (NOT NULL) |
+| nesting_level | INTEGER | Nesting level for nested generics (default: 0) |
+
+**Foreign Keys:**
+- `type_id` → `types(id)` ON DELETE CASCADE
+- `value_id` → `values(id)` ON DELETE CASCADE
+
+**Indexes:**
+- Primary key on `id`
+- Index on `type_id`
+- Index on `value_id`
+- Index on `base_type`
+
+## Common Query Patterns
+
+**IMPORTANT**: The `query_rescript_database` tool does NOT accept SQL parameters. All values must be inlined directly in the SQL query string. Replace any placeholders in these examples with actual values when constructing your queries.
+
+### List All Packages
+
+```sql
+SELECT name, path FROM packages ORDER BY name
+```
+
+### Get Modules in a Package
+
+Get top-level modules for a specific package:
+```sql
+SELECT m.id, m.qualified_name, m.source_file_path
+FROM modules m
+JOIN packages p ON m.package_id = p.id
+WHERE p.name = '@rescript/react' AND m.parent_module_id IS NULL
+ORDER BY m.qualified_name
+```
+
+Get nested modules for a specific module:
+```sql
+SELECT qualified_name
+FROM modules
+WHERE parent_module_id = (SELECT id FROM modules WHERE qualified_name = 'React')
+ORDER BY qualified_name
+```
+
+### Get Module Information
+
+Get types in a module:
+```sql
+SELECT name, kind, signature, detail
+FROM types
+WHERE module_id = (SELECT id FROM modules WHERE qualified_name = 'React')
+ORDER BY name
+```
+
+Get values in a module:
+```sql
+SELECT name, signature, param_count, return_type, detail
+FROM "values"
+WHERE module_id = (SELECT id FROM modules WHERE qualified_name = 'React')
+ORDER BY name
+```
+
+Get nested modules:
+```sql
+SELECT qualified_name
+FROM modules
+WHERE parent_module_id = (SELECT id FROM modules WHERE qualified_name = 'React')
+ORDER BY qualified_name
+```
+
+Get aliases:
+```sql
+SELECT alias_name, alias_kind, target_qualified_name, docstrings
+FROM aliases
+WHERE source_module_id = (SELECT id FROM modules WHERE qualified_name = 'React')
+ORDER BY alias_name
+```
+
+### Get Global Symbols (Auto-Opened Modules)
+
+Get all auto-opened modules:
+```sql
+SELECT m.qualified_name, m.is_auto_opened, p.name as package_name
+FROM modules m
+JOIN packages p ON m.package_id = p.id
+WHERE m.is_auto_opened = 1 AND m.parent_module_id IS NULL
+ORDER BY p.name, m.qualified_name
+```
+
+Get types in an auto-opened module:
+```sql
+SELECT t.name, t.kind, t.signature
+FROM types t
+JOIN modules m ON t.module_id = m.id
+WHERE m.qualified_name = 'Pervasives' AND m.is_auto_opened = 1
+ORDER BY t.name
+```
+
+Get values in an auto-opened module:
+```sql
+SELECT v.name, v.signature, v.param_count
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE m.qualified_name = 'Pervasives' AND m.is_auto_opened = 1
+ORDER BY v.name
+```
+
+### Get Type Details
+
+Get a specific type:
+```sql
+SELECT t.id, t.name, t.kind, t.signature, t.detail
+FROM types t
+JOIN modules m ON t.module_id = m.id
+WHERE m.qualified_name = 'React' AND t.name = 'element'
+```
+
+Get type references for a type (requires type ID from previous query):
+```sql
+SELECT tr.referenced_type_name, tr.referenced_module_name, tr.context, tr.position
+FROM type_references tr
+WHERE tr.source_type_id = 123
+ORDER BY tr.context, tr.position
+```
+
+Get generic parameters for a type (requires type ID from previous query):
+```sql
+SELECT parameter_index, base_type, base_module, parameter_signature, nesting_level, field_name
+FROM generic_type_parameters
+WHERE type_id = 123
+ORDER BY parameter_index, nesting_level
+```
+
+### Get Value Details
+
+Get a specific value:
+```sql
+SELECT v.name, v.signature, v.param_count, v.return_type, v.detail
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE m.qualified_name = 'React' AND v.name = 'useState'
+```
+
+Get type references for a value (requires value ID from previous query):
+```sql
+SELECT tr.referenced_type_name, tr.referenced_module_name, tr.context, tr.position
+FROM type_references tr
+WHERE tr.source_value_id = 456
+ORDER BY tr.context, tr.position
+```
+
+### Find Type Usage
+
+Find where a type is used (for module-qualified types):
+```sql
+SELECT 
+  CASE 
+    WHEN tr.source_type_id IS NOT NULL THEN t.name
+    WHEN tr.source_value_id IS NOT NULL THEN v.name
+    ELSE NULL
+  END as source_name,
+  CASE 
+    WHEN tr.source_type_id IS NOT NULL THEN tm.qualified_name
+    WHEN tr.source_value_id IS NOT NULL THEN vm.qualified_name
+    ELSE NULL
+  END as source_module,
+  CASE 
+    WHEN tr.source_type_id IS NOT NULL THEN 'type'
+    WHEN tr.source_value_id IS NOT NULL THEN 'value'
+    ELSE 'unknown'
+  END as source_kind,
+  tr.context,
+  tr.referenced_type_name,
+  tr.referenced_module_name
+FROM type_references tr
+LEFT JOIN types t ON tr.source_type_id = t.id
+LEFT JOIN modules tm ON t.module_id = tm.id
+LEFT JOIN "values" v ON tr.source_value_id = v.id
+LEFT JOIN modules vm ON v.module_id = vm.id
+WHERE tr.referenced_type_name = 'element' 
+  AND tr.referenced_module_name = 'React'
+ORDER BY source_module, source_name, tr.context
+```
+
+Find where a global type is used (e.g., 'string', 'int'):
+```sql
+SELECT 
+  CASE 
+    WHEN tr.source_type_id IS NOT NULL THEN t.name
+    WHEN tr.source_value_id IS NOT NULL THEN v.name
+    ELSE NULL
+  END as source_name,
+  CASE 
+    WHEN tr.source_type_id IS NOT NULL THEN tm.qualified_name
+    WHEN tr.source_value_id IS NOT NULL THEN vm.qualified_name
+    ELSE NULL
+  END as source_module,
+  CASE 
+    WHEN tr.source_type_id IS NOT NULL THEN 'type'
+    WHEN tr.source_value_id IS NOT NULL THEN 'value'
+    ELSE 'unknown'
+  END as source_kind,
+  tr.context,
+  tr.referenced_type_name,
+  tr.referenced_module_name
+FROM type_references tr
+LEFT JOIN types t ON tr.source_type_id = t.id
+LEFT JOIN modules tm ON t.module_id = tm.id
+LEFT JOIN "values" v ON tr.source_value_id = v.id
+LEFT JOIN modules vm ON v.module_id = vm.id
+WHERE tr.referenced_type_name = 'string' 
+  AND (tr.referenced_module_name IS NULL OR tr.referenced_module_name = '')
+ORDER BY source_module, source_name, tr.context
+```
+
+### Search Codebase
+
+**IMPORTANT**: For better signal/noise ratio, filter by module name FIRST, then use exact matches when possible.
+
+#### Two-Phase Search Strategy
+
+When you don't know which module contains what you're looking for, use a two-phase approach:
+
+**Phase 1: Exploratory Query** (lightweight, find the module)
+- Select minimal columns: just `name` and `qualified_name`
+- Use `LIMIT` to reduce noise
+- Goal: Identify the right module quickly
+
+**Phase 2: Targeted Query** (detailed, get full info)
+- Once you know the module, query with full details
+- Filter by exact module name
+- Get signature, return types, etc.
+
+**Example: Finding `fetch` when module is unknown**
+
+Phase 1 - Exploratory (lightweight):
+```sql
+-- ✅ GOOD: Minimal columns, just find the module
+SELECT v.name, m.qualified_name as module_name
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE v.name = 'fetch'
+LIMIT 10
+-- Returns: Quick list showing Global-WebAPI, ServiceWorkerGlobalScope-WebAPI, etc.
+```
+
+Phase 2 - Targeted (once you know it's Global-WebAPI):
+```sql
+-- ✅ GOOD: Full details for the specific module
+SELECT v.name, v.signature, v.param_count, v.return_type, m.qualified_name as module_name
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE m.qualified_name = 'Global-WebAPI' AND v.name = 'fetch'
+```
+
+#### Efficient Search Patterns (When Module is Known)
+
+**Find a specific function in a known module family** (e.g., WebAPI):
+```sql
+-- ✅ GOOD: Filter by module first, then exact match
+SELECT v.name, v.signature, v.param_count, v.return_type, m.qualified_name as module_name
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE m.qualified_name = 'Global-WebAPI' AND v.name = 'fetch'
+```
+
+**Find a function across a module family** (e.g., all WebAPI modules):
+```sql
+-- ✅ GOOD: Filter by module pattern, then exact match
+SELECT v.name, v.signature, v.param_count, v.return_type, m.qualified_name as module_name
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE m.qualified_name LIKE '%-WebAPI' AND v.name = 'fetch'
+ORDER BY m.qualified_name
+```
+
+**Find the main type `t` in a module** (e.g., JSON.t):
+```sql
+-- ✅ GOOD: Filter by module, then look for type 't'
+SELECT t.name, t.kind, t.signature, m.qualified_name as module_name
+FROM types t
+JOIN modules m ON t.module_id = m.id
+WHERE m.qualified_name LIKE '%JSON%' AND t.name = 't'
+ORDER BY m.qualified_name
+```
+
+**Find a method on a specific type** (e.g., Response.json):
+```sql
+-- ✅ GOOD: Exact module match + exact method name
+SELECT v.name, v.signature, v.param_count, v.return_type, m.qualified_name as module_name
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE m.qualified_name = 'Response-WebAPI' AND v.name = 'json'
+```
+
+#### Broader Search Patterns (Use When Module Unknown)
+
+Search packages:
+```sql
+SELECT name, path 
+FROM packages 
+WHERE LOWER(name) LIKE LOWER('%react%')
+ORDER BY name
+```
+
+Search modules:
+```sql
+SELECT m.qualified_name, p.name as package_name
+FROM modules m
+JOIN packages p ON m.package_id = p.id
+WHERE LOWER(m.qualified_name) LIKE LOWER('%React%')
+ORDER BY m.qualified_name
+```
+
+Search types (when module is unknown):
+```sql
+-- ⚠️ NOISY: Use only when you don't know the module
+SELECT t.name, t.kind, t.signature, m.qualified_name as module_name, p.name as package_name
+FROM types t
+JOIN modules m ON t.module_id = m.id
+JOIN packages p ON m.package_id = p.id
+WHERE LOWER(t.name) LIKE LOWER('%element%')
+ORDER BY t.name
+```
+
+Search values (when module is unknown):
+```sql
+-- ⚠️ NOISY: Use only when you don't know the module
+SELECT v.name, v.signature, v.param_count, m.qualified_name as module_name, p.name as package_name
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+JOIN packages p ON m.package_id = p.id
+WHERE LOWER(v.name) LIKE LOWER('%useState%')
+ORDER BY v.name
+```
+
+#### Query Efficiency Tips
+
+1. **Use two-phase approach when module is unknown**: 
+   - Phase 1: Lightweight exploratory query (minimal columns, `LIMIT 10`) to find the module
+   - Phase 2: Targeted query with full details once you know the module
+2. **Filter by module first**: If you know the module name or pattern (e.g., `WebAPI`, `React`), filter by `qualified_name` first
+3. **Use exact matches**: When possible, use `v.name = 'fetch'` instead of `LIKE '%fetch%'`
+4. **Combine filters**: `WHERE m.qualified_name LIKE '%-WebAPI' AND v.name = 'fetch'` is much more efficient than `WHERE v.name LIKE '%fetch%'`
+5. **Limit results in exploratory queries**: Add `LIMIT 10` when exploring to reduce noise
+6. **Select only what you need**: In exploratory queries, only select `name` and `qualified_name` - skip `signature`, `param_count`, etc. until you need them
+
+#### Example: Inefficient vs Efficient Queries
+
+**Finding `fetch` function when module is unknown:**
+
+❌ **INEFFICIENT** (high noise, too much data, 20+ results):
+```sql
+SELECT v.name, v.signature, v.param_count, v.return_type, m.qualified_name as module_name
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE LOWER(v.name) LIKE LOWER('%fetch%')
+-- Returns: 20+ results with full details, hard to scan
+-- Global-WebAPI.fetch, ServiceWorkerGlobalScope-WebAPI.fetch, 
+-- WorkerGlobalScope-WebAPI.fetch, Window-WebAPI.fetch, etc.
+```
+
+✅ **EFFICIENT - Phase 1** (lightweight exploratory, 10 results):
+```sql
+SELECT v.name, m.qualified_name as module_name
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE v.name = 'fetch'
+LIMIT 10
+-- Returns: Quick list to identify the right module
+-- Global-WebAPI, ServiceWorkerGlobalScope-WebAPI, etc.
+```
+
+✅ **EFFICIENT - Phase 2** (targeted, full details):
+```sql
+SELECT v.name, v.signature, v.param_count, v.return_type, m.qualified_name as module_name
+FROM "values" v
+JOIN modules m ON v.module_id = m.id
+WHERE m.qualified_name = 'Global-WebAPI' AND v.name = 'fetch'
+-- Returns: Only Global-WebAPI.fetch with full signature
+```
+
+**Finding `JSON.t` type when module is unknown:**
+
+❌ **INEFFICIENT** (misses the target, returns wrong types):
+```sql
+SELECT t.name, t.kind, t.signature, m.qualified_name as module_name
+FROM types t
+JOIN modules m ON t.module_id = m.id
+WHERE LOWER(t.name) LIKE LOWER('%json%')
+-- Returns: Js_json.Kind.json, pushSubscriptionJSON, etc. (but not JSON.t)
+```
+
+✅ **EFFICIENT - Phase 1** (exploratory, find JSON modules):
+```sql
+SELECT m.qualified_name as module_name
+FROM modules m
+WHERE m.qualified_name LIKE '%JSON%'
+-- Returns: Stdlib_JSON, Js_json, Js_json.Kind, etc.
+```
+
+✅ **EFFICIENT - Phase 2** (targeted, find type 't' in JSON modules):
+```sql
+SELECT t.name, t.kind, t.signature, m.qualified_name as module_name
+FROM types t
+JOIN modules m ON t.module_id = m.id
+WHERE m.qualified_name = 'Stdlib_JSON' AND t.name = 't'
+-- Returns: JSON.t from Stdlib_JSON
+```
+
+## Alias Resolution Pattern
+
+When looking up a module by name, first check if it exists directly:
+
+```sql
+SELECT id, qualified_name FROM modules WHERE qualified_name = 'String'
+```
+
+If not found, check the aliases table:
+
+```sql
+SELECT target_qualified_name 
+FROM aliases 
+WHERE alias_name = 'String'
+```
+
+Then look up the target module:
+
+```sql
+SELECT id, qualified_name FROM modules WHERE qualified_name = 'Stdlib_String'
+```
+
+## Notes
+
+- **IMPORTANT**: The `query_rescript_database` tool does NOT support SQL parameters. All values must be inlined directly in the SQL query string. When constructing queries, replace example values with actual identifiers.
+- The `detail` columns contain JSON strings that need to be parsed
+- Global types/values are stored in the "Pervasives" module (for @rescript/runtime)
+- Module names can include namespaces (e.g., "DOMAPI-WebAPI") or be nested (e.g., "React.Children")
+- Common package names: `@rescript/runtime`, `@rescript/react`, `@rescript/webapi`
+- The `is_auto_opened` flag indicates modules opened via the `-open` compiler flag
+- Type references and generic parameters are populated in a second pass after initial indexing
+- For queries that require IDs (like type_references or generic_type_parameters), first query the type/value to get its ID, then use that ID in subsequent queries

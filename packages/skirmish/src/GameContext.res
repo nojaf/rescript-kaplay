@@ -1,8 +1,5 @@
 open Kaplay
 
-@scope("import.meta.env")
-external baseUrl: string = "BASE_URL"
-
 @scope("window")
 external innerWidth: float = "innerWidth"
 
