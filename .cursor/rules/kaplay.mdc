@@ -51,6 +51,88 @@ These should reflect the types in [kaplay node_module](../../node_modules/kaplay
     ```
 - Avoid nested game-object modules inside other object modules. Includes leak methods into the nested module's scope, creating methods that type-check but are missing at runtime.
 
+### Child origin
+
+- All child transforms are relative to the parent. When you `addChild(parent, [...])`, components like `pos`, `scale`, `rotate`, `z`, etc. operate in the child’s local space, offset by the parent’s transform.
+- See the Kaplay `pos` docs for behavior and examples: [pos (position) component](https://v4000.kaplayjs.com/docs/api/ctx/pos/).
+
+### Local vs world coordinates
+
+- Child state you accumulate (like positions) is typically in the child’s local space. For comparisons against world/screen bounds, convert to world space first.
+- Convert child-local to world by offsetting with the child’s world position; for screen/world conversions use `k->toScreen` / `k->toWorld` when the camera is transformed.
+
+```ReScript
+// Given a child object and a candidate point in the child's local space
+let candidateLocal = nextPoint
+let candidateWorld = child->worldPos->Vec2.add(candidateLocal)
+
+// Compare against a world-space rectangle (e.g. 0..width/height)
+let worldRect = Math.Rect.make(k, k->vec2Zero, k->width, k->height)
+if !Math.Rect.contains(worldRect, candidateWorld) {
+  // out of bounds
+}
+```
+
+### Nested object hierarchies and add patterns
+
+- Kaplay’s `add`/`addChild` API expects a list of components to construct the object.
+- There are 2 ergonomic patterns for nested objects:
+  1) Return components: have `Child.makeComponents(...) : array<comp>` and call `parent->addChild(Child.makeComponents(...))`. This is great when you don’t need to capture the created object in the child.
+  2) Pass an adder: pass `addToParent` (i.e. `extra => parent->addChild(extra)`) into `Child.make(addToParent, ...)` so the child can call `addToParent([ ... comps ... ])` and immediately get a typed `child` back. This is useful when the child needs to register `onUpdate` or other event handlers on itself right away.
+
+Short examples:
+
+```ReScript
+// 1) Return components
+module Child = {
+  type t
+  include GameObjRaw.Comp({type t = t})
+  include Pos.Comp({type t = t})
+
+  let makeComponents = (~x: float, ~y: float): array<Kaplay.Types.comp> => [
+    addPos(k, x, y),
+    // ... other comps ...
+  ]
+}
+
+let child1 = parent->addChild(Child.makeComponents(~x=10., ~y=5.))
+```
+
+```ReScript
+// 2) Pass an adder so the child can attach handlers immediately
+module Child = {
+  type t
+  include GameObjRaw.Comp({type t = t})
+  include Pos.Comp({type t = t})
+
+  let make = (addToParent: array<Kaplay.Types.comp> => t, ~x: float, ~y: float): t => {
+    let child: t = addToParent([addPos(k, x, y)])
+    child->onUpdate(() => {
+      // ... per-frame logic ...
+    })
+    child
+  }
+}
+
+let child2 = Child.make(extra => parent->addChild(extra), ~x=10., ~y=5.)
+```
+
+### Event controllers and cleanup pattern
+
+Use controller-returning variants (e.g. `onUpdateWithController`) when you need to stop an update loop:
+
+```ReScript
+let ctrlRef: ref<option<Kaplay.KEventController.t>> = ref(None)
+ctrlRef := Some(obj->onUpdateWithController(() => {
+  if shouldStop {
+    switch ctrlRef.contents {
+    | Some(ctrl) => ctrl->KEventController.cancel
+    | None => ()
+    }
+  }
+}))
+```
+
 ## Events
 
 - Most context and object events have 2 variants:

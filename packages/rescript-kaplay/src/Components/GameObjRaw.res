@@ -48,7 +48,9 @@ module Comp = (
 
   /**
   Add a game object from an array of components.
- */
+  
+  Caution: child positions are relative to the parent! If you use addPos inside the child, it will be relative to the parent.
+  */
   @send
   external addChild: (T.t, array<comp>) => 't = "add"
 

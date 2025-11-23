@@ -3,7 +3,7 @@
 import Kaplay from "kaplay";
 import * as Primitive_float from "@rescript/runtime/lib/es6/Primitive_float.js";
 
-let scale = Primitive_float.min(1.5, Primitive_float.min(window.innerWidth / 800, window.innerHeight / 400));
+let scale = Primitive_float.min(1.5, Primitive_float.min(window.innerWidth / 300, window.innerHeight / 400));
 
 let k = Kaplay({
   width: 300,
@@ -14,7 +14,13 @@ let k = Kaplay({
   crisp: true
 });
 
+let gameWidth = 300;
+
+let gameHeight = 400;
+
 export {
+  gameWidth,
+  gameHeight,
   scale,
   k,
 }

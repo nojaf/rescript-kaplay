@@ -5,7 +5,11 @@ import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Health$Kaplay from "@nojaf/rescript-kaplay/src/Components/Health.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
+import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
+import * as Thundershock$Skirmish from "./Thundershock.res.mjs";
+
+GameObjRaw$Kaplay.Comp({});
 
 Pos$Kaplay.Comp({});
 
@@ -69,6 +73,11 @@ function make(id) {
       return;
     } else {
       return;
+    }
+  });
+  GameContext$Skirmish.k.onKeyRelease(key => {
+    if (key === "space") {
+      return Thundershock$Skirmish.make(extra => gameObj.add(extra), gameObj.pos, GameContext$Skirmish.k.Vec2.UP);
     }
   });
   return gameObj;

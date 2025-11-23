@@ -3,6 +3,7 @@ open GameContext
 
 type t
 
+include GameObjRaw.Comp({type t = t})
 include Pos.Comp({type t = t})
 include Sprite.Comp({type t = t})
 include Area.Comp({type t = t})
@@ -27,7 +28,7 @@ let load = (id: int): unit => {
 let movementSpeed = 200.
 
 /* Create a Pokemon game object at center, with hp 20, center anchor, default area.
-   Uses the back-facing sprite by default. */
+ Uses the back-facing sprite by default. */
 let make = (id: int): t => {
   let gameObj: t =
     k->Context.add([
@@ -63,7 +64,12 @@ let make = (id: int): t => {
     }
   })
 
+  k->Context.onKeyRelease(key => {
+    switch key {
+    | Space => Thundershock.make(addChild(gameObj, ...), gameObj->getPos, k->Context.vec2Up)
+    | _ => ()
+    }
+  })
+
   gameObj
 }
-
-
