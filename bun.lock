@@ -1,10 +1,11 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "rescript-kaplay",
       "dependencies": {
-        "rescript": "^12.0.0-beta.4",
+        "rescript": "^12.0.0-rc.5",
       },
       "devDependencies": {
         "@astrojs/starlight": "^0.34.8",
@@ -21,8 +22,8 @@
       "name": "@nojaf/rescript-kaplay",
       "version": "0.10.0",
       "peerDependencies": {
-        "kaplay": "^4000.0.0-alpha.19",
-        "rescript": "^12.0.0-beta.2",
+        "kaplay": "^4000.0.0-alpha.23",
+        "rescript": ">=12.0.0-rc.1 <13.0.0",
       },
     },
     "packages/samples": {
@@ -30,7 +31,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@nojaf/rescript-kaplay": "workspace:^",
-        "kaplay": "4000.0.0-alpha.19",
+        "kaplay": "4000.0.0-alpha.23",
       },
       "devDependencies": {
         "vite": "6.3.5",
@@ -196,15 +197,17 @@
 
     "@pagefind/windows-x64": ["@pagefind/windows-x64@1.3.0", "", { "os": "win32", "cpu": "x64" }, "sha512-BR1bIRWOMqkf8IoU576YDhij1Wd/Zf2kX/kCI0b2qzCKC8wcc2GQJaaRMCpzvCCrmliO4vtJ6RITp/AnoYUUmQ=="],
 
-    "@rescript/darwin-arm64": ["@rescript/darwin-arm64@12.0.0-beta.4", "", { "os": "darwin", "cpu": "arm64" }, "sha512-UenADkeR86PyFJ89AY0utG5fi1/3DLEBHoof0DjgXpMhZoPg+fjXcxRGhtBpN1Bov59kBLxIDLX0T6ZkFtjbwQ=="],
+    "@rescript/darwin-arm64": ["@rescript/darwin-arm64@12.0.0-rc.5", "", { "os": "darwin", "cpu": "arm64" }, "sha512-on94/D8LNX8+SwKKvVd5Zj7amtgzk+BRGiEw+5XW7Kz+hW/S0jwGvfVg8RlDweRI9duEkab4quesfEN4VuW+JA=="],
 
-    "@rescript/darwin-x64": ["@rescript/darwin-x64@12.0.0-beta.4", "", { "os": "darwin", "cpu": "x64" }, "sha512-aKSabtfetlVvA0EA2G4TBTlDH96CZsnmCMbsGwwMDvLLr4cmnmJoMO/nvgI5AdFcNUW/NGVtGVsgPfcmLd7EWQ=="],
+    "@rescript/darwin-x64": ["@rescript/darwin-x64@12.0.0-rc.5", "", { "os": "darwin", "cpu": "x64" }, "sha512-tfSOWR9fhHcVlV04t7qsL1pka64p9oo+5J9kNQeE6j/h3r5qnjg32M+XQl9hDKfg/btqf0KoeyDq/rQXFVsDSA=="],
 
-    "@rescript/linux-arm64": ["@rescript/linux-arm64@12.0.0-beta.4", "", { "os": "linux", "cpu": "arm64" }, "sha512-UHClm/Gsdv5v2kLgEhkqfIsDeYSIuACGmHWPhskg93+EjeBHpPWr4DG/8XdhywZfTFgIGsIYzpZ3ejRfKq5X+Q=="],
+    "@rescript/linux-arm64": ["@rescript/linux-arm64@12.0.0-rc.5", "", { "os": "linux", "cpu": "arm64" }, "sha512-6YHdSUYU+vBYXCqCxQve3CLHUqp8ojUV9476n7qxdYM36bWTvglnZae/SqMhGASwhviyXFumJDH15FLfUGpiZg=="],
 
-    "@rescript/linux-x64": ["@rescript/linux-x64@12.0.0-beta.4", "", { "os": "linux", "cpu": "x64" }, "sha512-c7ueadv9lhK77sCi9zfQPkaz4vmzoW4U2b4GgUqkSzDlOxYT3ttWiC2+deGBJ26Q7CsWL/kFb0Hp2rydjkkexw=="],
+    "@rescript/linux-x64": ["@rescript/linux-x64@12.0.0-rc.5", "", { "os": "linux", "cpu": "x64" }, "sha512-qS/1x6v2CdVuDIgMF3BnyxSwQ/QGwrrkhH4L1wjgS58STURDlwSxsEeS/tZca1v8TFbRKbMOi4KaWyyRuivgRA=="],
 
-    "@rescript/win32-x64": ["@rescript/win32-x64@12.0.0-beta.4", "", { "os": "win32", "cpu": "x64" }, "sha512-qMhBvqQp0wnKp+z1do79NHb/j3t50946P4QH01/ErtJpTLEJUyx6OzaEaNu5r4iu+AXAKtFG26497JICvuTWJg=="],
+    "@rescript/runtime": ["@rescript/runtime@12.0.0-rc.5", "", {}, "sha512-IkjXDr2hlMJDlJCVk1QlDR3r1sSKAJg8xnBq3Uh4IO0FToeMmeSYv/xh0j0YrInzCwgq6RmYgsyYS+ornEepJw=="],
+
+    "@rescript/win32-x64": ["@rescript/win32-x64@12.0.0-rc.5", "", { "os": "win32", "cpu": "x64" }, "sha512-kWAjl9nAsUntpMERAJE3c6EKRR6hl6tVB/9LzPkgvBLrX8m5FkPGUeeD4UJihTD2+BxC4BfLak4yOrENqMBA9g=="],
 
     "@rollup/pluginutils": ["@rollup/pluginutils@5.1.4", "", { "dependencies": { "@types/estree": "^1.0.0", "estree-walker": "^2.0.2", "picomatch": "^4.0.2" }, "peerDependencies": { "rollup": "^1.20.0||^2.0.0||^3.0.0||^4.0.0" }, "optionalPeers": ["rollup"] }, "sha512-USm05zrsFxYLPdWWq+K3STlWiT/3ELn3RcV5hJMghpeAIhxfsUIg6mt12CBJBInWMV4VneoV7SfGv8xIwo2qNQ=="],
 
@@ -558,7 +561,7 @@
 
     "js-yaml": ["js-yaml@4.1.0", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA=="],
 
-    "kaplay": ["kaplay@4000.0.0-alpha.19", "", {}, "sha512-d81FQ5ZyS6LT+KHlPwjHIn+GXFVDNc32IA/9YUbwoWic+myhAURYp+h60U5prev9VLXA8CjfB1121F2U04s6dw=="],
+    "kaplay": ["kaplay@4000.0.0-alpha.23", "", {}, "sha512-2VEQ+68eKQYBbZbSrpd9z11Im6djdfp7cJ/d1m5XXuDHGx1SY5hpJEo6bASui1JZaE1Z+7h8NR3DV3/xMoNWZw=="],
 
     "keep-a-changelog": ["keep-a-changelog@2.6.2", "", { "dependencies": { "@deno/shim-deno": "~0.18.0" }, "bin": { "changelog": "esm/bin.js" } }, "sha512-YSebqNvqzsTcDYJ4jxO1w8vFa74J0R+8Ks0ZOtHQwdJho2EPuzOtAgRkpMd/0NxiQ0toqJgl7CPMz1urZs9pxg=="],
 
@@ -800,7 +803,7 @@
 
     "remark-stringify": ["remark-stringify@11.0.0", "", { "dependencies": { "@types/mdast": "^4.0.0", "mdast-util-to-markdown": "^2.0.0", "unified": "^11.0.0" } }, "sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw=="],
 
-    "rescript": ["rescript@12.0.0-beta.4", "", { "optionalDependencies": { "@rescript/darwin-arm64": "12.0.0-beta.4", "@rescript/darwin-x64": "12.0.0-beta.4", "@rescript/linux-arm64": "12.0.0-beta.4", "@rescript/linux-x64": "12.0.0-beta.4", "@rescript/win32-x64": "12.0.0-beta.4" }, "bin": { "bsc": "cli/bsc.js", "rescript": "cli/rescript.js", "bstracing": "cli/bstracing.js", "rescript-tools": "cli/rescript-tools.js", "rescript-legacy": "cli/rescript-legacy.js" } }, "sha512-Le3fnsa6MUDecmpnfIuJMA8cXraRLrdEd4Ho2m5OavTKbWgINzJiG3sqlnF1yPpWNPZ3nL5D8oRNakcpp1fbtg=="],
+    "rescript": ["rescript@12.0.0-rc.5", "", { "dependencies": { "@rescript/runtime": "12.0.0-rc.5" }, "optionalDependencies": { "@rescript/darwin-arm64": "12.0.0-rc.5", "@rescript/darwin-x64": "12.0.0-rc.5", "@rescript/linux-arm64": "12.0.0-rc.5", "@rescript/linux-x64": "12.0.0-rc.5", "@rescript/win32-x64": "12.0.0-rc.5" }, "bin": { "bsc": "cli/bsc.js", "rescript": "cli/rescript.js", "bstracing": "cli/bstracing.js", "rescript-tools": "cli/rescript-tools.js", "rescript-legacy": "cli/rescript-legacy.js" } }, "sha512-4GZRZVbVLD/EoJskfmkVnWPBuA39njQahB+Qy69aeIE20x29AYbW9tuWYl9SE3Ul2zxbTe2Ymg//EQNFN2eWDQ=="],
 
     "restructure": ["restructure@3.0.2", "", {}, "sha512-gSfoiOEA0VPE6Tukkrr7I0RBdE0s7H1eFCDBk05l1KIQT1UIKNc5JZy6jdyW6eYH3aR3g5b3PuL77rq0hvwtAw=="],
 

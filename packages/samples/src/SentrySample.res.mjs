@@ -131,7 +131,7 @@ function onLoad() {
   make$2();
   make$3();
   flareon.onObjectsSpotted(spotted => {
-    k.debug.log("Spotted squirtle: " + spotted.length.toString());
+    k.debug.log(`Spotted squirtle: ` + spotted.length.toString());
   });
   squirtle.onKeyDown(key => {
     if (key !== "f1" && key !== "shift" && key !== "f2" && key !== "down" && key !== "f3" && key !== "up" && key !== "f4" && key !== "right" && key !== "f5" && key !== "left" && key !== "f6" && key !== " " && key !== "f7" && key !== "space" && key !== "f8" && key !== "meta" && key !== "f9" && key !== "alt" && key !== "f10" && key !== "control" && key !== "f11" && key !== "tab" && key !== "f12" && key !== "enter" && key !== "`" && key !== "backspace" && key !== "1" && key !== "escape" && key !== "2" && key !== "/" && key !== "3" && key !== "." && key !== "4" && key !== "," && key !== "5" && key !== "m" && key !== "6" && key !== "n" && key !== "7" && key !== "b" && key !== "8" && key !== "v" && key !== "9" && key !== "c" && key !== "0" && key !== "x" && key !== "-" && key !== "z" && key !== "+" && key !== "'" && key !== "=" && key !== ";" && key !== "q" && key !== "l" && key !== "w" && key !== "k" && key !== "e" && key !== "j" && key !== "r" && key !== "h" && key !== "t" && key !== "g" && key !== "y" && key !== "f" && key !== "u" && key !== "d" && key !== "i" && key !== "s" && key !== "o" && key !== "a" && key !== "p" && key !== "\\" && key !== "[" && key !== "]") {
@@ -156,9 +156,9 @@ function onLoad() {
   });
 }
 
-k.loadSprite("squirtle", import.meta.env.BASE_URL + "/sprites/squirtle-rb.png");
+k.loadSprite("squirtle", import.meta.env.BASE_URL + `/sprites/squirtle-rb.png`);
 
-k.loadSprite("flareon", import.meta.env.BASE_URL + "/sprites/flareon-rb.png");
+k.loadSprite("flareon", import.meta.env.BASE_URL + `/sprites/flareon-rb.png`);
 
 k.onLoad(onLoad);
 

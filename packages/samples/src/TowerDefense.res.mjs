@@ -10,14 +10,14 @@ import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Move$Kaplay from "@nojaf/rescript-kaplay/src/Components/Move.res.mjs";
 import * as Rect$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rect.res.mjs";
 import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.mjs";
-import * as Stdlib_Array from "rescript/lib/es6/Stdlib_Array.js";
+import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Circle$Kaplay from "@nojaf/rescript-kaplay/src/Components/Circle.res.mjs";
 import * as Health$Kaplay from "@nojaf/rescript-kaplay/src/Components/Health.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as OffScreen$Kaplay from "@nojaf/rescript-kaplay/src/Components/OffScreen.res.mjs";
-import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
+import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 
 let k = Kaplay({
@@ -271,7 +271,6 @@ function fireHomingBullet(tower, viewport, target) {
       bubble.destroy();
       return;
     }
-    
   });
   bubble.onCollide(enemy, (enemy, param) => {
     bubble.destroy();
@@ -307,7 +306,6 @@ function make$6() {
     if (enemy !== undefined) {
       return fireHomingBullet(tower, viewport, Primitive_option.valFromOption(enemy));
     }
-    
   });
   tower.add(make$4());
   return tower;
@@ -326,11 +324,11 @@ function onSceneLoad() {
   });
 }
 
-k.loadSprite("charmander", import.meta.env.BASE_URL + "/sprites/charmander-rb.png");
+k.loadSprite("charmander", import.meta.env.BASE_URL + `/sprites/charmander-rb.png`);
 
-k.loadSprite("squirtle", import.meta.env.BASE_URL + "/sprites/squirtle-rb.png");
+k.loadSprite("squirtle", import.meta.env.BASE_URL + `/sprites/squirtle-rb.png`);
 
-k.loadSprite("heart", import.meta.env.BASE_URL + "/sprites/heart.png", {
+k.loadSprite("heart", import.meta.env.BASE_URL + `/sprites/heart.png`, {
   sliceX: 2,
   sliceY: 1,
   anims: {

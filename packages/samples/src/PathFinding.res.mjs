@@ -10,7 +10,7 @@ import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.m
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as Outline$Kaplay from "@nojaf/rescript-kaplay/src/Components/Outline.res.mjs";
-import * as Primitive_float from "rescript/lib/es6/Primitive_float.js";
+import * as Primitive_float from "@rescript/runtime/lib/es6/Primitive_float.js";
 
 let width = 12 * 64;
 
@@ -188,11 +188,11 @@ function onLoad() {
   });
 }
 
-k.loadSprite("squirtle", import.meta.env.BASE_URL + "/sprites/squirtle-rb.png");
+k.loadSprite("squirtle", import.meta.env.BASE_URL + `/sprites/squirtle-rb.png`);
 
-k.loadSprite("charmander", import.meta.env.BASE_URL + "/sprites/charmander-rb.png");
+k.loadSprite("charmander", import.meta.env.BASE_URL + `/sprites/charmander-rb.png`);
 
-k.loadMusic("beast-in-black", import.meta.env.BASE_URL + "/sounds/beast-in-black.mp3");
+k.loadMusic("beast-in-black", import.meta.env.BASE_URL + `/sounds/beast-in-black.mp3`);
 
 k.onLoad(onLoad);
 

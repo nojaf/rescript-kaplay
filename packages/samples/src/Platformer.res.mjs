@@ -9,10 +9,10 @@ import * as Body$Kaplay from "@nojaf/rescript-kaplay/src/Components/Body.res.mjs
 import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Rect$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rect.res.mjs";
 import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.mjs";
-import * as Primitive_int from "rescript/lib/es6/Primitive_int.js";
+import * as Primitive_int from "@rescript/runtime/lib/es6/Primitive_int.js";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as OffScreen$Kaplay from "@nojaf/rescript-kaplay/src/Components/OffScreen.res.mjs";
-import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
+import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 
 let k = Kaplay({
@@ -145,13 +145,13 @@ let Coin = {
 
 function scene() {
   k.setGravity(250);
-  k.loadSound("score", import.meta.env.BASE_URL + "/sounds/score.wav");
+  k.loadSound("score", import.meta.env.BASE_URL + `/sounds/score.wav`);
   let squirtleSpritesheetDimensions = {
     width: 167,
     height: 39
   };
   let mkSquirtleQuad = (x, y, w, h) => k.quad(x / squirtleSpritesheetDimensions.width, y / squirtleSpritesheetDimensions.height, w / squirtleSpritesheetDimensions.width, h / squirtleSpritesheetDimensions.height);
-  k.loadSprite("squirtle", import.meta.env.BASE_URL + "/sprites/squirtle.png", {
+  k.loadSprite("squirtle", import.meta.env.BASE_URL + `/sprites/squirtle.png`, {
     anims: {
       idle: {
         frames: [0]
@@ -180,7 +180,7 @@ function scene() {
     ]
   });
   let mkCoinQuad = (x, w) => k.quad(x / 384, 0, w / 384, 1);
-  k.loadSprite("coin", import.meta.env.BASE_URL + "/sprites/coin.png", {
+  k.loadSprite("coin", import.meta.env.BASE_URL + `/sprites/coin.png`, {
     anims: {
       spin: {
         loop: true,
@@ -274,7 +274,6 @@ function scene() {
       squirtle.play("idle");
       return;
     }
-    
   });
   squirtle.onGround(() => {
     if (k.isKeyDown("left") || k.isKeyDown("right")) {

@@ -25,6 +25,6 @@
     "packages/*"
   ],
   "dependencies": {
-    "rescript": "^12.0.0-beta.4"
+    "rescript": "^12.0.0-rc.5"
   }
 }

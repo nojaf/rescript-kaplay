@@ -129,7 +129,6 @@ function onLoad() {
       cameraVelocity.contents = currentVelocity.scale(k.vec2(0.9, 0.9));
       return;
     }
-    
   });
   map.onKeyDown(key => {
     let currentCamPos = k.getCamPos();
@@ -162,7 +161,7 @@ function onLoad() {
   make(15, k.height() - 30, "Press arrow keys or touch to move the camera");
 }
 
-k.loadSprite("bg", import.meta.env.BASE_URL + "/sprites/middle-earth.webp");
+k.loadSprite("bg", import.meta.env.BASE_URL + `/sprites/middle-earth.webp`);
 
 k.onLoad(onLoad);
 

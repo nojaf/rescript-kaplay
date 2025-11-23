@@ -16,7 +16,7 @@ import * as Rotate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rotate.res
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as Outline$Kaplay from "@nojaf/rescript-kaplay/src/Components/Outline.res.mjs";
 import * as OffScreen$Kaplay from "@nojaf/rescript-kaplay/src/Components/OffScreen.res.mjs";
-import * as Primitive_option from "rescript/lib/es6/Primitive_option.js";
+import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 
 let k = Kaplay({
@@ -111,7 +111,6 @@ function make() {
     if (key === "space") {
       return fly(bird);
     }
-    
   });
   k.onTouchEnd((param, param$1) => fly(bird));
   return bird;
@@ -252,9 +251,9 @@ function menu$1() {
 }
 
 function game$1() {
-  k.loadSprite(spriteName, import.meta.env.BASE_URL + "/sprites/pidgeotto-rb.png");
-  k.loadSound(score$1, import.meta.env.BASE_URL + "/sounds/score.wav");
-  k.loadSound(die, import.meta.env.BASE_URL + "/sounds/die.wav");
+  k.loadSprite(spriteName, import.meta.env.BASE_URL + `/sprites/pidgeotto-rb.png`);
+  k.loadSound(score$1, import.meta.env.BASE_URL + `/sounds/score.wav`);
+  k.loadSound(die, import.meta.env.BASE_URL + `/sounds/die.wav`);
   k.setGravity(100);
   let gameState = {
     score: 0,
@@ -277,7 +276,6 @@ function game$1() {
       k.play(score$1);
       return;
     }
-    
   });
   k.on(gameOver, tag$1, (_pipe, param) => {
     k.play(die);
@@ -291,7 +289,6 @@ function game$1() {
       gameState.lastUpdate = 0;
       return;
     }
-    
   });
 }
 
