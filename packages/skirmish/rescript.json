@@ -1,0 +1,15 @@
+{
+  "name": "@nojaf/samples",
+  "namespace": "Skirmish",
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    }
+  ],
+  "dependencies": [
+    "@nojaf/rescript-kaplay",
+    "rescript-bun"
+  ],
+  "compiler-flags":[]
+}
