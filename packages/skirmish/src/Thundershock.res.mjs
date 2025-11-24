@@ -5,8 +5,12 @@ import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
+import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
+import GlowFragraw from "../shaders/glow.frag?raw";
+import DarkenFragraw from "../shaders/darken.frag?raw";
+import Outline2pxFragraw from "../shaders/outline2px.frag?raw";
 
 Pos$Kaplay.Comp({});
 
@@ -15,6 +19,20 @@ Anchor$Kaplay.Comp({});
 GameObjRaw$Kaplay.Comp({});
 
 Z$Kaplay.Comp({});
+
+Shader$Kaplay.Comp({});
+
+let glowSource = GlowFragraw;
+
+let outline2pxSource = Outline2pxFragraw;
+
+let darkenSource = DarkenFragraw;
+
+function load() {
+  GameContext$Skirmish.k.loadShader("glow", undefined, glowSource);
+  GameContext$Skirmish.k.loadShader("outline2px", undefined, outline2pxSource);
+  GameContext$Skirmish.k.loadShader("darken", undefined, darkenSource);
+}
 
 let lighting = GameContext$Skirmish.k.Color.fromHex("#fef9c2");
 
@@ -32,10 +50,11 @@ function draw() {
 
 let worldRect = Math$Kaplay.Rect.make(GameContext$Skirmish.k, GameContext$Skirmish.k.Vec2.ZERO, GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height());
 
-function make(addToParent, origin, direction) {
-  let direction$1 = direction.scale(20);
-  console.log("Origin: ", origin, "Direction: ", direction$1);
-  let gameObj = addToParent([
+function cast(pokemon) {
+  let direction = pokemon.direction.scale(20);
+  let isYAxis = direction.x === 0;
+  console.log("Direction: ", direction);
+  let thundershock = pokemon.add([
     {
       points: [GameContext$Skirmish.k.Vec2.ZERO]
     },
@@ -46,29 +65,38 @@ function make(addToParent, origin, direction) {
       draw: draw
     }
   ]);
+  pokemon.use(GameContext$Skirmish.k.shader("glow", () => ({
+    u_time: GameContext$Skirmish.k.time(),
+    u_resolution: GameContext$Skirmish.k.vec2(pokemon.width, pokemon.height),
+    u_thickness: 0.7,
+    u_color: GameContext$Skirmish.k.Color.fromHex("#fef9c2"),
+    u_intensity: 0.66,
+    u_pulse_speed: 5.0
+  })));
   let timerRef = {
     contents: undefined
   };
   timerRef.contents = GameContext$Skirmish.k.loop(0.050, () => {
-    let point = Stdlib_Array.last(gameObj.points);
+    let point = Stdlib_Array.last(thundershock.points);
     let lastPoint = point !== undefined ? point : GameContext$Skirmish.k.Vec2.ZERO;
     let deviation = GameContext$Skirmish.k.rand(-1 * 7, 7);
-    let candidate = GameContext$Skirmish.k.vec2(deviation, lastPoint.y + direction$1.y);
-    let candidateInWorldRect = gameObj.worldPos().add(candidate);
+    let candidate = isYAxis ? GameContext$Skirmish.k.vec2(deviation, lastPoint.y + direction.y) : GameContext$Skirmish.k.vec2(lastPoint.x + direction.x, deviation);
+    let candidateInWorldRect = thundershock.worldPos().add(candidate);
     if (worldRect.contains(candidateInWorldRect)) {
-      gameObj.points.push(candidate);
+      thundershock.points.push(candidate);
       return;
     }
     candidateInWorldRect.x = GameContext$Skirmish.k.clamp(candidateInWorldRect.x, 0, GameContext$Skirmish.k.width());
     candidateInWorldRect.y = GameContext$Skirmish.k.clamp(candidateInWorldRect.y, 0, GameContext$Skirmish.k.height());
-    let cappedLocal = candidateInWorldRect.sub(gameObj.worldPos());
-    gameObj.points.push(cappedLocal);
+    let cappedLocal = candidateInWorldRect.sub(thundershock.worldPos());
+    thundershock.points.push(cappedLocal);
     let t = timerRef.contents;
     if (t !== undefined) {
       t.cancel();
     }
     GameContext$Skirmish.k.wait(5 * 0.050, () => {
-      gameObj.destroy();
+      pokemon.unuse("shader");
+      thundershock.destroy();
     });
   });
 }
@@ -80,6 +108,10 @@ let deviationOffset = 7;
 let distance = 20;
 
 export {
+  glowSource,
+  outline2pxSource,
+  darkenSource,
+  load,
   lighting,
   lighting2,
   draw,
@@ -87,6 +119,6 @@ export {
   intervalSeconds,
   deviationOffset,
   distance,
-  make,
+  cast,
 }
 /*  Not a pure module */

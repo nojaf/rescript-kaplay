@@ -7,6 +7,22 @@ include Pos.Comp({type t = t})
 include Anchor.Comp({type t = t})
 include GameObjRaw.Comp({type t = t})
 include Z.Comp({type t = t})
+include Shader.Comp({type t = t})
+
+@module("../shaders/glow.frag?raw")
+external glowSource: string = "default"
+
+@module("../shaders/outline2px.frag?raw")
+external outline2pxSource: string = "default"
+
+@module("../shaders/darken.frag?raw")
+external darkenSource: string = "default"
+
+let load = (): unit => {
+  k->Context.loadShader("glow", ~frag=glowSource)
+  k->Context.loadShader("outline2px", ~frag=outline2pxSource)
+  k->Context.loadShader("darken", ~frag=darkenSource)
+}
 
 let lighting = k->Color.fromHex("#fef9c2")
 let lighting2 = k->Color.fromHex("#fff085")
@@ -29,10 +45,11 @@ let intervalSeconds = 0.050
 let deviationOffset = 7.
 let distance = 20.
 
-let make = (addToParent: array<Types.comp> => t, origin: Vec2.t, direction: Vec2.t) => {
-  let direction = direction->Vec2.scaleWith(distance)
-  Console.log4("Origin: ", origin, "Direction: ", direction)
-  let gameObj: t = addToParent([
+let cast = (pokemon: RuntimePokemon.t<t>) => {
+  let direction = pokemon.direction->Vec2.scaleWith(distance)
+  let isYAxis = direction.x == 0.
+  Console.log2("Direction: ", direction)
+  let thundershock: t = pokemon.add([
     Obj.magic({points: [k->Context.vec2Zero]}),
     k->addPos(0., 0.),
     k->addZ(-1),
@@ -42,22 +59,39 @@ let make = (addToParent: array<Types.comp> => t, origin: Vec2.t, direction: Vec2
     }),
   ])
 
+  pokemon.use(
+    addShader(k, "glow", ~uniform=() =>
+      {
+        "u_time": k->Context.time,
+        "u_resolution": k->Context.vec2(pokemon.width, pokemon.height),
+        "u_thickness": 0.7,
+        "u_color": k->Color.fromHex("#fef9c2"), // Thundershock.lighting2,
+        "u_intensity": 0.66,
+        "u_pulse_speed": 5.0,
+      }
+    ),
+  )
+
   let timerRef: ref<option<Kaplay.TimerController.t>> = ref(None)
   timerRef :=
     Some(
       k->Context.loopWithController(intervalSeconds, () => {
         // Propose the next point (from origin), avoiding accumulated lateral drift
         let candidate = {
-          let lastPoint = switch gameObj.points->Array.last {
+          let lastPoint = switch thundershock.points->Array.last {
           | Some(point) => point
           | None => k->Context.vec2Zero
           }
 
           let deviation = k->Context.randf(-1. * deviationOffset, deviationOffset)
-          k->Context.vec2(deviation, lastPoint.y + direction.y)
+          if isYAxis {
+            k->Context.vec2(deviation, lastPoint.y + direction.y)
+          } else {
+            k->Context.vec2(lastPoint.x + direction.x, deviation)
+          }
         }
 
-        let candidateInWorldRect = gameObj->worldPos->Vec2.add(candidate)
+        let candidateInWorldRect = thundershock->worldPos->Vec2.add(candidate)
         if !Kaplay.Math.Rect.contains(worldRect, candidateInWorldRect) {
           // Cap the last point to the game bounds edge, then stop
           let cap = {
@@ -66,8 +100,8 @@ let make = (addToParent: array<Types.comp> => t, origin: Vec2.t, direction: Vec2
             v.y = k->Context.clampFloat(v.y, 0., k->Context.height)
             v
           }
-          let cappedLocal = cap->Vec2.sub(gameObj->worldPos)
-          gameObj.points->Array.push(cappedLocal)
+          let cappedLocal = cap->Vec2.sub(thundershock->worldPos)
+          thundershock.points->Array.push(cappedLocal)
 
           // Remove timer
           switch timerRef.contents {
@@ -77,10 +111,11 @@ let make = (addToParent: array<Types.comp> => t, origin: Vec2.t, direction: Vec2
 
           // Schedule own destruction
           k->Context.wait(5. * intervalSeconds, () => {
-            gameObj->destroy
+            pokemon.unuse("shader")
+            thundershock->destroy
           })
         } else {
-          gameObj.points->Array.push(candidate)
+          thundershock.points->Array.push(candidate)
         }
       }),
     )

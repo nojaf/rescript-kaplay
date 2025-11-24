@@ -304,10 +304,6 @@ external loopWithController: (
 @send
 external wait: (t, float, unit => unit) => unit = "wait"
 
-/** Run the function after n seconds. */
-@send
-external waitWithController: (t, float, unit => unit) => TimerController.t = "wait"
-
 @send
 external randi: (t, int, int) => int = "randi"
 
@@ -444,6 +440,9 @@ external onWithController: (
   ~tag: string,
   ('t, 'arg) => unit,
 ) => KEventController.t = "on"
+
+@send
+external trigger: (t, string, string, 't) => unit = "trigger"
 
 /**
  Get current mouse position (without camera transform).

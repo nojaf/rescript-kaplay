@@ -78,4 +78,7 @@ module Comp = (
  */
   @send
   external use: (T.t, comp) => unit = "use"
+
+  @send
+  external unuse: (T.t, string) => unit = "unuse"
 }

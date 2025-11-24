@@ -9,9 +9,6 @@ import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
 import * as Thundershock$Skirmish from "./Thundershock.res.mjs";
-import GlowFragraw from "../shaders/glow.frag?raw";
-import DarkenFragraw from "../shaders/darken.frag?raw";
-import Outline2pxFragraw from "../shaders/outline2px.frag?raw";
 
 GameObjRaw$Kaplay.Comp({});
 
@@ -45,12 +42,6 @@ function backSpriteUrl(id) {
   return `/sprites/` + id.toString() + `-back.png`;
 }
 
-let glowSource = GlowFragraw;
-
-let outline2pxSource = Outline2pxFragraw;
-
-let darkenSource = DarkenFragraw;
-
 function load(id) {
   GameContext$Skirmish.k.loadSprite(frontSpriteName(id), frontSpriteUrl(id), {
     singular: true
@@ -58,13 +49,13 @@ function load(id) {
   GameContext$Skirmish.k.loadSprite(backSpriteName(id), backSpriteUrl(id), {
     singular: true
   });
-  GameContext$Skirmish.k.loadShader("glow", undefined, glowSource);
-  GameContext$Skirmish.k.loadShader("outline2px", undefined, outline2pxSource);
-  GameContext$Skirmish.k.loadShader("darken", undefined, darkenSource);
 }
 
 function make(id) {
   let gameObj = GameContext$Skirmish.k.add([
+    {
+      direction: GameContext$Skirmish.k.Vec2.UP
+    },
     GameContext$Skirmish.k.pos(GameContext$Skirmish.k.center().x, GameContext$Skirmish.k.height() * 0.8),
     GameContext$Skirmish.k.sprite(backSpriteName(id)),
     GameContext$Skirmish.k.area(),
@@ -72,44 +63,36 @@ function make(id) {
     GameContext$Skirmish.k.anchor("center"),
     tag
   ]);
-  let widthPx = gameObj.width;
-  let heightPx = gameObj.height;
-  gameObj.use(GameContext$Skirmish.k.shader("glow", () => ({
-    u_time: GameContext$Skirmish.k.time(),
-    u_resolution: GameContext$Skirmish.k.vec2(widthPx, heightPx),
-    u_thickness: 0.7,
-    u_color: GameContext$Skirmish.k.Color.fromHex("#fef9c2"),
-    u_intensity: 0.66,
-    u_pulse_speed: 5.0
-  })));
   GameContext$Skirmish.k.onUpdate(() => {
     let leftDown = GameContext$Skirmish.k.isKeyDown("left") || GameContext$Skirmish.k.isKeyDown("a");
     let rightDown = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
     let upDown = GameContext$Skirmish.k.isKeyDown("up") || GameContext$Skirmish.k.isKeyDown("w");
     let downDown = GameContext$Skirmish.k.isKeyDown("down") || GameContext$Skirmish.k.isKeyDown("s");
-    let speed = GameContext$Skirmish.k.vec2(200, 200);
-    if (upDown && !downDown) {
-      gameObj.move(GameContext$Skirmish.k.Vec2.UP.scale(speed));
-      gameObj.sprite = backSpriteName(id);
-      return;
-    } else if (downDown && !upDown) {
-      gameObj.move(GameContext$Skirmish.k.Vec2.DOWN.scale(speed));
-      gameObj.sprite = frontSpriteName(id);
-      return;
-    } else if (leftDown && !rightDown) {
-      gameObj.move(GameContext$Skirmish.k.Vec2.LEFT.scale(speed));
-      return;
-    } else if (rightDown && !leftDown) {
-      gameObj.move(GameContext$Skirmish.k.Vec2.RIGHT.scale(speed));
-      return;
-    } else {
+    if (leftDown || rightDown || upDown || downDown) {
+      if (upDown && !downDown) {
+        gameObj.direction = GameContext$Skirmish.k.Vec2.UP;
+        gameObj.sprite = backSpriteName(id);
+      } else if (downDown && !upDown) {
+        gameObj.direction = GameContext$Skirmish.k.Vec2.DOWN;
+        gameObj.sprite = frontSpriteName(id);
+      } else if (leftDown && !rightDown) {
+        gameObj.direction = GameContext$Skirmish.k.Vec2.LEFT;
+      } else if (rightDown && !leftDown) {
+        gameObj.direction = GameContext$Skirmish.k.Vec2.RIGHT;
+      }
+      gameObj.move(gameObj.direction.scale(200));
       return;
     }
   });
   GameContext$Skirmish.k.onKeyRelease(key => {
-    if (key === "space") {
-      return Thundershock$Skirmish.make(extra => gameObj.add(extra), gameObj.pos, GameContext$Skirmish.k.Vec2.UP);
+    if (key !== "f1" && key !== "shift" && key !== "f2" && key !== "down" && key !== "f3" && key !== "up" && key !== "f4" && key !== "right" && key !== "f5" && key !== "left" && key !== "f6" && key !== " " && key !== "f7" && key !== "space" && key !== "f8" && key !== "meta" && key !== "f9" && key !== "alt" && key !== "f10" && key !== "control" && key !== "f11" && key !== "tab" && key !== "f12" && key !== "enter" && key !== "`" && key !== "backspace" && key !== "1" && key !== "escape" && key !== "2" && key !== "/" && key !== "3" && key !== "." && key !== "4" && key !== "," && key !== "5" && key !== "m" && key !== "6" && key !== "n" && key !== "7" && key !== "b" && key !== "8" && key !== "v" && key !== "9" && key !== "c" && key !== "0" && key !== "x" && key !== "-" && key !== "z" && key !== "+" && key !== "'" && key !== "=" && key !== ";" && key !== "q" && key !== "l" && key !== "w" && key !== "k" && key !== "e" && key !== "j" && key !== "r" && key !== "h" && key !== "t" && key !== "g" && key !== "y" && key !== "f" && key !== "u" && key !== "d" && key !== "i" && key !== "s" && key !== "o" && key !== "a" && key !== "p" && key !== "\\" && key !== "[" && key !== "]") {
+      return;
     }
+    if (key !== "space") {
+      return;
+    }
+    console.log("Triggering Thundershock");
+    Thundershock$Skirmish.cast(gameObj);
   });
   return gameObj;
 }
@@ -122,9 +105,6 @@ export {
   backSpriteName,
   frontSpriteUrl,
   backSpriteUrl,
-  glowSource,
-  outline2pxSource,
-  darkenSource,
   load,
   movementSpeed,
   make,
