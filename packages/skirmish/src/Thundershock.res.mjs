@@ -22,18 +22,12 @@ let lighting2 = GameContext$Skirmish.k.Color.fromHex("#fee685");
 
 function draw() {
   let t = this ;
-  for (let i = 0, i_finish = t.points.length; i < i_finish; ++i) {
-    let match = t.points[i];
-    let match$1 = t.points[i + 1 | 0];
-    if (match !== undefined && match$1 !== undefined) {
-      GameContext$Skirmish.k.drawLine({
-        p1: match,
-        p2: match$1,
-        width: 2,
-        color: i % 3 === 0 ? lighting : lighting2
-      });
-    }
-  }
+  GameContext$Skirmish.k.drawLines({
+    pts: t.points,
+    color: lighting,
+    width: 2,
+    cap: "square"
+  });
 }
 
 let worldRect = Math$Kaplay.Rect.make(GameContext$Skirmish.k, GameContext$Skirmish.k.Vec2.ZERO, GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height());

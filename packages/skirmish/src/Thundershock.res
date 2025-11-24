@@ -14,18 +14,12 @@ let lighting2 = k->Color.fromHex("#fee685")
 let draw =
   @this
   (t: t) => {
-    for i in 0 to t.points->Array.length - 1 {
-      switch (t.points[i], t.points[i + 1]) {
-      | (Some(p1), Some(p2)) =>
-        k->Context.drawLine({
-          p1,
-          p2,
-          width: 2.,
-          color: i % 3 == 0 ? lighting : lighting2,
-        })
-      | _ => ()
-      }
-    }
+    k->Context.drawLines({
+      pts: t.points,
+      width: 2.,
+      color: lighting,
+      cap: Square,
+    })
   }
 
 let worldRect = Kaplay.Math.Rect.make(k, k->Context.vec2Zero, k->Context.width, k->Context.height)
