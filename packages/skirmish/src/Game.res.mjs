@@ -5,10 +5,12 @@ import * as GameContext$Skirmish from "./GameContext.res.mjs";
 import * as Thundershock$Skirmish from "./Thundershock.res.mjs";
 
 function sceneLoaded() {
-  Pokemon$Skirmish.make(25);
+  Pokemon$Skirmish.make(25, "Player");
+  Pokemon$Skirmish.make(4, "Opponent");
 }
 
 function scene() {
+  Pokemon$Skirmish.load(4);
   Pokemon$Skirmish.load(25);
   Thundershock$Skirmish.load();
   GameContext$Skirmish.k.onLoad(sceneLoaded);

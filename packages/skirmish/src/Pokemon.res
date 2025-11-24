@@ -3,6 +3,8 @@ open GameContext
 
 type t = {mutable direction: Vec2.t}
 
+type team = Player | Opponent
+
 include GameObjRaw.Comp({type t = t})
 include Pos.Comp({type t = t})
 include Sprite.Comp({type t = t})
@@ -32,59 +34,68 @@ external asRuntime: t => RuntimePokemon.t<'t> = "%identity"
 
 /* Create a Pokemon game object at center, with hp 20, center anchor, default area.
  Uses the back-facing sprite by default. */
-let make = (id: int): t => {
-  let gameObj: t = k->Context.add([
-    // initialState
-    Obj.magic({direction: k->Context.vec2Up}),
-    k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.8),
-    k->addSprite(backSpriteName(id)),
-    k->addArea,
-    k->addHealth(20),
-    k->addAnchorCenter,
-    Context.tag(tag),
-  ])
+let make = (id: int, team: team): t => {
+  let gameObj: t = k->Context.add(
+    [
+      // initialState
+      ...team == Player
+        ? [
+            Obj.magic({direction: k->Context.vec2Up}),
+            k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.8),
+            k->addSprite(backSpriteName(id)),
+          ]
+        : [
+            Obj.magic({direction: k->Context.vec2Down}),
+            k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.2),
+            k->addSprite(frontSpriteName(id)),
+          ],
+      k->addArea,
+      k->addHealth(20),
+      k->addAnchorCenter,
+      Context.tag(tag),
+    ],
+  )
 
-  /* Continuous movement on key press, single direction at a time (no diagonals). */
-  k->Context.onUpdate(() => {
-    let leftDown = k->Context.isKeyDown(Left) || k->Context.isKeyDown(A)
-    let rightDown = k->Context.isKeyDown(Right) || k->Context.isKeyDown(D)
-    let upDown = k->Context.isKeyDown(Up) || k->Context.isKeyDown(W)
-    let downDown = k->Context.isKeyDown(Down) || k->Context.isKeyDown(S)
+  if team == Player {
+    /* Continuous movement on key press, single direction at a time (no diagonals). */
+    k->Context.onUpdate(() => {
+      let leftDown = k->Context.isKeyDown(Left) || k->Context.isKeyDown(A)
+      let rightDown = k->Context.isKeyDown(Right) || k->Context.isKeyDown(D)
+      let upDown = k->Context.isKeyDown(Up) || k->Context.isKeyDown(W)
+      let downDown = k->Context.isKeyDown(Down) || k->Context.isKeyDown(S)
 
-    if !(leftDown || rightDown || upDown || downDown) {
-      // No key was pressed
-      ()
-    } else {
-      /* Y axis has priority over X; ignore X when any vertical key is active (not both). */
-      if upDown && !downDown {
-        // Move up
-        gameObj.direction = k->Context.vec2Up
-        gameObj->setSprite(backSpriteName(id))
-      } else if downDown && !upDown {
-        // Move down
-        gameObj.direction = k->Context.vec2Down
-        gameObj->setSprite(frontSpriteName(id))
-      } else if leftDown && !rightDown {
-        // Move left
-        gameObj.direction = k->Context.vec2Left
-      } else if rightDown && !leftDown {
-        // Move right
-        gameObj.direction = k->Context.vec2Right
+      if !(leftDown || rightDown || upDown || downDown) {
+        // No key was pressed
+        ()
+      } else {
+        /* Y axis has priority over X; ignore X when any vertical key is active (not both). */
+        if upDown && !downDown {
+          // Move up
+          gameObj.direction = k->Context.vec2Up
+          gameObj->setSprite(backSpriteName(id))
+        } else if downDown && !upDown {
+          // Move down
+          gameObj.direction = k->Context.vec2Down
+          gameObj->setSprite(frontSpriteName(id))
+        } else if leftDown && !rightDown {
+          // Move left
+          gameObj.direction = k->Context.vec2Left
+        } else if rightDown && !leftDown {
+          // Move right
+          gameObj.direction = k->Context.vec2Right
+        }
+
+        gameObj->move(gameObj.direction->Vec2.scaleWith(movementSpeed))
       }
+    })
 
-      gameObj->move(gameObj.direction->Vec2.scaleWith(movementSpeed))
-    }
-  })
-
-  k->Context.onKeyRelease(key => {
-    switch key {
-    | Space => {
-        Console.log("Triggering Thundershock")
-        Thundershock.cast(gameObj->asRuntime)
+    k->Context.onKeyRelease(key => {
+      switch key {
+      | Space => Thundershock.cast(gameObj->asRuntime)
+      | _ => ()
       }
-    | _ => ()
-    }
-  })
+    })
+  }
 
   gameObj
 }

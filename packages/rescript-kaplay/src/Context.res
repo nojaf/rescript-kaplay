@@ -63,22 +63,6 @@ external clamp: (t, int, int, int) => int = "clamp"
 @send
 external clampFloat: (t, float, float, float) => float = "clamp"
 
-/**
-`wait(context, seconds, callback)`
-
-Run the function after n seconds.
-*/
-@send
-external wait: (t, float, unit => unit) => unit = "wait"
-
-/**
-`wait(context, seconds, callback)`
-
-Run the function after n seconds.
-*/
-@send
-external waitWithController: (t, float, unit => unit) => TimerController.t = "wait"
-
 /** Get the delta time in seconds since last frame. */
 @send
 external dt: t => float = "dt"
@@ -300,9 +284,21 @@ external loopWithController: (
   ~waitFirst: bool=?,
 ) => TimerController.t = "loop"
 
-/** Run the function after n seconds. */
+/**
+`wait(context, seconds, callback)`
+
+Run the function after n seconds.
+*/
 @send
 external wait: (t, float, unit => unit) => unit = "wait"
+
+/**
+`wait(context, seconds, callback)`
+
+Run the function after n seconds.
+*/
+@send
+external waitWithController: (t, float, unit => unit) => TimerController.t = "wait"
 
 @send
 external randi: (t, int, int) => int = "randi"
