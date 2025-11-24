@@ -16,7 +16,7 @@
     "docs": "bunx --bun astro dev",
     "docs:build": "bun run scripts/build-docs.js",
     "watch": "rescript watch",
-    "fmt": "rescript format --all && prettier --log-level warn --write ./docs package.json astro.config.mjs scripts",
+    "fmt": "rescript format && prettier --log-level warn --write ./docs package.json astro.config.mjs scripts",
     "set-version": "bun run scripts/set-version.js",
     "dry-release": "bun run scripts/publish.js --dry-run",
     "release": "bun run scripts/publish.js"

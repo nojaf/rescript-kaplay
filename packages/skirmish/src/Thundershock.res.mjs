@@ -72,8 +72,10 @@ function make(addToParent, origin, direction) {
     let t = timerRef.contents;
     if (t !== undefined) {
       t.cancel();
-      return;
     }
+    GameContext$Skirmish.k.wait(5 * 0.050, () => {
+      gameObj.destroy();
+    });
   });
 }
 

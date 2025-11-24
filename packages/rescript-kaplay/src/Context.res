@@ -288,8 +288,25 @@ external toScreen: (t, Vec2.t) => Vec2.t = "toScreen"
 
 /** Run the function every n seconds. */
 @send
-external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) => TimerController.t =
-  "loop"
+external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) => unit = "loop"
+
+/** Run the function every n seconds. */
+@send
+external loopWithController: (
+  t,
+  float,
+  unit => unit,
+  ~maxLoops: int=?,
+  ~waitFirst: bool=?,
+) => TimerController.t = "loop"
+
+/** Run the function after n seconds. */
+@send
+external wait: (t, float, unit => unit) => unit = "wait"
+
+/** Run the function after n seconds. */
+@send
+external waitWithController: (t, float, unit => unit) => TimerController.t = "wait"
 
 @send
 external randi: (t, int, int) => int = "randi"

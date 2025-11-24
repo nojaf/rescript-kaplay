@@ -51,7 +51,7 @@ let make = (addToParent: array<Types.comp> => t, origin: Vec2.t, direction: Vec2
   let timerRef: ref<option<Kaplay.TimerController.t>> = ref(None)
   timerRef :=
     Some(
-      k->Context.loop(intervalSeconds, () => {
+      k->Context.loopWithController(intervalSeconds, () => {
         // Propose the next point (from origin), avoiding accumulated lateral drift
         let candidate = {
           let lastPoint = switch gameObj.points->Array.last {
@@ -74,10 +74,17 @@ let make = (addToParent: array<Types.comp> => t, origin: Vec2.t, direction: Vec2
           }
           let cappedLocal = cap->Vec2.sub(gameObj->worldPos)
           gameObj.points->Array.push(cappedLocal)
+
+          // Remove timer
           switch timerRef.contents {
           | None => ()
           | Some(t) => t->Kaplay.TimerController.cancel
           }
+
+          // Schedule own destruction
+          k->Context.wait(5. * intervalSeconds, () => {
+            gameObj->destroy
+          })
         } else {
           gameObj.points->Array.push(candidate)
         }
