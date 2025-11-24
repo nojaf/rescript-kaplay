@@ -8,8 +8,8 @@ include Anchor.Comp({type t = t})
 include GameObjRaw.Comp({type t = t})
 include Z.Comp({type t = t})
 
-let lighting = k->Color.fromHex("#ffdf20")
-let lighting2 = k->Color.fromHex("#fee685")
+let lighting = k->Color.fromHex("#fef9c2")
+let lighting2 = k->Color.fromHex("#fff085")
 
 let draw =
   @this

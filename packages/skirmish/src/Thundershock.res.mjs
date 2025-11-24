@@ -16,9 +16,9 @@ GameObjRaw$Kaplay.Comp({});
 
 Z$Kaplay.Comp({});
 
-let lighting = GameContext$Skirmish.k.Color.fromHex("#ffdf20");
+let lighting = GameContext$Skirmish.k.Color.fromHex("#fef9c2");
 
-let lighting2 = GameContext$Skirmish.k.Color.fromHex("#fee685");
+let lighting2 = GameContext$Skirmish.k.Color.fromHex("#fff085");
 
 function draw() {
   let t = this ;

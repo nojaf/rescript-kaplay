@@ -4,10 +4,14 @@ import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Health$Kaplay from "@nojaf/rescript-kaplay/src/Components/Health.res.mjs";
+import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
 import * as Thundershock$Skirmish from "./Thundershock.res.mjs";
+import GlowFragraw from "../shaders/glow.frag?raw";
+import DarkenFragraw from "../shaders/darken.frag?raw";
+import Outline2pxFragraw from "../shaders/outline2px.frag?raw";
 
 GameObjRaw$Kaplay.Comp({});
 
@@ -20,6 +24,8 @@ Area$Kaplay.Comp({});
 Health$Kaplay.Comp({});
 
 Anchor$Kaplay.Comp({});
+
+Shader$Kaplay.Comp({});
 
 let tag = "pokemon";
 
@@ -39,9 +45,22 @@ function backSpriteUrl(id) {
   return `/sprites/` + id.toString() + `-back.png`;
 }
 
+let glowSource = GlowFragraw;
+
+let outline2pxSource = Outline2pxFragraw;
+
+let darkenSource = DarkenFragraw;
+
 function load(id) {
-  GameContext$Skirmish.k.loadSprite(frontSpriteName(id), frontSpriteUrl(id));
-  GameContext$Skirmish.k.loadSprite(backSpriteName(id), backSpriteUrl(id));
+  GameContext$Skirmish.k.loadSprite(frontSpriteName(id), frontSpriteUrl(id), {
+    singular: true
+  });
+  GameContext$Skirmish.k.loadSprite(backSpriteName(id), backSpriteUrl(id), {
+    singular: true
+  });
+  GameContext$Skirmish.k.loadShader("glow", undefined, glowSource);
+  GameContext$Skirmish.k.loadShader("outline2px", undefined, outline2pxSource);
+  GameContext$Skirmish.k.loadShader("darken", undefined, darkenSource);
 }
 
 function make(id) {
@@ -53,6 +72,16 @@ function make(id) {
     GameContext$Skirmish.k.anchor("center"),
     tag
   ]);
+  let widthPx = gameObj.width;
+  let heightPx = gameObj.height;
+  gameObj.use(GameContext$Skirmish.k.shader("glow", () => ({
+    u_time: GameContext$Skirmish.k.time(),
+    u_resolution: GameContext$Skirmish.k.vec2(widthPx, heightPx),
+    u_thickness: 0.7,
+    u_color: GameContext$Skirmish.k.Color.fromHex("#fef9c2"),
+    u_intensity: 0.66,
+    u_pulse_speed: 5.0
+  })));
   GameContext$Skirmish.k.onUpdate(() => {
     let leftDown = GameContext$Skirmish.k.isKeyDown("left") || GameContext$Skirmish.k.isKeyDown("a");
     let rightDown = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
@@ -93,6 +122,9 @@ export {
   backSpriteName,
   frontSpriteUrl,
   backSpriteUrl,
+  glowSource,
+  outline2pxSource,
+  darkenSource,
   load,
   movementSpeed,
   make,

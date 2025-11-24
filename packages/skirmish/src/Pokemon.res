@@ -9,6 +9,7 @@ include Sprite.Comp({type t = t})
 include Area.Comp({type t = t})
 include Health.Comp({type t = t})
 include Anchor.Comp({type t = t})
+include Shader.Comp({type t = t})
 
 let tag = "pokemon"
 
@@ -19,10 +20,22 @@ let backSpriteName = (id: int) => "pokemon-" ++ Int.toString(id) ++ "-back"
 let frontSpriteUrl = (id: int) => `/sprites/${Int.toString(id)}-front.png`
 let backSpriteUrl = (id: int) => `/sprites/${Int.toString(id)}-back.png`
 
+@module("../shaders/glow.frag?raw")
+external glowSource: string = "default"
+
+@module("../shaders/outline2px.frag?raw")
+external outline2pxSource: string = "default"
+
+@module("../shaders/darken.frag?raw")
+external darkenSource: string = "default"
+
 /* Load both front and back sprites for the given pokemon id */
 let load = (id: int): unit => {
-  k->Context.loadSprite(frontSpriteName(id), frontSpriteUrl(id))
-  k->Context.loadSprite(backSpriteName(id), backSpriteUrl(id))
+  k->Context.loadSprite(frontSpriteName(id), frontSpriteUrl(id), ~options={singular: true})
+  k->Context.loadSprite(backSpriteName(id), backSpriteUrl(id), ~options={singular: true})
+  k->Context.loadShader("glow", ~frag=glowSource)
+  k->Context.loadShader("outline2px", ~frag=outline2pxSource)
+  k->Context.loadShader("darken", ~frag=darkenSource)
 }
 
 let movementSpeed = 200.
@@ -39,6 +52,28 @@ let make = (id: int): t => {
       k->addAnchorCenter,
       Context.tag(tag),
     ])
+
+  // For experimentation: apply the red 2px outline shader around the sprite
+  let widthPx = gameObj->getWidth
+  let heightPx = gameObj->getHeight
+  // gameObj->use(addShader(k, "darken"))
+  // gameObj->use(addShader(k, "outline2px", ~uniform=() => {
+  //   "u_resolution": k->Context.vec2(widthPx, heightPx),
+  //   "u_color": k->Color.cyan,
+  // }))
+  // Apply animated glow using distance field similar to outline2px
+  gameObj->use(
+    addShader(k, "glow", ~uniform=() =>
+      {
+        "u_time": k->Context.time,
+        "u_resolution": k->Context.vec2(widthPx, heightPx),
+        "u_thickness": 0.7,
+        "u_color": k->Color.fromHex("#fef9c2"), // Thundershock.lighting2,
+        "u_intensity": 0.66,
+        "u_pulse_speed": 5.0,
+      }
+    ),
+  )
 
   /* Continuous movement on key press, single direction at a time (no diagonals). */
   k->Context.onUpdate(() => {
