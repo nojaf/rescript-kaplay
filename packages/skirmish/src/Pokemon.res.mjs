@@ -61,9 +61,11 @@ function make(id) {
     let speed = GameContext$Skirmish.k.vec2(200, 200);
     if (upDown && !downDown) {
       gameObj.move(GameContext$Skirmish.k.Vec2.UP.scale(speed));
+      gameObj.sprite = backSpriteName(id);
       return;
     } else if (downDown && !upDown) {
       gameObj.move(GameContext$Skirmish.k.Vec2.DOWN.scale(speed));
+      gameObj.sprite = frontSpriteName(id);
       return;
     } else if (leftDown && !rightDown) {
       gameObj.move(GameContext$Skirmish.k.Vec2.LEFT.scale(speed));

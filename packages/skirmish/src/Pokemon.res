@@ -52,12 +52,18 @@ let make = (id: int): t => {
 
     /* Y axis has priority over X; ignore X when any vertical key is active (not both). */
     if upDown && !downDown {
+      // Move up
       gameObj->move(k->Context.vec2Up->Vec2.scale(speed))
+      gameObj->setSprite(backSpriteName(id))
     } else if downDown && !upDown {
+      // Move down
       gameObj->move(k->Context.vec2Down->Vec2.scale(speed))
+      gameObj->setSprite(frontSpriteName(id))
     } else if leftDown && !rightDown {
+      // Move left
       gameObj->move(k->Context.vec2Left->Vec2.scale(speed))
     } else if rightDown && !leftDown {
+      // Move right
       gameObj->move(k->Context.vec2Right->Vec2.scale(speed))
     } else {
       ()
