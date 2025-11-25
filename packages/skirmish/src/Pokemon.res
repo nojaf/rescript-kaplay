@@ -34,6 +34,12 @@ let movementSpeed = 200.
 
 external internalState: t => Types.comp = "%identity"
 
+let getHealthPercentage = (pokemon: t): float => {
+  let currentHp = pokemon->getHp->Int.toFloat
+  let maxHp = pokemon->getMaxHp->Int.toFloat
+  currentHp / maxHp * 100.
+}
+
 /* Create a Pokemon game object at center, with hp 20, center anchor, default area.
  Uses the back-facing sprite by default. */
 let make = (id: int, team: team): t => {
@@ -52,7 +58,7 @@ let make = (id: int, team: team): t => {
             k->addSprite(frontSpriteName(id)),
           ],
       k->addArea,
-      k->addHealth(20),
+      k->addHealth(20, ~maxHP=20),
       k->addAnchorCenter,
       k->addOpacity(1.),
       k->addAnimate,

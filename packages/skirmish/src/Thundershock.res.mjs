@@ -48,7 +48,6 @@ let worldRect = Math$Kaplay.Rect.make(GameContext$Skirmish.k, GameContext$Skirmi
 function cast(pokemon) {
   let direction = pokemon.direction.scale(20);
   let isYAxis = direction.x === 0;
-  console.log("Direction: ", direction);
   let thundershock = pokemon.add([
     {
       points: [GameContext$Skirmish.k.Vec2.ZERO]
@@ -98,7 +97,7 @@ function cast(pokemon) {
     }
     otherPokemon.forEach(otherPokemon => {
       if (otherPokemon.hasPoint(candidateInWorldRect)) {
-        otherPokemon.hp = otherPokemon.hp - 1 | 0;
+        otherPokemon.hp = otherPokemon.hp - 5 | 0;
         return;
       }
     });
@@ -109,10 +108,7 @@ function load() {
   GameContext$Skirmish.k.loadShader("glow", undefined, glowSource);
   GameContext$Skirmish.k.loadShader("outline2px", undefined, outline2pxSource);
   GameContext$Skirmish.k.loadShader("darken", undefined, darkenSource);
-  GameContext$Skirmish.k.on("Thundershock", Pokemon$Skirmish.tag, (pokemon, param) => {
-    console.log("Received thundershock event 225", pokemon);
-    cast(pokemon);
-  });
+  GameContext$Skirmish.k.on("Thundershock", Pokemon$Skirmish.tag, (pokemon, param) => cast(pokemon));
 }
 
 let intervalSeconds = 0.050;

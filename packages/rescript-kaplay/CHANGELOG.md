@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `Context.wait`
 - `Context.query`
 
+### Fixed
+- Correct `maxHP` for `Health` component
+
 ## [0.10.1] - 2025-11-23
 ### Changed
 - Update to ReScript 12 RC

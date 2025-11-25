@@ -1,5 +1,6 @@
 open Types
 
+@editor.completeFrom(Color)
 type t = {debug: Debug.t, easings: easingMap}
 
 type htmlCanvasElement

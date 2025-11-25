@@ -57,6 +57,12 @@ function load(id) {
   });
 }
 
+function getHealthPercentage(pokemon) {
+  let currentHp = pokemon.hp;
+  let maxHp = pokemon.maxHP;
+  return currentHp / maxHp * 100;
+}
+
 function make(id, team) {
   let gameObj = GameContext$Skirmish.k.add(Belt_Array.concatMany([
     team === "Player" ? [
@@ -74,7 +80,7 @@ function make(id, team) {
       ],
     [
       GameContext$Skirmish.k.area(),
-      GameContext$Skirmish.k.health(20),
+      GameContext$Skirmish.k.health(20, 20),
       GameContext$Skirmish.k.anchor("center"),
       GameContext$Skirmish.k.opacity(1),
       GameContext$Skirmish.k.animate(),
@@ -142,6 +148,7 @@ export {
   backSpriteUrl,
   load,
   movementSpeed,
+  getHealthPercentage,
   make,
 }
 /*  Not a pure module */

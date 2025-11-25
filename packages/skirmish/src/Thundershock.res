@@ -42,7 +42,6 @@ let distance = 20.
 let cast = (pokemon: Pokemon.t) => {
   let direction = pokemon.direction->Vec2.scaleWith(distance)
   let isYAxis = direction.x == 0.
-  Console.log2("Direction: ", direction)
   let thundershock: t = pokemon->Pokemon.addChild([
     Obj.magic({points: [k->Context.vec2Zero]}),
     k->addPos(0., 0.),
@@ -122,7 +121,7 @@ let cast = (pokemon: Pokemon.t) => {
         // Check collision with other Pokemon
         otherPokemon->Array.forEach(otherPokemon => {
           if otherPokemon->Pokemon.hasPoint(candidateInWorldRect) {
-            otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 1)
+            otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 5)
           }
         })
       }),
@@ -138,7 +137,6 @@ let load = (): unit => {
     pokemon: Pokemon.t,
     _,
   ) => {
-    Console.log2("Received thundershock event 225", pokemon)
     cast(pokemon)
   })
 }
