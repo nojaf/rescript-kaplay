@@ -6,6 +6,7 @@ import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
+import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
 import GlowFragraw from "../shaders/glow.frag?raw";
@@ -27,12 +28,6 @@ let glowSource = GlowFragraw;
 let outline2pxSource = Outline2pxFragraw;
 
 let darkenSource = DarkenFragraw;
-
-function load() {
-  GameContext$Skirmish.k.loadShader("glow", undefined, glowSource);
-  GameContext$Skirmish.k.loadShader("outline2px", undefined, outline2pxSource);
-  GameContext$Skirmish.k.loadShader("darken", undefined, darkenSource);
-}
 
 let lighting = GameContext$Skirmish.k.Color.fromHex("#fef9c2");
 
@@ -65,11 +60,14 @@ function cast(pokemon) {
       draw: draw
     }
   ]);
+  let otherPokemon = GameContext$Skirmish.k.query({
+    include: ["pokemon"]
+  }).filter(p => p.id !== pokemon.id);
   pokemon.use(GameContext$Skirmish.k.shader("glow", () => ({
     u_time: GameContext$Skirmish.k.time(),
     u_resolution: GameContext$Skirmish.k.vec2(pokemon.width, pokemon.height),
     u_thickness: 0.7,
-    u_color: GameContext$Skirmish.k.Color.fromHex("#fef9c2"),
+    u_color: lighting,
     u_intensity: 0.66,
     u_pulse_speed: 5.0
   })));
@@ -84,20 +82,36 @@ function cast(pokemon) {
     let candidateInWorldRect = thundershock.worldPos().add(candidate);
     if (worldRect.contains(candidateInWorldRect)) {
       thundershock.points.push(candidate);
-      return;
+    } else {
+      candidateInWorldRect.x = GameContext$Skirmish.k.clamp(candidateInWorldRect.x, 0, GameContext$Skirmish.k.width());
+      candidateInWorldRect.y = GameContext$Skirmish.k.clamp(candidateInWorldRect.y, 0, GameContext$Skirmish.k.height());
+      let cappedLocal = candidateInWorldRect.sub(thundershock.worldPos());
+      thundershock.points.push(cappedLocal);
+      let t = timerRef.contents;
+      if (t !== undefined) {
+        t.cancel();
+      }
+      GameContext$Skirmish.k.wait(5 * 0.050, () => {
+        pokemon.unuse("shader");
+        thundershock.destroy();
+      });
     }
-    candidateInWorldRect.x = GameContext$Skirmish.k.clamp(candidateInWorldRect.x, 0, GameContext$Skirmish.k.width());
-    candidateInWorldRect.y = GameContext$Skirmish.k.clamp(candidateInWorldRect.y, 0, GameContext$Skirmish.k.height());
-    let cappedLocal = candidateInWorldRect.sub(thundershock.worldPos());
-    thundershock.points.push(cappedLocal);
-    let t = timerRef.contents;
-    if (t !== undefined) {
-      t.cancel();
-    }
-    GameContext$Skirmish.k.wait(5 * 0.050, () => {
-      pokemon.unuse("shader");
-      thundershock.destroy();
+    otherPokemon.forEach(otherPokemon => {
+      if (otherPokemon.hasPoint(candidateInWorldRect)) {
+        otherPokemon.hp = otherPokemon.hp - 1 | 0;
+        return;
+      }
     });
+  });
+}
+
+function load() {
+  GameContext$Skirmish.k.loadShader("glow", undefined, glowSource);
+  GameContext$Skirmish.k.loadShader("outline2px", undefined, outline2pxSource);
+  GameContext$Skirmish.k.loadShader("darken", undefined, darkenSource);
+  GameContext$Skirmish.k.on("Thundershock", Pokemon$Skirmish.tag, (pokemon, param) => {
+    console.log("Received thundershock event 225", pokemon);
+    cast(pokemon);
   });
 }
 
@@ -111,7 +125,6 @@ export {
   glowSource,
   outline2pxSource,
   darkenSource,
-  load,
   lighting,
   lighting2,
   draw,
@@ -120,5 +133,6 @@ export {
   deviationOffset,
   distance,
   cast,
+  load,
 }
 /*  Not a pure module */

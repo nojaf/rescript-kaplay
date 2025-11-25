@@ -7,9 +7,10 @@ import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res
 import * as Health$Kaplay from "@nojaf/rescript-kaplay/src/Components/Health.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
+import * as Animate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Animate.res.mjs";
+import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
-import * as Thundershock$Skirmish from "./Thundershock.res.mjs";
 
 GameObjRaw$Kaplay.Comp({});
 
@@ -24,6 +25,10 @@ Health$Kaplay.Comp({});
 Anchor$Kaplay.Comp({});
 
 Shader$Kaplay.Comp({});
+
+Opacity$Kaplay.Comp({});
+
+Animate$Kaplay.Comp({});
 
 let tag = "pokemon";
 
@@ -71,6 +76,8 @@ function make(id, team) {
       GameContext$Skirmish.k.area(),
       GameContext$Skirmish.k.health(20),
       GameContext$Skirmish.k.anchor("center"),
+      GameContext$Skirmish.k.opacity(1),
+      GameContext$Skirmish.k.animate(),
       tag
     ]
   ]));
@@ -97,11 +104,31 @@ function make(id, team) {
       }
     });
     GameContext$Skirmish.k.onKeyRelease(key => {
-      if (key === "space") {
-        return Thundershock$Skirmish.cast(gameObj);
+      if (key !== "f1" && key !== "shift" && key !== "f2" && key !== "down" && key !== "f3" && key !== "up" && key !== "f4" && key !== "right" && key !== "f5" && key !== "left" && key !== "f6" && key !== " " && key !== "f7" && key !== "space" && key !== "f8" && key !== "meta" && key !== "f9" && key !== "alt" && key !== "f10" && key !== "control" && key !== "f11" && key !== "tab" && key !== "f12" && key !== "enter" && key !== "`" && key !== "backspace" && key !== "1" && key !== "escape" && key !== "2" && key !== "/" && key !== "3" && key !== "." && key !== "4" && key !== "," && key !== "5" && key !== "m" && key !== "6" && key !== "n" && key !== "7" && key !== "b" && key !== "8" && key !== "v" && key !== "9" && key !== "c" && key !== "0" && key !== "x" && key !== "-" && key !== "z" && key !== "+" && key !== "'" && key !== "=" && key !== ";" && key !== "q" && key !== "l" && key !== "w" && key !== "k" && key !== "e" && key !== "j" && key !== "r" && key !== "h" && key !== "t" && key !== "g" && key !== "y" && key !== "f" && key !== "u" && key !== "d" && key !== "i" && key !== "s" && key !== "o" && key !== "a" && key !== "p" && key !== "\\" && key !== "[" && key !== "]") {
+        return;
       }
+      if (key !== "space") {
+        return;
+      }
+      gameObj.trigger("Thundershock", gameObj);
     });
   }
+  gameObj.onHurt(deltaHp => {
+    console.log("I hurt myself today", deltaHp);
+    gameObj.unanimate("opacity");
+    let animation = gameObj.animation;
+    animation.seek(0);
+    gameObj.animate("opacity", [
+      1,
+      0.5,
+      1,
+      0.75,
+      1
+    ], {
+      duration: 0.4,
+      loops: 1
+    });
+  });
   return gameObj;
 }
 

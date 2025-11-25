@@ -7,6 +7,7 @@ open Kaplay
  */
 
 type t<'child> = {
+  id: int,
   direction: Vec2.t,
   /// Note that this is addChild in the GameObjRaw module, but at runtime is it is `add`
   add: array<Types.comp> => 'child,

@@ -18,12 +18,6 @@ external outline2pxSource: string = "default"
 @module("../shaders/darken.frag?raw")
 external darkenSource: string = "default"
 
-let load = (): unit => {
-  k->Context.loadShader("glow", ~frag=glowSource)
-  k->Context.loadShader("outline2px", ~frag=outline2pxSource)
-  k->Context.loadShader("darken", ~frag=darkenSource)
-}
-
 let lighting = k->Color.fromHex("#fef9c2")
 let lighting2 = k->Color.fromHex("#fff085")
 
@@ -45,11 +39,11 @@ let intervalSeconds = 0.050
 let deviationOffset = 7.
 let distance = 20.
 
-let cast = (pokemon: RuntimePokemon.t<t>) => {
+let cast = (pokemon: Pokemon.t) => {
   let direction = pokemon.direction->Vec2.scaleWith(distance)
   let isYAxis = direction.x == 0.
   Console.log2("Direction: ", direction)
-  let thundershock: t = pokemon.add([
+  let thundershock: t = pokemon->Pokemon.addChild([
     Obj.magic({points: [k->Context.vec2Zero]}),
     k->addPos(0., 0.),
     k->addZ(-1),
@@ -59,13 +53,20 @@ let cast = (pokemon: RuntimePokemon.t<t>) => {
     }),
   ])
 
-  pokemon.use(
+  let otherPokemon =
+    k
+    ->Context.query({
+      include_: ["pokemon"],
+    })
+    ->Array.filter(p => p->Pokemon.getId != pokemon->Pokemon.getId)
+
+  pokemon->Pokemon.use(
     addShader(k, "glow", ~uniform=() =>
       {
         "u_time": k->Context.time,
-        "u_resolution": k->Context.vec2(pokemon.width, pokemon.height),
+        "u_resolution": k->Context.vec2(pokemon->Pokemon.getWidth, pokemon->Pokemon.getHeight),
         "u_thickness": 0.7,
-        "u_color": k->Color.fromHex("#fef9c2"), // Thundershock.lighting2,
+        "u_color": lighting,
         "u_intensity": 0.66,
         "u_pulse_speed": 5.0,
       }
@@ -111,12 +112,33 @@ let cast = (pokemon: RuntimePokemon.t<t>) => {
 
           // Schedule own destruction
           k->Context.wait(5. * intervalSeconds, () => {
-            pokemon.unuse("shader")
+            pokemon->Pokemon.unuse("shader")
             thundershock->destroy
           })
         } else {
           thundershock.points->Array.push(candidate)
         }
+
+        // Check collision with other Pokemon
+        otherPokemon->Array.forEach(otherPokemon => {
+          if otherPokemon->Pokemon.hasPoint(candidateInWorldRect) {
+            otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 1)
+          }
+        })
       }),
     )
+}
+
+let load = (): unit => {
+  k->Context.loadShader("glow", ~frag=glowSource)
+  k->Context.loadShader("outline2px", ~frag=outline2pxSource)
+  k->Context.loadShader("darken", ~frag=darkenSource)
+
+  k->Context.on(~event=(Moves.Thundershock :> string), ~tag=Pokemon.tag, (
+    pokemon: Pokemon.t,
+    _,
+  ) => {
+    Console.log2("Received thundershock event 225", pokemon)
+    cast(pokemon)
+  })
 }

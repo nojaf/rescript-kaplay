@@ -12,6 +12,8 @@ include Area.Comp({type t = t})
 include Health.Comp({type t = t})
 include Anchor.Comp({type t = t})
 include Shader.Comp({type t = t})
+include Opacity.Comp({type t = t})
+include Animate.Comp({type t = t})
 
 let tag = "pokemon"
 
@@ -30,7 +32,7 @@ let load = (id: int): unit => {
 
 let movementSpeed = 200.
 
-external asRuntime: t => RuntimePokemon.t<'t> = "%identity"
+external internalState: t => Types.comp = "%identity"
 
 /* Create a Pokemon game object at center, with hp 20, center anchor, default area.
  Uses the back-facing sprite by default. */
@@ -40,18 +42,20 @@ let make = (id: int, team: team): t => {
       // initialState
       ...team == Player
         ? [
-            Obj.magic({direction: k->Context.vec2Up}),
+            internalState({direction: k->Context.vec2Up}),
             k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.8),
             k->addSprite(backSpriteName(id)),
           ]
         : [
-            Obj.magic({direction: k->Context.vec2Down}),
+            internalState({direction: k->Context.vec2Down}),
             k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.2),
             k->addSprite(frontSpriteName(id)),
           ],
       k->addArea,
       k->addHealth(20),
       k->addAnchorCenter,
+      k->addOpacity(1.),
+      k->addAnimate,
       Context.tag(tag),
     ],
   )
@@ -91,11 +95,29 @@ let make = (id: int, team: team): t => {
 
     k->Context.onKeyRelease(key => {
       switch key {
-      | Space => Thundershock.cast(gameObj->asRuntime)
+      | Space => gameObj->trigger((Moves.Thundershock :> string), gameObj)
       | _ => ()
       }
     })
   }
+
+  gameObj->onHurt(deltaHp => {
+    Console.log2("I hurt myself today", deltaHp)
+
+    // Stop any existing opacity animation and reset the internal clock
+    gameObj->unanimate("opacity")
+    gameObj->getAnimation->(animation => animation.seek(0.))
+
+    // Animate opacity: 1.0 → 0.5 → 0.75 → 1.0
+    gameObj->animate(
+      "opacity",
+      [1., 0.5, 1., 0.75, 1.],
+      {
+        duration: 0.4,
+        loops: 1,
+      },
+    )
+  })
 
   gameObj
 }

@@ -683,3 +683,24 @@ external getCursor: t => cursor = "getCursor"
 
 @send
 external setCursor: (t, cursor) => unit = "setCursor"
+
+type includeOp = And | Or
+type distanceOp = Near | Far
+type hierarchy = Children | Siblings | Ancestors | Descendants
+
+type queryOptions = {
+  @as("include") include_?: array<string>,
+  includeOp?: includeOp,
+  exclude?: array<string>,
+  excludeOp?: includeOp,
+  distance?: float,
+  distanceOp?: distanceOp,
+  visible?: bool,
+  hierarchy?: hierarchy,
+}
+
+/**
+ Get a list of game objects in an advanced way.
+ */
+@send
+external query: (t, queryOptions) => array<'gameObj> = "query"
