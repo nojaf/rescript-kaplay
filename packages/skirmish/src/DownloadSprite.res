@@ -62,7 +62,7 @@ let downloadSprite = async (spriteUrl: string, fileName: string): unit => {
   }
 }
 
-let main = async (identifier: string, outputPath: option<string>): unit => {
+let main = async (identifier: string): unit => {
   let trimmedIdentifier = identifier->String.trim
   let url = `https://pokeapi.co/api/v2/pokemon/${trimmedIdentifier}/`
 
@@ -141,14 +141,11 @@ let parseArgs = () => {
       RescriptBun.Process.exitWithCode(RescriptBun.Process.process, 1)
       None
     }
-  | Some(identifier) => {
-      let optionalPath = scriptArgs->Array.at(1)
-      Some((identifier, optionalPath))
-    }
+  | Some(identifier) => Some(identifier)
   }
 }
 
 switch parseArgs() {
 | None => ()
-| Some((required, optionalPath)) => await main(required, optionalPath)
+| Some(required) => await main(required)
 }

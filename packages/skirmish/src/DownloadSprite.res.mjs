@@ -63,7 +63,7 @@ async function downloadSprite(spriteUrl, fileName) {
   Process.exit(1);
 }
 
-async function main(identifier, outputPath) {
+async function main(identifier) {
   let trimmedIdentifier = identifier.trim();
   let url = `https://pokeapi.co/api/v2/pokemon/` + trimmedIdentifier + `/`;
   try {
@@ -127,20 +127,18 @@ function parseArgs() {
   let scriptArgs = args.slice(2);
   let identifier = scriptArgs[0];
   if (identifier !== undefined) {
-    let optionalPath = scriptArgs.at(1);
-    return [
-      identifier,
-      optionalPath
-    ];
+    return identifier;
+  } else {
+    console.error("Error: Required parameter is missing. Provide a Pokemon name or ID.");
+    Process.exit(1);
+    return;
   }
-  console.error("Error: Required parameter is missing. Provide a Pokemon name or ID.");
-  Process.exit(1);
 }
 
-let match = parseArgs();
+let required = parseArgs();
 
-if (match !== undefined) {
-  await main(match[0], match[1]);
+if (required !== undefined) {
+  await main(required);
 }
 
 export {
@@ -150,4 +148,4 @@ export {
   main,
   parseArgs,
 }
-/* match Not a pure module */
+/* required Not a pure module */

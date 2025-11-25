@@ -13,13 +13,14 @@
     "fmt": "rescript format -all"
   },
   "dependencies": {
-    "kaplay": "4000.0.0-alpha.23",
-    "@nojaf/rescript-kaplay": "workspace:^"
+    "kaplay": "catalog:",
+    "@nojaf/rescript-kaplay": "workspace:^",
+    "rescript": "catalog:"
   },
   "devDependencies": {
     "rescript-bun": "^2.1.0",
     "sharp": "^0.34.5",
-    "vite": "^7.2.4"
+    "vite": "catalog:"
   },
   "trustedDependencies": [
     "esbuild",
