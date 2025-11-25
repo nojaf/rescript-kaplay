@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - `Context.wait`
+- `Context.query`
 
 ## [0.10.1] - 2025-11-23
 ### Changed
