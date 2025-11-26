@@ -28,28 +28,30 @@ let spriteName = "flame";
 
 function load() {
   GameContext$Skirmish.k.loadSprite(spriteName, "/sprites/moves/flame.png");
-  GameContext$Skirmish.k.on("Ember", Pokemon$Skirmish.tag, (pokemon, param) => {
-    let flame = pokemon.add([
-      GameContext$Skirmish.k.sprite(spriteName),
-      GameContext$Skirmish.k.pos(0, 0),
-      GameContext$Skirmish.k.move(pokemon.direction, 120),
-      GameContext$Skirmish.k.z(-1),
-      GameContext$Skirmish.k.area(),
-      pokemon.direction.y < 0 ? GameContext$Skirmish.k.anchor("bot") : GameContext$Skirmish.k.anchor("top")
-    ]);
-    flame.onCollide(Pokemon$Skirmish.tag, (other, _collision) => {
-      if (other.pokemonId !== pokemon.pokemonId) {
-        console.log("Ember hit", other.pokemonId);
-        other.hp = other.hp - 4 | 0;
-        flame.destroy();
-        return;
-      }
-    });
+}
+
+function cast(pokemon) {
+  let flame = pokemon.add([
+    GameContext$Skirmish.k.sprite(spriteName),
+    GameContext$Skirmish.k.pos(0, 0),
+    GameContext$Skirmish.k.move(pokemon.direction, 120),
+    GameContext$Skirmish.k.z(-1),
+    GameContext$Skirmish.k.area(),
+    pokemon.direction.y < 0 ? GameContext$Skirmish.k.anchor("bot") : GameContext$Skirmish.k.anchor("top")
+  ]);
+  flame.onCollide(Pokemon$Skirmish.tag, (other, _collision) => {
+    if (other.pokemonId !== pokemon.pokemonId) {
+      console.log("Ember hit", other.pokemonId);
+      other.hp = other.hp - 4 | 0;
+      flame.destroy();
+      return;
+    }
   });
 }
 
 export {
   spriteName,
   load,
+  cast,
 }
 /*  Not a pure module */

@@ -6,7 +6,6 @@ import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
-import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "../GameContext.res.mjs";
 import GlowFragraw from "../../shaders/glow.frag?raw";
@@ -28,6 +27,12 @@ let glowSource = GlowFragraw;
 let outline2pxSource = Outline2pxFragraw;
 
 let darkenSource = DarkenFragraw;
+
+function load() {
+  GameContext$Skirmish.k.loadShader("glow", undefined, glowSource);
+  GameContext$Skirmish.k.loadShader("outline2px", undefined, outline2pxSource);
+  GameContext$Skirmish.k.loadShader("darken", undefined, darkenSource);
+}
 
 let lighting = GameContext$Skirmish.k.Color.fromHex("#fef9c2");
 
@@ -104,13 +109,6 @@ function cast(pokemon) {
   });
 }
 
-function load() {
-  GameContext$Skirmish.k.loadShader("glow", undefined, glowSource);
-  GameContext$Skirmish.k.loadShader("outline2px", undefined, outline2pxSource);
-  GameContext$Skirmish.k.loadShader("darken", undefined, darkenSource);
-  GameContext$Skirmish.k.on("Thundershock", Pokemon$Skirmish.tag, (pokemon, param) => cast(pokemon));
-}
-
 let intervalSeconds = 0.050;
 
 let deviationOffset = 7;
@@ -121,6 +119,7 @@ export {
   glowSource,
   outline2pxSource,
   darkenSource,
+  load,
   lighting,
   lighting2,
   draw,
@@ -129,6 +128,5 @@ export {
   deviationOffset,
   distance,
   cast,
-  load,
 }
 /*  Not a pure module */

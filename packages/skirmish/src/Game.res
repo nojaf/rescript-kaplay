@@ -2,9 +2,9 @@ open Kaplay
 open GameContext
 
 let sceneLoaded = () => {
-  let _pikachu = Pokemon.make(25, 12, Pokemon.Player)
-  let _pikachuHealthbar = Healthbar.make(_pikachu)
-  let _charmander = Pokemon.make(4, 5, Pokemon.Opponent)
+  let pikachu = Player.make(~pokemonId=25, ~level=12)
+  let _pikachuHealthbar = Healthbar.make(pikachu)
+  let _charmander = EnemyAI.make(~pokemonId=4, ~level=5, pikachu)
   let _charmanderHealthbar = Healthbar.make(_charmander)
 }
 

@@ -18,6 +18,12 @@ external outline2pxSource: string = "default"
 @module("../../shaders/darken.frag?raw")
 external darkenSource: string = "default"
 
+let load = (): unit => {
+  k->Context.loadShader("glow", ~frag=glowSource)
+  k->Context.loadShader("outline2px", ~frag=outline2pxSource)
+  k->Context.loadShader("darken", ~frag=darkenSource)
+}
+
 let lighting = k->Color.fromHex("#fef9c2")
 let lighting2 = k->Color.fromHex("#fff085")
 
@@ -126,17 +132,4 @@ let cast = (pokemon: Pokemon.t) => {
         })
       }),
     )
-}
-
-let load = (): unit => {
-  k->Context.loadShader("glow", ~frag=glowSource)
-  k->Context.loadShader("outline2px", ~frag=outline2pxSource)
-  k->Context.loadShader("darken", ~frag=darkenSource)
-
-  k->Context.on(~event=(Moves.Thundershock :> string), ~tag=Pokemon.tag, (
-    pokemon: Pokemon.t,
-    _,
-  ) => {
-    cast(pokemon)
-  })
 }
