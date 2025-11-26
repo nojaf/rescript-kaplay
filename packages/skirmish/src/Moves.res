@@ -1,2 +1,2 @@
 @unboxed
-type move = Thundershock
+type move = Thundershock | Ember

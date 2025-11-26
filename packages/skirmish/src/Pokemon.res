@@ -107,6 +107,13 @@ let make = (id: int, level: int, team: team): t => {
     })
   }
 
+  if team == Opponent {
+    k->Context.loop(1., () => {
+      ()
+      gameObj->trigger((Moves.Ember :> string), ())
+    })
+  }
+
   gameObj->onHurt(deltaHp => {
     Console.log2("I hurt myself today", deltaHp)
 

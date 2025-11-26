@@ -6,12 +6,12 @@ import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
-import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
+import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
-import * as GameContext$Skirmish from "./GameContext.res.mjs";
-import GlowFragraw from "../shaders/glow.frag?raw";
-import DarkenFragraw from "../shaders/darken.frag?raw";
-import Outline2pxFragraw from "../shaders/outline2px.frag?raw";
+import * as GameContext$Skirmish from "../GameContext.res.mjs";
+import GlowFragraw from "../../shaders/glow.frag?raw";
+import DarkenFragraw from "../../shaders/darken.frag?raw";
+import Outline2pxFragraw from "../../shaders/outline2px.frag?raw";
 
 Pos$Kaplay.Comp({});
 

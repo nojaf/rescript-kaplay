@@ -12,5 +12,6 @@ let scene = () => {
   Pokemon.load(4)
   Pokemon.load(25)
   Thundershock.load()
+  Ember.load()
   k->Context.onLoad(sceneLoaded)
 }

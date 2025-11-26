@@ -9,13 +9,13 @@ include GameObjRaw.Comp({type t = t})
 include Z.Comp({type t = t})
 include Shader.Comp({type t = t})
 
-@module("../shaders/glow.frag?raw")
+@module("../../shaders/glow.frag?raw")
 external glowSource: string = "default"
 
-@module("../shaders/outline2px.frag?raw")
+@module("../../shaders/outline2px.frag?raw")
 external outline2pxSource: string = "default"
 
-@module("../shaders/darken.frag?raw")
+@module("../../shaders/darken.frag?raw")
 external darkenSource: string = "default"
 
 let lighting = k->Color.fromHex("#fef9c2")

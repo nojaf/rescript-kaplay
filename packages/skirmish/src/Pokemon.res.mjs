@@ -125,6 +125,11 @@ function make(id, level, team) {
       gameObj.trigger("Thundershock", gameObj);
     });
   }
+  if (team === "Opponent") {
+    GameContext$Skirmish.k.loop(1, () => {
+      gameObj.trigger("Ember", undefined);
+    });
+  }
   gameObj.onHurt(deltaHp => {
     console.log("I hurt myself today", deltaHp);
     gameObj.unanimate("opacity");
