@@ -40,14 +40,6 @@ let getHealthPercentage = (pokemon: t): float => {
   currentHp / maxHp * 100.
 }
 
-let hurtHandler = (pokemon: t, deltaHp: int) => {
-  Console.log2("I hurt myself today", deltaHp)
-
-  // Stop any existing opacity animation and reset the internal clock
-  pokemon->unanimate("opacity")
-  pokemon->getAnimation->(animation => animation.seek(0.))
-}
-
 let make = (~pokemonId: int, ~level: int, team: team): t => {
   let gameObj: t = k->Context.add(
     [
@@ -60,7 +52,7 @@ let make = (~pokemonId: int, ~level: int, team: team): t => {
           ]
         : [
             internalState({direction: k->Context.vec2Down, level, pokemonId, team}),
-            k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.2),
+            k->addPos(20., k->Context.height * 0.2),
             k->addSprite(frontSpriteName(pokemonId)),
           ],
       k->addArea,
@@ -78,6 +70,15 @@ let make = (~pokemonId: int, ~level: int, team: team): t => {
     // Stop any existing opacity animation and reset the internal clock
     gameObj->unanimate("opacity")
     gameObj->getAnimation->(animation => animation.seek(0.))
+    // Animate opacity: 1.0 → 0.5 → 0.75 → 1.0
+    gameObj->animate(
+      "opacity",
+      [1., 0.5, 1., 0.75, 1.],
+      {
+        duration: 0.4,
+        loops: 1,
+      },
+    )
   })
 
   gameObj

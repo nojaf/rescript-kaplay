@@ -43,7 +43,5 @@ let make = (~pokemonId: int, ~level: int): Pokemon.t => {
     }
   })
 
-  gameObj->Pokemon.onHurt(Pokemon.hurtHandler(gameObj, ...))
-
   gameObj
 }

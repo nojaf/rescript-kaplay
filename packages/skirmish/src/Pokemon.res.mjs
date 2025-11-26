@@ -63,13 +63,6 @@ function getHealthPercentage(pokemon) {
   return currentHp / maxHp * 100;
 }
 
-function hurtHandler(pokemon, deltaHp) {
-  console.log("I hurt myself today", deltaHp);
-  pokemon.unanimate("opacity");
-  let animation = pokemon.animation;
-  animation.seek(0);
-}
-
 function make(pokemonId, level, team) {
   let gameObj = GameContext$Skirmish.k.add(Belt_Array.concatMany([
     team === "Player" ? [
@@ -88,7 +81,7 @@ function make(pokemonId, level, team) {
           pokemonId: pokemonId,
           team: team
         },
-        GameContext$Skirmish.k.pos(GameContext$Skirmish.k.center().x, GameContext$Skirmish.k.height() * 0.2),
+        GameContext$Skirmish.k.pos(20, GameContext$Skirmish.k.height() * 0.2),
         GameContext$Skirmish.k.sprite(frontSpriteName(pokemonId))
       ],
     [
@@ -105,6 +98,16 @@ function make(pokemonId, level, team) {
     gameObj.unanimate("opacity");
     let animation = gameObj.animation;
     animation.seek(0);
+    gameObj.animate("opacity", [
+      1,
+      0.5,
+      1,
+      0.75,
+      1
+    ], {
+      duration: 0.4,
+      loops: 1
+    });
   });
   return gameObj;
 }
@@ -120,7 +123,6 @@ export {
   load,
   movementSpeed,
   getHealthPercentage,
-  hurtHandler,
   make,
 }
 /*  Not a pure module */

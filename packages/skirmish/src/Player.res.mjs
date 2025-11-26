@@ -32,7 +32,6 @@ function make(pokemonId, level) {
       return Thundershock$Skirmish.cast(gameObj);
     }
   });
-  gameObj.onHurt(extra => Pokemon$Skirmish.hurtHandler(gameObj, extra));
   return gameObj;
 }
 
