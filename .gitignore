@@ -32,3 +32,6 @@ rescript.lock
 
 # Astro
 .astro/
+
+# ReScript LLM
+rescript.db

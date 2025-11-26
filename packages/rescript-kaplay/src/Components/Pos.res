@@ -3,6 +3,27 @@ module Comp = (
     type t
   },
 ) => {
+  /**
+  `move(gameObj, velocity)` moves the object by `velocity` every frame with delta time applied internally.
+
+  - `velocity`: a vector in units per second (do NOT multiply by `dt` yourself)
+  - Frame-rate independent: Kaplay scales by `dt` under the hood
+
+  Example:
+
+  ```ReScript
+  open Kaplay
+
+  // Example context instance
+  external k: Context.t = "k"
+
+  let speed = k->Context.vec2(200., 200.)
+  k->Context.onUpdate(() => {
+    // Move left at 200 units/second
+    myObj->MyModule.move(k->Context.vec2Left->Vec2.scale(speed))
+  })
+  ```
+  */
   @send
   external move: (T.t, Vec2.t) => unit = "move"
 

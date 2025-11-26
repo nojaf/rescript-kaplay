@@ -16,7 +16,7 @@
     "docs": "bunx --bun astro dev",
     "docs:build": "bun run scripts/build-docs.js",
     "watch": "rescript watch",
-    "fmt": "rescript format --all && prettier --log-level warn --write ./docs package.json astro.config.mjs scripts",
+    "fmt": "rescript format && prettier --log-level warn --write ./docs package.json astro.config.mjs scripts",
     "set-version": "bun run scripts/set-version.js",
     "dry-release": "bun run scripts/publish.js --dry-run",
     "release": "bun run scripts/publish.js"
@@ -24,7 +24,12 @@
   "workspaces": [
     "packages/*"
   ],
+  "catalog": {
+    "rescript": "12.0.0",
+    "vite": "^7.2.0",
+    "kaplay": "4000.0.0-alpha.23"
+  },
   "dependencies": {
-    "rescript": "^12.0.0-rc.5"
+    "rescript": "catalog:"
   }
 }

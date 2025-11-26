@@ -27,6 +27,9 @@ external sub: (t, t) => t = "sub"
 external scale: (t, t) => t = "scale"
 
 @send
+external scaleWith: (t, float) => t = "scale"
+
+@send
 external len: t => float = "len"
 
 @send

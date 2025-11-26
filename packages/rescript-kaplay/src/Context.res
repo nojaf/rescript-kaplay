@@ -1,5 +1,6 @@
 open Types
 
+@editor.completeFrom(Color)
 type t = {debug: Debug.t, easings: easingMap}
 
 type htmlCanvasElement
@@ -62,22 +63,6 @@ external clamp: (t, int, int, int) => int = "clamp"
 
 @send
 external clampFloat: (t, float, float, float) => float = "clamp"
-
-/**
-`wait(context, seconds, callback)`
-
-Run the function after n seconds.
-*/
-@send
-external wait: (t, float, unit => unit) => unit = "wait"
-
-/**
-`wait(context, seconds, callback)`
-
-Run the function after n seconds.
-*/
-@send
-external waitWithController: (t, float, unit => unit) => TimerController.t = "wait"
 
 /** Get the delta time in seconds since last frame. */
 @send
@@ -288,8 +273,33 @@ external toScreen: (t, Vec2.t) => Vec2.t = "toScreen"
 
 /** Run the function every n seconds. */
 @send
-external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) => TimerController.t =
-  "loop"
+external loop: (t, float, unit => unit, ~maxLoops: int=?, ~waitFirst: bool=?) => unit = "loop"
+
+/** Run the function every n seconds. */
+@send
+external loopWithController: (
+  t,
+  float,
+  unit => unit,
+  ~maxLoops: int=?,
+  ~waitFirst: bool=?,
+) => TimerController.t = "loop"
+
+/**
+`wait(context, seconds, callback)`
+
+Run the function after n seconds.
+*/
+@send
+external wait: (t, float, unit => unit) => unit = "wait"
+
+/**
+`wait(context, seconds, callback)`
+
+Run the function after n seconds.
+*/
+@send
+external waitWithController: (t, float, unit => unit) => TimerController.t = "wait"
 
 @send
 external randi: (t, int, int) => int = "randi"
@@ -427,6 +437,9 @@ external onWithController: (
   ~tag: string,
   ('t, 'arg) => unit,
 ) => KEventController.t = "on"
+
+@send
+external trigger: (t, string, string, 't) => unit = "trigger"
 
 /**
  Get current mouse position (without camera transform).
@@ -671,3 +684,24 @@ external getCursor: t => cursor = "getCursor"
 
 @send
 external setCursor: (t, cursor) => unit = "setCursor"
+
+type includeOp = And | Or
+type distanceOp = Near | Far
+type hierarchy = Children | Siblings | Ancestors | Descendants
+
+type queryOptions = {
+  @as("include") include_?: array<string>,
+  includeOp?: includeOp,
+  exclude?: array<string>,
+  excludeOp?: includeOp,
+  distance?: float,
+  distanceOp?: distanceOp,
+  visible?: bool,
+  hierarchy?: hierarchy,
+}
+
+/**
+ Get a list of game objects in an advanced way.
+ */
+@send
+external query: (t, queryOptions) => array<'gameObj> = "query"

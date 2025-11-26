@@ -1,0 +1,206 @@
+---
+alwaysApply: true
+---
+
+# Kaplay
+
+ReScript package `"@nojaf/rescript-kaplay"` contains a bunch of bindings under the `Kaplay` namespace.
+These should reflect the types in [kaplay node_module](../../node_modules/kaplay/dist/doc.d.ts)
+
+## Initialization and Context
+
+- Always initialize a Kaplay context via `Kaplay.Context.kaplay(~initOptions=?) : Kaplay.Context.t`.
+  - The binding uses `@module("kaplay")` to import the npm package. Do not assume globals.
+  - Typical convention: create a `GameContext` module that exposes `let k = Kaplay.Context.kaplay(~initOptions={...})`.
+- The context `k` exposes most top-level APIs as `@send` methods. Use ReScript pipe style: `k->width`, `k->setCamPos(v)`, etc.
+  - Per ReScript rules, `@send` methods that return a value do not take `()`.
+  - For `@send` methods with optional labeled args, omit `()` entirely or pass labeled args; never write empty `()`.
+- Useful context fields and helpers:
+  - `k.easings.<name>` gives `easeFunc`s.
+  - `k->vec2(x, y)`, `k->vec2Zero`, `k->vec2One`, `k->vec2Left`, `k->vec2Right`, `k->vec2Up`, `k->vec2Down`.
+
+## Assets and Lifecycle
+
+- Load assets on the context:
+  - `k->loadSprite(name, url, ~options=?)`, `k->loadSound(name, url)`, `k->loadMusic(name, url)`, `k->loadFont(name, url)`.
+  - Access a loaded sprite asset with `k->getSprite(name) : Kaplay.Asset.t(Kaplay.SpriteData.t)`.
+- Use `k->Context.onLoad(() => ...)` to run logic once all assets are ready. Avoid accessing unloaded assets before this event.
+- Scenes: `k->scene(name, ctx => ...)` to define, `k->go(name, ~data=?)` or `k->goWithData(name, data)` to switch.
+
+## Game Objects and Components
+
+- Game objects are created by composing components. The binding pattern is:
+  - Define a module with a type for your object: `module Player = { type t }` or `type t = { ... }` for custom state.
+  - Include component module functions you need: `include Pos.Comp({type t = t})`, `include Sprite.Comp({type t = t})`, etc.
+  - Create objects by calling `k->Context.add([ ... list of comp ... ])` and annotate the return as your type `t`.
+- Critical pitfall: Including `XYZ.Comp` only exposes functions at compile time; you must also add the runtime comp in `Context.add` via the corresponding `addXYZ(k, ...)`. If you omit `addXYZ`, getters/setters may compile but crash or be undefined at runtime.
+- Common components and their creation helpers (all live under `Kaplay.Components` when referenced in source, re-exported by `Kaplay`):
+  - `Pos`: `addPos(k, x, y)` or `addPosFromVec2(k, v)`. Accessors: `getPos`, `setPos`, `getPosX`, `getPosY`, `move`, `worldPos`, etc.
+  - `Sprite`: `addSprite(k, name, ~options=?)`. Methods: `play`, `getFrame`, `setFrame`, `getAnimSpeed`, `setAnimSpeed`, `getWidth/Height`, `setWidth/Height`, etc.
+  - `GameObjRaw`: utilities for all objects: `onUpdate`, `destroy`, `addChild`, `getChildren`, `trigger`, `has`, etc.
+- Custom object state:
+  - Use a record `type t = { ... }` and provide an identity external to inject initial state inside `Context.add`:
+    ```rescript
+    module Hero = {
+      type t = {name: string}
+      external initialState: t => Kaplay.Types.comp = "%identity"
+      include Pos.Comp({type t = t})
+      let make = (k: Kaplay.Context.t): t =>
+        k->Kaplay.Context.add([initialState(~name="Freddie"), addPos(k, 4., 3.)])
+    }
+    ```
+- Avoid nested game-object modules inside other object modules. Includes leak methods into the nested module's scope, creating methods that type-check but are missing at runtime.
+
+### Child origin
+
+- All child transforms are relative to the parent. When you `addChild(parent, [...])`, components like `pos`, `scale`, `rotate`, `z`, etc. operate in the child’s local space, offset by the parent’s transform.
+- See the Kaplay `pos` docs for behavior and examples: [pos (position) component](https://v4000.kaplayjs.com/docs/api/ctx/pos/).
+
+### Local vs world coordinates
+
+- Child state you accumulate (like positions) is typically in the child’s local space. For comparisons against world/screen bounds, convert to world space first.
+- Convert child-local to world by offsetting with the child’s world position; for screen/world conversions use `k->toScreen` / `k->toWorld` when the camera is transformed.
+
+```ReScript
+// Given a child object and a candidate point in the child's local space
+let candidateLocal = nextPoint
+let candidateWorld = child->worldPos->Vec2.add(candidateLocal)
+
+// Compare against a world-space rectangle (e.g. 0..width/height)
+let worldRect = Math.Rect.make(k, k->vec2Zero, k->width, k->height)
+if !Math.Rect.contains(worldRect, candidateWorld) {
+  // out of bounds
+}
+```
+
+### Nested object hierarchies and add patterns
+
+- Kaplay’s `add`/`addChild` API expects a list of components to construct the object.
+- There are 2 ergonomic patterns for nested objects:
+  1) Return components: have `Child.makeComponents(...) : array<comp>` and call `parent->addChild(Child.makeComponents(...))`. This is great when you don’t need to capture the created object in the child.
+  2) Pass an adder: pass `addToParent` (i.e. `extra => parent->addChild(extra)`) into `Child.make(addToParent, ...)` so the child can call `addToParent([ ... comps ... ])` and immediately get a typed `child` back. This is useful when the child needs to register `onUpdate` or other event handlers on itself right away.
+
+Short examples:
+
+```ReScript
+// 1) Return components
+module Child = {
+  type t
+  include GameObjRaw.Comp({type t = t})
+  include Pos.Comp({type t = t})
+
+  let makeComponents = (~x: float, ~y: float): array<Kaplay.Types.comp> => [
+    addPos(k, x, y),
+    // ... other comps ...
+  ]
+}
+
+let child1 = parent->addChild(Child.makeComponents(~x=10., ~y=5.))
+```
+
+```ReScript
+// 2) Pass an adder so the child can attach handlers immediately
+module Child = {
+  type t
+  include GameObjRaw.Comp({type t = t})
+  include Pos.Comp({type t = t})
+
+  let make = (addToParent: array<Kaplay.Types.comp> => t, ~x: float, ~y: float): t => {
+    let child: t = addToParent([addPos(k, x, y)])
+    child->onUpdate(() => {
+      // ... per-frame logic ...
+    })
+    child
+  }
+}
+
+let child2 = Child.make(extra => parent->addChild(extra), ~x=10., ~y=5.)
+```
+
+### Event controllers and cleanup pattern
+
+Use controller-returning variants (e.g. `onUpdateWithController`) when you need to stop an update loop:
+
+```ReScript
+let ctrlRef: ref<option<Kaplay.KEventController.t>> = ref(None)
+ctrlRef := Some(obj->onUpdateWithController(() => {
+  if shouldStop {
+    switch ctrlRef.contents {
+    | Some(ctrl) => ctrl->KEventController.cancel
+    | None => ()
+    }
+  }
+}))
+```
+
+## Events
+
+- Most context and object events have 2 variants:
+  - Fire-and-forget: e.g. `k->onUpdate(() => ...)` or `obj->onUpdate(() => ...)` returning `unit`.
+  - Controller variant: e.g. `k->onUpdateWithController(...) : Kaplay.KEventController.t` that you can hold to cancel/unsubscribe.
+  - If you do not need the controller, pipe to `->ignore` to drop the returned value.
+- Context-wide input:
+  - Keyboard: `onKeyPress`, `onKeyDown`, `onKeyRelease` (and `WithController` variants).
+  - Touch: `onTouchStart`, `onTouchMove`, `onTouchEnd` receive `(Kaplay.Vec2.t, touch)`.
+  - Mouse: `onMousePress`, `onMouseMove`, `onMouseRelease`; mouse position via `k->Context.mousePos`.
+- Object-level events:
+  - Via `GameObjRaw.Comp`: `onUpdate`, `onKeyDown`, `onKeyPress`, `onKeyRelease`, `onDestroy`, etc.
+  - Custom events: `obj->trigger("eventName", arg)`. Context can register for tags via `k->on(~event, ~tag, (obj, arg) => ...)`.
+
+## Math, Tweening, and Time
+
+- Delta time `k->dt` and total time `k->time`.
+- Tweening:
+  - `k->tween(~from, ~to_, ~duration, ~setValue, ~easeFunc=?) : unit`.
+  - `k->tweenWithController(...) : Kaplay.TweenController.t` to pause/cancel.
+- Timers:
+  - `k->wait(seconds, cb)` or `k->waitWithController(...)`.
+  - `k->loop(seconds, cb, ~maxLoops=?, ~waitFirst=?) : Kaplay.TimerController.t`.
+- Random and clamps: `k->randi`, `k->randf`, `k->clamp`, `k->clampFloat`, `k->deg2rad`, `k->rad2deg`.
+
+## Drawing Primitives
+
+- Besides component-based drawing, the context can draw directly each frame (typically in `onDraw`):
+  - `k->drawSprite({sprite, frame=?, width=?, height=?, anchor=?, ...})`
+  - `k->drawText({text, font=?, size=?, align=?, width=?, anchor=?, ...})`
+  - `k->drawRect({width, height, pos=?, color=?, outline=?, ...})`
+  - `k->drawLine({p1, p2, width=?, color=?, opacity=?})`, `k->drawLines({pts, width=?, join=?, cap=?, ...})`
+  - `k->drawCircle`, `k->drawEllipse`, `k->drawPolygon`, `k->drawBezier`, `k->drawTriangle`
+- Many draw option records accept a common subset of `renderProps`: `pos`, `scale`, `angle`, `color`, `opacity`, `fixed`, `blendMode`, `outline`.
+- Some parameters are flexible types (sprite name, asset, or sprite data). The bindings provide identity constructors internally; supply the right typed value, not raw `unknown`.
+
+## Layers, Camera, and World/Screen Space
+
+- Camera controls: `k->getCamPos`, `k->setCamPos(v)`, transform helpers `k->toWorld(v)`, `k->toScreen(v)`.
+- Layers: define via `k->setLayers([|"bg", "game", "ui"|], "game")`, query with `k->getLayers()` and `k->getDefaultLayer()`.
+- Gravity and background: `k->setGravity(value)`, `k->setBackground(color)`.
+
+## Typings to Use in ReScript
+
+- Keys are `Kaplay.Types.key` constructors like `Left`, `Right`, `Up`, `Down`, `Space`, etc. Do not pass strings.
+- Mouse buttons are `Kaplay.Types.mouseButton` constructors like `Left`, `Right`, `Middle`, ...
+- Colors are `{r: int, g: int, b: int}` records; outlines, blend modes, cursors, textAlign, lineJoin, and lineCap are typed discriminated unions.
+- A single component value has type `Kaplay.Types.comp`. `Context.add([ ... ])` expects a list of `comp` and returns a generic game object that you annotate as your module's `t`.
+
+## Calling Style and Namespacing
+
+- Always use the `Kaplay` namespace (configured via ReScript namespaces). Never use the compiler-internal `-` namespace syntax.
+- When chaining, prefer `value->Module.method(args)` style. Examples:
+  - `k->width` (no `()`)
+  - `k->Context.add([addPos(k, 100., 100.), addSprite(k, "hero")])`
+  - `player->getPos |> (pos => k->setCamPos(pos))`
+
+## Common Pitfalls and Best Practices
+
+- Include vs Add: If you `include Sprite.Comp`, you must also supply `addSprite(k, ...)` when constructing the object; otherwise, methods like `play` exist at compile time but will fail at runtime.
+- Do not nest object modules: nested includes can expose methods that don't exist at runtime on the nested object.
+- Prefer controller-returning variants when you need to cancel/unsubscribe; otherwise pipe to `->ignore`.
+- For input enums (`key`, `mouseButton`, etc.), use typed constructors, not strings.
+- Use `k->Context.onLoad` to start game logic dependent on assets; avoid using assets synchronously after `loadSprite` until loaded.
+
+## Pointers to Local Docs and Samples
+
+- See `docs/content/docs/game-context.mdx` for initializing and holding the context.
+- See `docs/content/docs/game-object.mdx` for step-by-step object composition, including includes, `make`, and pitfalls.
+- Browse `packages/samples/src/*.res` for idiomatic usage of events, tweening, camera controls, and vector math with `Kaplay.Vec2`.
+

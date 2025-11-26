@@ -10,10 +10,10 @@ module Comp = (
   external setHp: (T.t, int) => unit = "hp"
 
   @get
-  external getMaxHp: T.t => int = "maxHp"
+  external getMaxHp: T.t => int = "maxHP"
 
   @set
-  external setMaxHp: (T.t, int) => unit = "maxHp"
+  external setMaxHp: (T.t, int) => unit = "maxHP"
 
   @get
   external getDead: T.t => bool = "dead"
@@ -58,5 +58,5 @@ module Comp = (
  `addHealth(context, hp, ~maxHp=?)` handles health related logic and events.
  */
   @send
-  external addHealth: (Context.t, int, ~maxHp: int=?) => Types.comp = "health"
+  external addHealth: (Context.t, int, ~maxHP: int=?) => Types.comp = "health"
 }
