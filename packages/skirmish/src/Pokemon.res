@@ -1,9 +1,9 @@
 open Kaplay
 open GameContext
 
-type t = {mutable direction: Vec2.t}
-
 type team = Player | Opponent
+
+type t = {mutable direction: Vec2.t, level: int, pokemonId: int, team: team}
 
 include GameObjRaw.Comp({type t = t})
 include Pos.Comp({type t = t})
@@ -42,18 +42,18 @@ let getHealthPercentage = (pokemon: t): float => {
 
 /* Create a Pokemon game object at center, with hp 20, center anchor, default area.
  Uses the back-facing sprite by default. */
-let make = (id: int, team: team): t => {
+let make = (id: int, level: int, team: team): t => {
   let gameObj: t = k->Context.add(
     [
       // initialState
       ...team == Player
         ? [
-            internalState({direction: k->Context.vec2Up}),
+            internalState({direction: k->Context.vec2Up, level, pokemonId: id, team}),
             k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.8),
             k->addSprite(backSpriteName(id)),
           ]
         : [
-            internalState({direction: k->Context.vec2Down}),
+            internalState({direction: k->Context.vec2Down, level, pokemonId: id, team}),
             k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.2),
             k->addSprite(frontSpriteName(id)),
           ],

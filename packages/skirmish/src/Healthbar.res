@@ -4,6 +4,9 @@ open GameContext
 type t = {
   mutable healthPercentage: float,
   mutable tweenControllerRef?: TweenController.t,
+  name: string,
+  level: int,
+  team: Pokemon.team,
 }
 
 external initialState: t => Types.comp = "%identity"
@@ -63,13 +66,21 @@ let draw =
   @this
   (healthbar: t) => {
     // Lines
+    let lines =
+      healthbar.team == Pokemon.Opponent
+        ? [
+            k->Context.vec2Zero,
+            k->Context.vec2(0., 40.),
+            k->Context.vec2(k->Context.width / 2., 40.),
+          ]
+        : [
+            k->Context.vec2(k->Context.width / 2., 0.),
+            k->Context.vec2(k->Context.width / 2., 40.),
+            k->Context.vec2(0., 40.),
+          ]
+
     k->Context.drawLines({
-      pts: [
-        //
-        k->Context.vec2Zero,
-        k->Context.vec2(0., 40.),
-        k->Context.vec2(k->Context.width / 2., 40.),
-      ],
+      pts: lines,
       color: k->Color.black,
       width: 2.,
     })
@@ -77,9 +88,18 @@ let draw =
     // Pokemon name
     k->Context.drawText({
       pos: k->Context.vec2(5., 0.),
-      text: "Charmander"->String.toUpperCase,
+      text: healthbar.name->String.toUpperCase,
       letterSpacing: 0.5,
       size: 15.,
+      color: k->Color.black,
+      font: Context.makeDrawTextFontInfoFromString("system-ui"),
+    })
+
+    // Pokemon level
+    k->Context.drawText({
+      pos: k->Context.vec2(80., 15.),
+      text: ":L" ++ Int.toString(healthbar.level),
+      size: 10.,
       color: k->Color.black,
       font: Context.makeDrawTextFontInfoFromString("system-ui"),
     })
@@ -123,9 +143,14 @@ let make = (pokemon: Pokemon.t) => {
   let healthbar: t = k->Context.add([
     initialState({
       healthPercentage: pokemon->Pokemon.getHealthPercentage,
+      name: MetaData.names->Map.get(pokemon.pokemonId)->Option.getOr("???"),
+      level: pokemon.level,
+      team: pokemon.team,
     }),
     CustomComponent.make({id: "healthbar", draw}),
-    addPos(k, 10., 10.),
+    pokemon.team == Pokemon.Opponent
+      ? addPos(k, 10., 10.)
+      : addPos(k, k->Context.width - 160., k->Context.height - 50.),
   ])
 
   pokemon

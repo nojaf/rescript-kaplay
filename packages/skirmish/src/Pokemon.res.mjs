@@ -63,17 +63,23 @@ function getHealthPercentage(pokemon) {
   return currentHp / maxHp * 100;
 }
 
-function make(id, team) {
+function make(id, level, team) {
   let gameObj = GameContext$Skirmish.k.add(Belt_Array.concatMany([
     team === "Player" ? [
         {
-          direction: GameContext$Skirmish.k.Vec2.UP
+          direction: GameContext$Skirmish.k.Vec2.UP,
+          level: level,
+          pokemonId: id,
+          team: team
         },
         GameContext$Skirmish.k.pos(GameContext$Skirmish.k.center().x, GameContext$Skirmish.k.height() * 0.8),
         GameContext$Skirmish.k.sprite(backSpriteName(id))
       ] : [
         {
-          direction: GameContext$Skirmish.k.Vec2.DOWN
+          direction: GameContext$Skirmish.k.Vec2.DOWN,
+          level: level,
+          pokemonId: id,
+          team: team
         },
         GameContext$Skirmish.k.pos(GameContext$Skirmish.k.center().x, GameContext$Skirmish.k.height() * 0.2),
         GameContext$Skirmish.k.sprite(frontSpriteName(id))

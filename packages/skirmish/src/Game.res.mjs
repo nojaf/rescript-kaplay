@@ -6,8 +6,9 @@ import * as GameContext$Skirmish from "./GameContext.res.mjs";
 import * as Thundershock$Skirmish from "./Thundershock.res.mjs";
 
 function sceneLoaded() {
-  Pokemon$Skirmish.make(25, "Player");
-  let _charmander = Pokemon$Skirmish.make(4, "Opponent");
+  let _pikachu = Pokemon$Skirmish.make(25, 12, "Player");
+  Healthbar$Skirmish.make(_pikachu);
+  let _charmander = Pokemon$Skirmish.make(4, 5, "Opponent");
   Healthbar$Skirmish.make(_charmander);
 }
 
