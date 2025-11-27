@@ -45,11 +45,13 @@ let intervalSeconds = 0.050
 let deviationOffset = 7.
 let distance = 20.
 
+external initialState: t => Types.comp = "%identity"
+
 let cast = (pokemon: Pokemon.t) => {
   let direction = pokemon.direction->Vec2.scaleWith(distance)
   let isYAxis = direction.x == 0.
   let thundershock: t = pokemon->Pokemon.addChild([
-    Obj.magic({points: [k->Context.vec2Zero]}),
+    initialState({points: [k->Context.vec2Zero]}),
     k->addPos(0., 0.),
     k->addZ(-1),
     CustomComponent.make({

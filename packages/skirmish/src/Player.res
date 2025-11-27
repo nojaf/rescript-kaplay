@@ -36,12 +36,34 @@ let make = (~pokemonId: int, ~level: int): Pokemon.t => {
     }
   })
 
+  // k->Context.onKeyRelease(key => {
+  //   let isYAxis = !(gameObj.direction.y == 0.)
+  //   switch key {
+  //   | Space => (if isYAxis {
+  //       Thundershock.cast(gameObj)
+  //     } else {
+  //       ()->ignore
+  //     })
+  //   | _ => ()
+  //   }
+  // })
+
   k->Context.onKeyRelease(key => {
+    let isYAxis = !(gameObj.direction.y == 0.)
     switch key {
-    | Space => Thundershock.cast(gameObj)
+    | Space => if isYAxis {
+        Thundershock.cast(gameObj)->ignore
+      }
     | _ => ()
     }
   })
+
+  // k->Context.onKeyRelease(key => {
+  //   switch key {
+  //   | Space => Thundershock.cast(gameObj)
+  //   | _ => ()
+  //   }
+  // })
 
   gameObj
 }
