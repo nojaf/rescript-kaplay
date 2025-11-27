@@ -2,7 +2,7 @@ open Kaplay
 open GameContext
 
 let make = (~pokemonId: int, ~level: int): Pokemon.t => {
-  let gameObj: Pokemon.t = Pokemon.make(~pokemonId, ~level, Player)
+  let gameObj: Pokemon.t = Obj.magic(3)
 
   k->Context.onKeyRelease(key => {
     let isYAxis = !(gameObj.direction.y == 0.)
