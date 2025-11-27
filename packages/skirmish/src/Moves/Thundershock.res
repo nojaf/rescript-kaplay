@@ -38,18 +38,25 @@ let draw =
     })
   }
 
+// TODO: extract and figure out proper world coordinates rect (keeping status bars in mind)
 let worldRect = Kaplay.Math.Rect.make(k, k->Context.vec2Zero, k->Context.width, k->Context.height)
 
 // Add a new point at a fixed interval using a timer loop
 let intervalSeconds = 0.050
 let deviationOffset = 7.
 let distance = 20.
+let up = k->Context.vec2Up->Vec2.scaleWith(distance)
+let down = k->Context.vec2Down->Vec2.scaleWith(distance)
 
 external initialState: t => Types.comp = "%identity"
 
 let cast = (pokemon: Pokemon.t) => {
-  let direction = pokemon.direction->Vec2.scaleWith(distance)
-  let isYAxis = direction.x == 0.
+  // Prevent the Pokemon from moving while the Thundershock is active
+  pokemon.mobility = CannotMove
+  // Thundershock is either up or down, so we need to get the direction
+  // We used cached vectors with the distance already applied to them
+  let direction = pokemon.facing == FacingUp ? up : down
+
   let thundershock: t = pokemon->Pokemon.addChild([
     initialState({points: [k->Context.vec2Zero]}),
     k->addPos(0., 0.),
@@ -92,11 +99,7 @@ let cast = (pokemon: Pokemon.t) => {
           }
 
           let deviation = k->Context.randf(-1. * deviationOffset, deviationOffset)
-          if isYAxis {
-            k->Context.vec2(deviation, lastPoint.y + direction.y)
-          } else {
-            k->Context.vec2(lastPoint.x + direction.x, deviation)
-          }
+          k->Context.vec2(deviation, lastPoint.y + direction.y)
         }
 
         let candidateInWorldRect = thundershock->worldPos->Vec2.add(candidate)
@@ -119,7 +122,12 @@ let cast = (pokemon: Pokemon.t) => {
 
           // Schedule own destruction
           k->Context.wait(5. * intervalSeconds, () => {
+            // Remove the shader from the Pokemon
             pokemon->Pokemon.unuse("shader")
+
+            // Allow the Pokemon to move again
+            pokemon.mobility = CanMove
+            // Destroy the Thundershock game object
             thundershock->destroy
           })
         } else {

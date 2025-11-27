@@ -50,9 +50,13 @@ function draw() {
 
 let worldRect = Math$Kaplay.Rect.make(GameContext$Skirmish.k, GameContext$Skirmish.k.Vec2.ZERO, GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height());
 
+let up = GameContext$Skirmish.k.Vec2.UP.scale(20);
+
+let down = GameContext$Skirmish.k.Vec2.DOWN.scale(20);
+
 function cast(pokemon) {
-  let direction = pokemon.direction.scale(20);
-  let isYAxis = direction.x === 0;
+  pokemon.mobility = false;
+  let direction = pokemon.facing === true ? up : down;
   let thundershock = pokemon.add([
     {
       points: [GameContext$Skirmish.k.Vec2.ZERO]
@@ -82,7 +86,7 @@ function cast(pokemon) {
     let point = Stdlib_Array.last(thundershock.points);
     let lastPoint = point !== undefined ? point : GameContext$Skirmish.k.Vec2.ZERO;
     let deviation = GameContext$Skirmish.k.rand(-1 * 7, 7);
-    let candidate = isYAxis ? GameContext$Skirmish.k.vec2(deviation, lastPoint.y + direction.y) : GameContext$Skirmish.k.vec2(lastPoint.x + direction.x, deviation);
+    let candidate = GameContext$Skirmish.k.vec2(deviation, lastPoint.y + direction.y);
     let candidateInWorldRect = thundershock.worldPos().add(candidate);
     if (worldRect.contains(candidateInWorldRect)) {
       thundershock.points.push(candidate);
@@ -97,6 +101,7 @@ function cast(pokemon) {
       }
       GameContext$Skirmish.k.wait(5 * 0.050, () => {
         pokemon.unuse("shader");
+        pokemon.mobility = true;
         thundershock.destroy();
       });
     }
@@ -127,6 +132,8 @@ export {
   intervalSeconds,
   deviationOffset,
   distance,
+  up,
+  down,
   cast,
 }
 /*  Not a pure module */

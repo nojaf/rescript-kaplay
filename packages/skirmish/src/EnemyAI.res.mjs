@@ -64,7 +64,7 @@ function addEnemyAI(player) {
 }
 
 function make(pokemonId, level, player) {
-  let gameObj = Pokemon$Skirmish.make(pokemonId, level, "Opponent");
+  let gameObj = Pokemon$Skirmish.make(pokemonId, level, false);
   gameObj.state = "Thinking";
   gameObj.use(addEnemyAI(player));
   return gameObj;

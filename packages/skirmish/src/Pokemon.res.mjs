@@ -65,9 +65,11 @@ function getHealthPercentage(pokemon) {
 
 function make(pokemonId, level, team) {
   let gameObj = GameContext$Skirmish.k.add(Belt_Array.concatMany([
-    team === "Player" ? [
+    team === true ? [
         {
           direction: GameContext$Skirmish.k.Vec2.UP,
+          facing: true,
+          mobility: true,
           level: level,
           pokemonId: pokemonId,
           team: team
@@ -77,6 +79,8 @@ function make(pokemonId, level, team) {
       ] : [
         {
           direction: GameContext$Skirmish.k.Vec2.DOWN,
+          facing: false,
+          mobility: true,
           level: level,
           pokemonId: pokemonId,
           team: team

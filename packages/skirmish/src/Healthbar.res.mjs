@@ -42,7 +42,7 @@ function setHealth(healthbar, targetPercent) {
 
 function draw() {
   let healthbar = this ;
-  let lines = healthbar.team === "Opponent" ? [
+  let lines = healthbar.team === false ? [
       GameContext$Skirmish.k.Vec2.ZERO,
       GameContext$Skirmish.k.vec2(0, 40),
       GameContext$Skirmish.k.vec2(GameContext$Skirmish.k.width() / 2, 40)
@@ -122,7 +122,7 @@ function make(pokemon) {
       id: "healthbar",
       draw: draw
     },
-    pokemon.team === "Opponent" ? GameContext$Skirmish.k.pos(10, 10) : GameContext$Skirmish.k.pos(GameContext$Skirmish.k.width() - 160, GameContext$Skirmish.k.height() - 50)
+    pokemon.team === false ? GameContext$Skirmish.k.pos(10, 10) : GameContext$Skirmish.k.pos(GameContext$Skirmish.k.width() - 160, GameContext$Skirmish.k.height() - 50)
   ]);
   pokemon.onHurt(_deltaHP => {
     let newHealthPercent = Pokemon$Skirmish.getHealthPercentage(pokemon);

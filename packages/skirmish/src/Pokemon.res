@@ -1,9 +1,23 @@
 open Kaplay
 open GameContext
 
-type team = Player | Opponent
+@unboxed
+type team = | @as(true) Player | @as(false) Opponent
 
-type t = {mutable direction: Vec2.t, level: int, pokemonId: int, team: team}
+@unboxed
+type facing = | @as(true) FacingUp | @as(false) FacingDown
+
+@unboxed
+type mobility = | @as(true) CanMove | @as(false) CannotMove
+
+type t = {
+  mutable direction: Vec2.t,
+  mutable facing: facing,
+  mutable mobility: mobility,
+  level: int,
+  pokemonId: int,
+  team: team,
+}
 
 include GameObjRaw.Comp({type t = t})
 include Pos.Comp({type t = t})
@@ -46,12 +60,26 @@ let make = (~pokemonId: int, ~level: int, team: team): t => {
       // initialState
       ...team == Player
         ? [
-            internalState({direction: k->Context.vec2Up, level, pokemonId, team}),
+            internalState({
+              direction: k->Context.vec2Up,
+              level,
+              pokemonId,
+              team,
+              facing: FacingUp,
+              mobility: CanMove,
+            }),
             k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.8),
             k->addSprite(backSpriteName(pokemonId)),
           ]
         : [
-            internalState({direction: k->Context.vec2Down, level, pokemonId, team}),
+            internalState({
+              direction: k->Context.vec2Down,
+              level,
+              pokemonId,
+              team,
+              facing: FacingDown,
+              mobility: CanMove,
+            }),
             k->addPos(20., k->Context.height * 0.2),
             k->addSprite(frontSpriteName(pokemonId)),
           ],
