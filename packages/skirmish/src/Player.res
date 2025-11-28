@@ -32,7 +32,9 @@ let make = (~pokemonId: int, ~level: int): Pokemon.t => {
     }
 
     if gameObj.mobility == Pokemon.CanMove && movementPressed {
-      gameObj->Pokemon.move(gameObj.direction->Vec2.scaleWith(Pokemon.movementSpeed))
+      gameObj->Pokemon.move(
+        gameObj.direction->Vec2.Unit.asWorld->Vec2.World.scaleWith(Pokemon.movementSpeed),
+      )
     }
   })
 

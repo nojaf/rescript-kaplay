@@ -43,7 +43,7 @@ let addEnemyAI = (player: Pokemon.t) => {
           if direction == k->Context.vec2Zero {
             self->setState(Attack)
           } else {
-            self->Pokemon.move(direction->Vec2.scaleWith(50.))
+            self->Pokemon.move(direction->Vec2.Unit.asWorld->Vec2.World.scaleWith(50.))
           }
         }
       | Attack => {

@@ -14,7 +14,7 @@ module Tags = {
 let circlePolygon = (center: Vec2.t, radius: float, ~segments: int=32): Types.shape => {
   let points = Array.fromInitializer(~length=segments, idx => {
     let theta = Int.toFloat(idx) / Int.toFloat(segments) * 2. * Stdlib_Math.Constants.pi
-    k->vec2(
+    k->vec2World(
       //
       center.x + Stdlib_Math.cos(theta) * radius,
       center.y + Stdlib_Math.sin(theta) * radius,
@@ -92,7 +92,7 @@ module Charmander = {
       k->addPos(0., 300.),
       k->addArea,
       k->addAnchorCenter,
-      k->addMove(k->vec2(1., 0.), 100.),
+      k->addMove(k->Context.vec2Right, 100.),
       k->addOffScreen(~options={destroy: true}),
       k->addHealth(3),
       tag(Tags.enemy),
@@ -179,7 +179,7 @@ module Squirtle = {
 module Bubble = {
   type t = {
     mutable homingTimer: float,
-    mutable homingVelocity: Vec2.t,
+    mutable homingVelocity: Vec2.World.t,
   }
 
   include GameObjRaw.Comp({type t = t})
@@ -195,7 +195,7 @@ module Bubble = {
     k->Color.fromHex("#155dfc"),
   ]
 
-  let make = (homingVelocity: Vec2.t, homingTimer: float) => {
+  let make = (homingVelocity: Vec2.World.t, homingTimer: float) => {
     let bubbleColor = bubbleColors->Array.getUnsafe(k->randi(0, 2))
     [
       k->addPos(0., 0.),
@@ -221,10 +221,14 @@ module Tower = {
 
   let fireHomingBullet = (tower: t, viewport: Viewport.t, target: Charmander.t) => {
     let maxDistance = viewport->Viewport.getRadius
-    let bulletSpeed = k->vec2FromXY(500.)
+    let bulletSpeed = 500.
     let homingStrength = 0.1
-    let homingVelocity =
-      target->Charmander.worldPos->Vec2.sub(tower->worldPos)->Vec2.unit->Vec2.scale(bulletSpeed)
+    let homingVelocity: Vec2.World.t =
+      target
+      ->Charmander.worldPos
+      ->Vec2.World.sub(tower->worldPos)
+      ->Vec2.World.unit
+      ->Vec2.World.scaleWith(bulletSpeed)
     let homingTimer = 0.2
 
     let bubble: Bubble.t = tower->addChild(Bubble.make(homingVelocity, homingTimer))
@@ -232,15 +236,19 @@ module Tower = {
     bubble
     ->Bubble.onUpdate(() => {
       if bubble.homingTimer > 0. {
-        let toTarget = target->Charmander.worldPos->Vec2.sub(bubble->Bubble.worldPos)->Vec2.unit
+        let toTarget =
+          target->Charmander.worldPos->Vec2.World.sub(bubble->Bubble.worldPos)->Vec2.World.unit
         bubble.homingVelocity =
-          bubble.homingVelocity->Vec2.lerp(toTarget->Vec2.scale(bulletSpeed), homingStrength)
+          bubble.homingVelocity->Vec2.World.lerp(
+            toTarget->Vec2.World.scaleWith(bulletSpeed),
+            homingStrength,
+          )
         bubble.homingTimer = bubble.homingTimer - k->dt
       }
 
       bubble->Bubble.move(bubble.homingVelocity)
 
-      if bubble->Bubble.worldPos->Vec2.dist(tower->worldPos) >= maxDistance {
+      if bubble->Bubble.worldPos->Vec2.World.dist(tower->worldPos) >= maxDistance {
         bubble->Bubble.destroy
       }
     })

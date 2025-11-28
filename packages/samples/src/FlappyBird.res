@@ -58,7 +58,7 @@ module Bird = {
   let make = () => {
     let bird: t =
       k->Context.add([
-        k->addPosFromVec2(k->Context.center),
+        k->addPosFromWorldVec2(k->Context.center),
         k->addSprite(spriteName, ~options={flipX: true, height: 35.}),
         k->addBody,
         k->addColor(k->Color.fromHex("#ffb86a")),

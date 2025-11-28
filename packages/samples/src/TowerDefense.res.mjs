@@ -121,7 +121,7 @@ function make$2() {
     k.pos(0, 300),
     k.area(),
     k.anchor("center"),
-    k.move(k.vec2(1, 0), 100),
+    k.move(k.Vec2.RIGHT, 100),
     k.offscreen({
       destroy: true
     }),
@@ -257,13 +257,12 @@ Body$Kaplay.Comp({});
 
 function fireHomingBullet(tower, viewport, target) {
   let maxDistance = viewport.radius;
-  let bulletSpeed = k.vec2(500);
-  let homingVelocity = target.worldPos().sub(tower.worldPos()).unit().scale(bulletSpeed);
+  let homingVelocity = target.worldPos().sub(tower.worldPos()).unit().scale(500);
   let bubble = tower.add(make$5(homingVelocity, 0.2));
   bubble.onUpdate(() => {
     if (bubble.homingTimer > 0) {
       let toTarget = target.worldPos().sub(bubble.worldPos()).unit();
-      bubble.homingVelocity = bubble.homingVelocity.lerp(toTarget.scale(bulletSpeed), 0.1);
+      bubble.homingVelocity = bubble.homingVelocity.lerp(toTarget.scale(500), 0.1);
       bubble.homingTimer = bubble.homingTimer - k.dt();
     }
     bubble.move(bubble.homingVelocity);

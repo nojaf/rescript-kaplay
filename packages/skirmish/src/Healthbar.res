@@ -69,7 +69,7 @@ let draw =
     let lines =
       healthbar.team == Pokemon.Opponent
         ? [
-            k->Context.vec2Zero,
+            k->Context.vec2ZeroLocal,
             k->Context.vec2(0., 40.),
             k->Context.vec2(k->Context.width / 2., 40.),
           ]

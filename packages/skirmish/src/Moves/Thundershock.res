@@ -1,7 +1,7 @@
 open Kaplay
 open GameContext
 
-type t = {points: array<Vec2.t>}
+type t = {points: array<Vec2.Local.t>}
 
 include Pos.Comp({type t = t})
 include Anchor.Comp({type t = t})
@@ -39,14 +39,20 @@ let draw =
   }
 
 // TODO: extract and figure out proper world coordinates rect (keeping status bars in mind)
-let worldRect = Kaplay.Math.Rect.make(k, k->Context.vec2Zero, k->Context.width, k->Context.height)
+let worldRect = Kaplay.Math.Rect.make(
+  k,
+  k->Context.vec2ZeroWorld,
+  k->Context.width,
+  k->Context.height,
+)
 
 // Add a new point at a fixed interval using a timer loop
 let intervalSeconds = 0.050
 let deviationOffset = 7.
 let distance = 20.
-let up = k->Context.vec2Up->Vec2.scaleWith(distance)
-let down = k->Context.vec2Down->Vec2.scaleWith(distance)
+// Scale unit direction vectors to create local coordinate offsets
+let up: Vec2.Local.t = k->Context.vec2Up->Vec2.Unit.asLocal->Vec2.Local.scaleWith(distance)
+let down: Vec2.Local.t = k->Context.vec2Down->Vec2.Unit.asLocal->Vec2.Local.scaleWith(distance)
 
 external initialState: t => Types.comp = "%identity"
 
@@ -60,7 +66,7 @@ let cast = (pokemon: Pokemon.t) => {
   let direction = pokemon.facing == FacingUp ? up : down
 
   let thundershock: t = pokemon->Pokemon.addChild([
-    initialState({points: [k->Context.vec2Zero]}),
+    initialState({points: [k->Context.vec2ZeroLocal]}),
     k->addPos(0., 0.),
     k->addZ(-1),
     CustomComponent.make({
@@ -94,26 +100,32 @@ let cast = (pokemon: Pokemon.t) => {
     Some(
       k->Context.loopWithController(intervalSeconds, () => {
         // Propose the next point (from origin), avoiding accumulated lateral drift
-        let candidate = {
+        let candidate: Vec2.Local.t = {
           let lastPoint = switch thundershock.points->Array.last {
           | Some(point) => point
-          | None => k->Context.vec2Zero
+          | None => k->Context.vec2ZeroLocal
           }
 
           let deviation = k->Context.randf(-1. * deviationOffset, deviationOffset)
           k->Context.vec2(deviation, lastPoint.y + direction.y)
         }
 
-        let candidateInWorldRect = thundershock->worldPos->Vec2.add(candidate)
+        // Convert local candidate to world coordinates for bounds checking
+        // candidate is in local space relative to thundershock, so add it to worldPos
+        let candidateInWorldRect: Vec2.World.t =
+          thundershock
+          ->worldPos
+          ->Vec2.World.add(candidate->Vec2.Local.asWorld)
         if !Kaplay.Math.Rect.contains(worldRect, candidateInWorldRect) {
           // Cap the last point to the game bounds edge, then stop
-          let cap = {
+          let cap: Vec2.World.t = {
             let v = candidateInWorldRect
             v.x = k->Context.clampFloat(v.x, 0., k->Context.width)
             v.y = k->Context.clampFloat(v.y, 0., k->Context.height)
             v
           }
-          let cappedLocal = cap->Vec2.sub(thundershock->worldPos)
+          // Convert world coordinate back to local coordinate relative to thundershock
+          let cappedLocal: Vec2.t = thundershock->fromWorld(cap)
           thundershock.points->Array.push(cappedLocal)
 
           // Remove timer

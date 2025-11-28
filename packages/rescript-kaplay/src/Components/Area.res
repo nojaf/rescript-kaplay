@@ -17,7 +17,7 @@ module Comp = (
   external onCollideEnd: (T.t, 'tag, 't => unit) => KEventController.t = "onCollideEnd"
 
   @send
-  external hasPoint: (T.t, Vec2.t) => bool = "hasPoint"
+  external hasPoint: (T.t, Vec2.World.t) => bool = "hasPoint"
 
   /**
 Register an event runs when clicked

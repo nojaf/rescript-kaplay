@@ -131,7 +131,7 @@ let onLoad = () => {
   k->onKeyPress(key => {
     switch key {
     | Space => {
-        let target = squirtle->SquirtleTile.getPos
+        let target = squirtle->SquirtleTile.worldPos
         charmander->CharmanderTile.setTarget(target)
         switch audio.contents {
         | None => audio := Some(k->play("beast-in-black"))

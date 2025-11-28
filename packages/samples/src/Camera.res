@@ -22,17 +22,15 @@ let cameraBounds = {
   },
 }
 
-let zeroVector = k->vec2(0., 0.)
-
-// Velocity for momentum effect
-let cameraVelocity = ref(zeroVector)
-let lastTouchStart = ref(zeroVector)
+// Velocity for momentum effect (world-space offset)
+let cameraVelocity: ref<Vec2.World.t> = ref(k->vec2ZeroWorld)
+let lastTouchStart: ref<Vec2.Screen.t> = ref(k->vec2ZeroScreen)
 let isDragging = ref(false)
 
-let updateCamera = (result: Vec2.t) => {
+let updateCamera = (result: Vec2.World.t) => {
   let currentCamPos = k->getCamPos
-  let moveWithBounds = {
-    let result = currentCamPos->Vec2.add(result)
+  let moveWithBounds: Vec2.World.t = {
+    let result = currentCamPos->Vec2.World.add(result)
     result.x = k->clampFloat(result.x, cameraBounds["x"]["min"], cameraBounds["x"]["max"])
     result.y = k->clampFloat(result.y, cameraBounds["y"]["min"], cameraBounds["y"]["max"])
     result
@@ -95,20 +93,28 @@ module Map = {
 let onLoad = () => {
   let map = Map.make()
 
-  let touchStart = pos => {
+  let touchStart = (pos: Vec2.Screen.t) => {
     lastTouchStart := pos
     isDragging := true
-    cameraVelocity := zeroVector // Reset velocit
+    cameraVelocity := k->vec2ZeroWorld // Reset velocity
   }
 
   k->onTouchStart((pos, _touch) => {
     touchStart(pos)
   })
 
-  let touchMove = pos => {
+  let touchMove = (pos: Vec2.Screen.t) => {
     if isDragging.contents {
-      let delta = pos->Vec2.sub(lastTouchStart.contents)
-      cameraVelocity := delta->Vec2.scale(k->vec2(-150., -100.)) // Scale for responsiveness
+      // Calculate screen-space delta
+      let delta: Vec2.Screen.t = pos->Vec2.Screen.sub(lastTouchStart.contents)
+      // Scale for responsiveness
+      // Note: Scaling by world-space factors (-150., -100.) conceptually converts the delta to world space
+      // We use Obj.magic to cast the type without creating a redundant vector allocation
+      // Trust me bro
+      let worldOffset: Vec2.World.t = Obj.magic(
+        delta->Vec2.Screen.scale(k->vec2Screen(-150., -100.)),
+      )
+      cameraVelocity := worldOffset
       lastTouchStart := pos
     }
   }
@@ -131,11 +137,11 @@ let onLoad = () => {
   k->onUpdate(() => {
     if !isDragging.contents {
       // Apply velocity to camera
-      let currentVelocity = cameraVelocity.contents
-      if currentVelocity->Vec2.len > 0.1 {
+      let currentVelocity: Vec2.World.t = cameraVelocity.contents
+      if currentVelocity->Vec2.World.len > 0.1 {
         updateCamera(currentVelocity)
         // Gradually reduce velocity (friction)
-        cameraVelocity := currentVelocity->Vec2.scale(k->vec2(0.9, 0.9))
+        cameraVelocity := currentVelocity->Vec2.World.scaleWith(0.9)
       }
     }
   })
@@ -144,15 +150,16 @@ let onLoad = () => {
   ->Map.onKeyDown(key => {
     let currentCamPos = k->getCamPos
 
-    let move = switch key {
-    | Left => k->vec2(-speed, 0.)
-    | Right => k->vec2(speed, 0.)
-    | Up => k->vec2(0., -speed)
-    | Down => k->vec2(0., speed)
-    | _ => k->vec2(0., 0.)
+    // Create world-space movement offset
+    let move: Vec2.World.t = switch key {
+    | Left => k->vec2World(-speed, 0.)
+    | Right => k->vec2World(speed, 0.)
+    | Up => k->vec2World(0., -speed)
+    | Down => k->vec2World(0., speed)
+    | _ => k->vec2ZeroWorld
     }
-    let moveWithBounds = {
-      let result = currentCamPos->Vec2.add(move)
+    let moveWithBounds: Vec2.World.t = {
+      let result = currentCamPos->Vec2.World.add(move)
       result.x = k->clampFloat(result.x, cameraBounds["x"]["min"], cameraBounds["x"]["max"])
       result.y = k->clampFloat(result.y, cameraBounds["y"]["min"], cameraBounds["y"]["max"])
       result

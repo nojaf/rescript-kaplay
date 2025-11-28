@@ -25,19 +25,22 @@ module Comp = (
   ```
   */
   @send
-  external move: (T.t, Vec2.t) => unit = "move"
+  external move: (T.t, Vec2.World.t) => unit = "move"
 
   @send
-  external worldPos: T.t => Vec2.t = "worldPos"
+  external worldPos: T.t => Vec2.World.t = "worldPos"
 
   @send
-  external setWorldPos: (T.t, Vec2.t) => unit = "worldPos"
+  external setWorldPos: (T.t, Vec2.World.t) => unit = "worldPos"
 
   @send
-  external screenPos: T.t => Vec2.t = "screenPos"
+  external fromWorld: (T.t, Vec2.World.t) => Vec2.Local.t = "fromWorld"
 
   @send
-  external setScreenPos: (T.t, Vec2.t) => unit = "screenPos"
+  external screenPos: T.t => Vec2.Screen.t = "screenPos"
+
+  @send
+  external setScreenPos: (T.t, Vec2.Screen.t) => unit = "screenPos"
 
   @get
   external getPos: T.t => Vec2.t = "pos"
@@ -56,4 +59,11 @@ module Comp = (
 
   @send
   external addPosFromVec2: (Context.t, Vec2.t) => Types.comp = "pos"
+
+  /**
+   * Add position from world coordinates.
+   * You should only use this if you are adding a position to a root-level object!
+   */
+  @send
+  external addPosFromWorldVec2: (Context.t, Vec2.World.t) => Types.comp = "pos"
 }

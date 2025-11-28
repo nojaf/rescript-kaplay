@@ -7,5 +7,5 @@ module Comp = (
  Move towards a direction infinitely, and destroys when it leaves game view.
  */
   @send
-  external addMove: (Context.t, Vec2.t, float) => Types.comp = "move"
+  external addMove: (Context.t, Vec2.Unit.t, float) => Types.comp = "move"
 }

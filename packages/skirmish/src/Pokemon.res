@@ -14,7 +14,7 @@ type mobility = | @as(true) CanMove | @as(false) CannotMove
 type attackStatus = | @as(true) CanAttack | @as(false) Attacking
 
 type t = {
-  mutable direction: Vec2.t,
+  mutable direction: Vec2.Unit.t,
   mutable facing: facing,
   mutable mobility: mobility,
   mutable attackStatus: attackStatus,
@@ -73,7 +73,7 @@ let make = (~pokemonId: int, ~level: int, team: team): t => {
               mobility: CanMove,
               attackStatus: CanAttack,
             }),
-            k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.8),
+            k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.8),
             k->addSprite(backSpriteName(pokemonId)),
           ]
         : [

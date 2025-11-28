@@ -94,7 +94,7 @@ function cast(pokemon) {
     } else {
       candidateInWorldRect.x = GameContext$Skirmish.k.clamp(candidateInWorldRect.x, 0, GameContext$Skirmish.k.width());
       candidateInWorldRect.y = GameContext$Skirmish.k.clamp(candidateInWorldRect.y, 0, GameContext$Skirmish.k.height());
-      let cappedLocal = candidateInWorldRect.sub(thundershock.worldPos());
+      let cappedLocal = thundershock.fromWorld(candidateInWorldRect);
       thundershock.points.push(cappedLocal);
       let t = timerRef.contents;
       if (t !== undefined) {

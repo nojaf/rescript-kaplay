@@ -67,7 +67,7 @@ function make$1(squirtle) {
     k.anchor("center"),
     k.color(k.Color.fromHex("#FF746C")),
     k.sentry([squirtle], {
-      direction: k.vec2(0, 0),
+      direction: k.Vec2.ZERO,
       fieldOfView: 45,
       lineOfSight: true,
       checkFrequency: 0.200

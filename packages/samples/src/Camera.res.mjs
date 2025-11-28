@@ -32,14 +32,12 @@ let cameraBounds = {
   }
 };
 
-let zeroVector = k.vec2(0, 0);
-
 let cameraVelocity = {
-  contents: zeroVector
+  contents: k.Vec2.ZERO
 };
 
 let lastTouchStart = {
-  contents: zeroVector
+  contents: k.Vec2.ZERO
 };
 
 let isDragging = {
@@ -106,14 +104,15 @@ function onLoad() {
   k.onTouchStart((pos, _touch) => {
     lastTouchStart.contents = pos;
     isDragging.contents = true;
-    cameraVelocity.contents = zeroVector;
+    cameraVelocity.contents = k.Vec2.ZERO;
   });
   k.onTouchMove((pos, _touch) => {
     if (!isDragging.contents) {
       return;
     }
     let delta = pos.sub(lastTouchStart.contents);
-    cameraVelocity.contents = delta.scale(k.vec2(-150, -100));
+    let worldOffset = delta.scale(k.vec2(-150, -100));
+    cameraVelocity.contents = worldOffset;
     lastTouchStart.contents = pos;
   });
   k.onTouchEnd((param, _touch) => {
@@ -126,7 +125,7 @@ function onLoad() {
     let currentVelocity = cameraVelocity.contents;
     if (currentVelocity.len() > 0.1) {
       updateCamera(currentVelocity);
-      cameraVelocity.contents = currentVelocity.scale(k.vec2(0.9, 0.9));
+      cameraVelocity.contents = currentVelocity.scale(0.9);
       return;
     }
   });
@@ -148,10 +147,10 @@ function onLoad() {
           move = k.vec2(0, 10);
           break;
         default:
-          move = k.vec2(0, 0);
+          move = k.Vec2.ZERO;
       }
     } else {
-      move = k.vec2(0, 0);
+      move = k.Vec2.ZERO;
     }
     let result = currentCamPos.add(move);
     result.x = k.clamp(result.x, cameraBounds.x.min, cameraBounds.x.max);
@@ -179,7 +178,6 @@ export {
   gameWidth,
   gameHeight,
   cameraBounds,
-  zeroVector,
   cameraVelocity,
   lastTouchStart,
   isDragging,
