@@ -31,7 +31,7 @@ let cast = (pokemon: Pokemon.t) => {
   flame->onCollide(Pokemon.tag, (other: Pokemon.t, _collision) => {
     if other.pokemonId != pokemon.pokemonId {
       Console.log2("Ember hit", other.pokemonId)
-      other->Pokemon.setHp(other->Pokemon.getHp - 4)
+      other->Pokemon.setHp(other->Pokemon.getHp - 1)
       flame->destroy
     }
   })

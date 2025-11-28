@@ -42,7 +42,7 @@ function cast(pokemon) {
   flame.onCollide(Pokemon$Skirmish.tag, (other, _collision) => {
     if (other.pokemonId !== pokemon.pokemonId) {
       console.log("Ember hit", other.pokemonId);
-      other.hp = other.hp - 4 | 0;
+      other.hp = other.hp - 1 | 0;
       flame.destroy();
       return;
     }

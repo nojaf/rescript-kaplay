@@ -53,6 +53,8 @@ external initialState: t => Types.comp = "%identity"
 let cast = (pokemon: Pokemon.t) => {
   // Prevent the Pokemon from moving while the Thundershock is active
   pokemon.mobility = CannotMove
+  pokemon.attackStatus = Attacking
+
   // Thundershock is either up or down, so we need to get the direction
   // We used cached vectors with the distance already applied to them
   let direction = pokemon.facing == FacingUp ? up : down
@@ -127,6 +129,7 @@ let cast = (pokemon: Pokemon.t) => {
 
             // Allow the Pokemon to move again
             pokemon.mobility = CanMove
+            pokemon.attackStatus = CanAttack
             // Destroy the Thundershock game object
             thundershock->destroy
           })
@@ -136,8 +139,10 @@ let cast = (pokemon: Pokemon.t) => {
 
         // Check collision with other Pokemon
         otherPokemon->Array.forEach(otherPokemon => {
+          // TODO: all points should be check here, not just the last one
+
           if otherPokemon->Pokemon.hasPoint(candidateInWorldRect) {
-            otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 5)
+            otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 1)
           }
         })
       }),

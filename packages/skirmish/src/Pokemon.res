@@ -10,10 +10,14 @@ type facing = | @as(true) FacingUp | @as(false) FacingDown
 @unboxed
 type mobility = | @as(true) CanMove | @as(false) CannotMove
 
+@unboxed
+type attackStatus = | @as(true) CanAttack | @as(false) Attacking
+
 type t = {
   mutable direction: Vec2.t,
   mutable facing: facing,
   mutable mobility: mobility,
+  mutable attackStatus: attackStatus,
   level: int,
   pokemonId: int,
   team: team,
@@ -67,6 +71,7 @@ let make = (~pokemonId: int, ~level: int, team: team): t => {
               team,
               facing: FacingUp,
               mobility: CanMove,
+              attackStatus: CanAttack,
             }),
             k->addPos(k->Context.center->Vec2.x, k->Context.height * 0.8),
             k->addSprite(backSpriteName(pokemonId)),
@@ -79,6 +84,7 @@ let make = (~pokemonId: int, ~level: int, team: team): t => {
               team,
               facing: FacingDown,
               mobility: CanMove,
+              attackStatus: CanAttack,
             }),
             k->addPos(20., k->Context.height * 0.2),
             k->addSprite(frontSpriteName(pokemonId)),
@@ -101,7 +107,7 @@ let make = (~pokemonId: int, ~level: int, team: team): t => {
     // Animate opacity: 1.0 → 0.5 → 0.75 → 1.0
     gameObj->animate(
       "opacity",
-      [1., 0.5, 1., 0.75, 1.],
+      [1., 0.3, 1., 0.5, 1.],
       {
         duration: 0.4,
         loops: 1,

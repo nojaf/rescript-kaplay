@@ -56,6 +56,7 @@ let down = GameContext$Skirmish.k.Vec2.DOWN.scale(20);
 
 function cast(pokemon) {
   pokemon.mobility = false;
+  pokemon.attackStatus = false;
   let direction = pokemon.facing === true ? up : down;
   let thundershock = pokemon.add([
     {
@@ -102,12 +103,13 @@ function cast(pokemon) {
       GameContext$Skirmish.k.wait(5 * 0.050, () => {
         pokemon.unuse("shader");
         pokemon.mobility = true;
+        pokemon.attackStatus = true;
         thundershock.destroy();
       });
     }
     otherPokemon.forEach(otherPokemon => {
       if (otherPokemon.hasPoint(candidateInWorldRect)) {
-        otherPokemon.hp = otherPokemon.hp - 5 | 0;
+        otherPokemon.hp = otherPokemon.hp - 1 | 0;
         return;
       }
     });

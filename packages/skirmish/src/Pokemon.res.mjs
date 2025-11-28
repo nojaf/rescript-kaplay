@@ -70,6 +70,7 @@ function make(pokemonId, level, team) {
           direction: GameContext$Skirmish.k.Vec2.UP,
           facing: true,
           mobility: true,
+          attackStatus: true,
           level: level,
           pokemonId: pokemonId,
           team: team
@@ -81,6 +82,7 @@ function make(pokemonId, level, team) {
           direction: GameContext$Skirmish.k.Vec2.DOWN,
           facing: false,
           mobility: true,
+          attackStatus: true,
           level: level,
           pokemonId: pokemonId,
           team: team
@@ -104,9 +106,9 @@ function make(pokemonId, level, team) {
     animation.seek(0);
     gameObj.animate("opacity", [
       1,
-      0.5,
+      0.3,
       1,
-      0.75,
+      0.5,
       1
     ], {
       duration: 0.4,

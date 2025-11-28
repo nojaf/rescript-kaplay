@@ -6,33 +6,34 @@ import * as Thundershock$Skirmish from "./Moves/Thundershock.res.mjs";
 
 function make(pokemonId, level) {
   let gameObj = Pokemon$Skirmish.make(pokemonId, level, true);
+  let spaceWasDown = {
+    contents: false
+  };
   GameContext$Skirmish.k.onUpdate(() => {
-    if (gameObj.mobility !== true) {
-      return;
+    let isSpacePressed = GameContext$Skirmish.k.isKeyDown("space");
+    let isNewSpacePress = isSpacePressed && !spaceWasDown.contents;
+    spaceWasDown.contents = isSpacePressed;
+    let isUpPressed = GameContext$Skirmish.k.isKeyDown("up") || GameContext$Skirmish.k.isKeyDown("w");
+    let isDownPressed = GameContext$Skirmish.k.isKeyDown("down") || GameContext$Skirmish.k.isKeyDown("s");
+    let isLeftPressed = GameContext$Skirmish.k.isKeyDown("left") || GameContext$Skirmish.k.isKeyDown("a");
+    let isRightPressed = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
+    let movementPressed = isUpPressed || isDownPressed || isLeftPressed || isRightPressed;
+    if (isNewSpacePress && gameObj.attackStatus === true) {
+      Thundershock$Skirmish.cast(gameObj);
+    } else if (isUpPressed) {
+      gameObj.direction = GameContext$Skirmish.k.Vec2.UP;
+      gameObj.sprite = Pokemon$Skirmish.backSpriteName(pokemonId);
+    } else if (isDownPressed) {
+      gameObj.direction = GameContext$Skirmish.k.Vec2.DOWN;
+      gameObj.sprite = Pokemon$Skirmish.frontSpriteName(pokemonId);
+    } else if (isLeftPressed) {
+      gameObj.direction = GameContext$Skirmish.k.Vec2.LEFT;
+    } else if (isRightPressed) {
+      gameObj.direction = GameContext$Skirmish.k.Vec2.RIGHT;
     }
-    let leftDown = GameContext$Skirmish.k.isKeyDown("left") || GameContext$Skirmish.k.isKeyDown("a");
-    let rightDown = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
-    let upDown = GameContext$Skirmish.k.isKeyDown("up") || GameContext$Skirmish.k.isKeyDown("w");
-    let downDown = GameContext$Skirmish.k.isKeyDown("down") || GameContext$Skirmish.k.isKeyDown("s");
-    if (leftDown || rightDown || upDown || downDown) {
-      if (upDown && !downDown) {
-        gameObj.direction = GameContext$Skirmish.k.Vec2.UP;
-        gameObj.sprite = Pokemon$Skirmish.backSpriteName(pokemonId);
-      } else if (downDown && !upDown) {
-        gameObj.direction = GameContext$Skirmish.k.Vec2.DOWN;
-        gameObj.sprite = Pokemon$Skirmish.frontSpriteName(pokemonId);
-      } else if (leftDown && !rightDown) {
-        gameObj.direction = GameContext$Skirmish.k.Vec2.LEFT;
-      } else if (rightDown && !leftDown) {
-        gameObj.direction = GameContext$Skirmish.k.Vec2.RIGHT;
-      }
+    if (gameObj.mobility === true && movementPressed) {
       gameObj.move(gameObj.direction.scale(Pokemon$Skirmish.movementSpeed));
       return;
-    }
-  });
-  GameContext$Skirmish.k.onKeyRelease(key => {
-    if (key === "space") {
-      return Thundershock$Skirmish.cast(gameObj);
     }
   });
   return gameObj;
