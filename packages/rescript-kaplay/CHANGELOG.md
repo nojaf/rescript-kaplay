@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - `Context.onError`
 - `Context.quit`
+- `RuleSystem`, `Rule`
 
 ## [0.11.0] - 2025-11-26
 
