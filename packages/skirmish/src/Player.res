@@ -2,7 +2,7 @@ open Kaplay
 open GameContext
 
 let make = (~pokemonId: int, ~level: int): Pokemon.t => {
-  let gameObj: Pokemon.t = Pokemon.make(~pokemonId, ~level, Player)
+  let gameObj: Pokemon.t = Pokemon.make(k, ~pokemonId, ~level, Player)
 
   let spaceWasDown = ref(false)
 

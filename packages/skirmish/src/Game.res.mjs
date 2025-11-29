@@ -11,13 +11,13 @@ import * as Thundershock$Skirmish from "./Moves/Thundershock.res.mjs";
 function sceneLoaded() {
   let pikachu = Player$Skirmish.make(25, 12);
   Healthbar$Skirmish.make(pikachu);
-  let _charmander = EnemyAI$Skirmish.make(4, 5, pikachu);
+  let _charmander = EnemyAI$Skirmish.make(GameContext$Skirmish.k, 4, 5, pikachu);
   Healthbar$Skirmish.make(_charmander);
 }
 
 function scene() {
-  Pokemon$Skirmish.load(4);
-  Pokemon$Skirmish.load(25);
+  Pokemon$Skirmish.load(GameContext$Skirmish.k, 4);
+  Pokemon$Skirmish.load(GameContext$Skirmish.k, 25);
   Thundershock$Skirmish.load();
   Ember$Skirmish.load();
   GameContext$Skirmish.k.onLoad(sceneLoaded);

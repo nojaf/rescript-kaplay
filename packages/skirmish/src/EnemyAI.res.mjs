@@ -3,27 +3,26 @@
 import * as Ember$Skirmish from "./Moves/Ember.res.mjs";
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as Primitive_object from "@rescript/runtime/lib/es6/Primitive_object.js";
-import * as GameContext$Skirmish from "./GameContext.res.mjs";
 
-function directionToPlayer(enemy, player) {
+function directionToPlayer(k, enemy, player) {
   let ex = enemy.pos.x;
   let px = player.pos.x;
   let distance = px - ex;
   if (distance > 1) {
-    return GameContext$Skirmish.k.Vec2.RIGHT;
+    return k.Vec2.RIGHT;
   } else if (distance < - 1) {
-    return GameContext$Skirmish.k.Vec2.LEFT;
+    return k.Vec2.LEFT;
   } else {
-    return GameContext$Skirmish.k.Vec2.ZERO;
+    return k.Vec2.ZERO;
   }
 }
 
-function addEnemyAI(player) {
+function addEnemyAI(k, player) {
   let update = function () {
     let self = this ;
     let t = self.state;
     if (typeof t === "object") {
-      if (GameContext$Skirmish.k.time() > t._0) {
+      if (k.time() > t._0) {
         self.state = "Thinking";
         return;
       } else {
@@ -32,16 +31,16 @@ function addEnemyAI(player) {
     }
     switch (t) {
       case "Thinking" :
-        let direction = directionToPlayer(self, player);
-        if (Primitive_object.notequal(direction, GameContext$Skirmish.k.Vec2.ZERO)) {
+        let direction = directionToPlayer(k, self, player);
+        if (Primitive_object.notequal(direction, k.Vec2.ZERO)) {
           self.state = "Move";
         } else {
           self.state = "Attack";
         }
         return;
       case "Move" :
-        let direction$1 = directionToPlayer(self, player);
-        if (Primitive_object.equal(direction$1, GameContext$Skirmish.k.Vec2.ZERO)) {
+        let direction$1 = directionToPlayer(k, self, player);
+        if (Primitive_object.equal(direction$1, k.Vec2.ZERO)) {
           self.state = "Attack";
         } else {
           self.move(direction$1.scale(50));
@@ -49,7 +48,7 @@ function addEnemyAI(player) {
         return;
       case "Attack" :
         Ember$Skirmish.cast(self);
-        let t$1 = GameContext$Skirmish.k.time() + 2.0;
+        let t$1 = k.time() + 2.0;
         self.state = {
           TAG: "CoolDown",
           _0: t$1
@@ -63,10 +62,10 @@ function addEnemyAI(player) {
   };
 }
 
-function make(pokemonId, level, player) {
-  let gameObj = Pokemon$Skirmish.make(pokemonId, level, false);
+function make(k, pokemonId, level, player) {
+  let gameObj = Pokemon$Skirmish.make(k, pokemonId, level, false);
   gameObj.state = "Thinking";
-  gameObj.use(addEnemyAI(player));
+  gameObj.use(addEnemyAI(k, player));
   return gameObj;
 }
 

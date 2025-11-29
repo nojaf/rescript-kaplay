@@ -10,7 +10,6 @@ import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res
 import * as Animate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Animate.res.mjs";
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
-import * as GameContext$Skirmish from "./GameContext.res.mjs";
 
 GameObjRaw$Kaplay.Comp({});
 
@@ -48,11 +47,11 @@ function backSpriteUrl(id) {
   return `/sprites/` + id.toString() + `-back.png`;
 }
 
-function load(id) {
-  GameContext$Skirmish.k.loadSprite(frontSpriteName(id), frontSpriteUrl(id), {
+function load(k, id) {
+  k.loadSprite(frontSpriteName(id), frontSpriteUrl(id), {
     singular: true
   });
-  GameContext$Skirmish.k.loadSprite(backSpriteName(id), backSpriteUrl(id), {
+  k.loadSprite(backSpriteName(id), backSpriteUrl(id), {
     singular: true
   });
 }
@@ -63,11 +62,11 @@ function getHealthPercentage(pokemon) {
   return currentHp / maxHp * 100;
 }
 
-function make(pokemonId, level, team) {
-  let gameObj = GameContext$Skirmish.k.add(Belt_Array.concatMany([
+function make(k, pokemonId, level, team) {
+  let gameObj = k.add(Belt_Array.concatMany([
     team === true ? [
         {
-          direction: GameContext$Skirmish.k.Vec2.UP,
+          direction: k.Vec2.UP,
           facing: true,
           mobility: true,
           attackStatus: true,
@@ -75,11 +74,11 @@ function make(pokemonId, level, team) {
           pokemonId: pokemonId,
           team: team
         },
-        GameContext$Skirmish.k.pos(GameContext$Skirmish.k.center().x, GameContext$Skirmish.k.height() * 0.8),
-        GameContext$Skirmish.k.sprite(backSpriteName(pokemonId))
+        k.pos(k.center().x, k.height() * 0.8),
+        k.sprite(backSpriteName(pokemonId))
       ] : [
         {
-          direction: GameContext$Skirmish.k.Vec2.DOWN,
+          direction: k.Vec2.DOWN,
           facing: false,
           mobility: true,
           attackStatus: true,
@@ -87,15 +86,15 @@ function make(pokemonId, level, team) {
           pokemonId: pokemonId,
           team: team
         },
-        GameContext$Skirmish.k.pos(20, GameContext$Skirmish.k.height() * 0.2),
-        GameContext$Skirmish.k.sprite(frontSpriteName(pokemonId))
+        k.pos(k.center().x, k.height() * 0.2),
+        k.sprite(frontSpriteName(pokemonId))
       ],
     [
-      GameContext$Skirmish.k.area(),
-      GameContext$Skirmish.k.health(20, 20),
-      GameContext$Skirmish.k.anchor("center"),
-      GameContext$Skirmish.k.opacity(1),
-      GameContext$Skirmish.k.animate(),
+      k.area(),
+      k.health(20, 20),
+      k.anchor("center"),
+      k.opacity(1),
+      k.animate(),
       tag
     ]
   ]));

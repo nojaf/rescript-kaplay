@@ -26,6 +26,9 @@ type kaplayOptions = {
 external kaplay: (~initOptions: kaplayOptions=?) => t = "default"
 
 @send
+external quit: t => unit = "quit"
+
+@send
 external add: (t, array<comp>) => 't = "add"
 
 external tag: string => comp = "%identity"
@@ -170,6 +173,9 @@ external onDrawWithController: (t, unit => unit) => KEventController.t = "onDraw
 /** Register an event that runs when all assets finished loading. */
 @send
 external onLoad: (t, unit => unit) => unit = "onLoad"
+
+@send
+external onError: (t, JsError.t => unit) => unit = "onError"
 
 @send
 external setGravity: (t, float) => unit = "setGravity"

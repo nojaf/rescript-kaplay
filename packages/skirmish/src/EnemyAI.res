@@ -1,5 +1,4 @@
 open Kaplay
-open GameContext
 
 type state =
   | Thinking
@@ -13,7 +12,7 @@ external getState: Pokemon.t => state = "state"
 @set
 external setState: (Pokemon.t, state) => unit = "state"
 
-let directionToPlayer = (enemy: Pokemon.t, player: Pokemon.t) => {
+let directionToPlayer = (k: Context.t, enemy: Pokemon.t, player: Pokemon.t) => {
   let ew = 1.
   let ex = enemy->Pokemon.getPosX
   let px = player->Pokemon.getPosX
@@ -25,13 +24,13 @@ let directionToPlayer = (enemy: Pokemon.t, player: Pokemon.t) => {
   }
 }
 
-let addEnemyAI = (player: Pokemon.t) => {
+let addEnemyAI = (k: Context.t, player: Pokemon.t) => {
   let update =
     @this
     (self: Pokemon.t) => {
       switch self->getState {
       | Thinking => {
-          let direction = directionToPlayer(self, player)
+          let direction = directionToPlayer(k, self, player)
           if direction != k->Context.vec2Zero {
             self->setState(Move)
           } else {
@@ -39,7 +38,7 @@ let addEnemyAI = (player: Pokemon.t) => {
           }
         }
       | Move => {
-          let direction = directionToPlayer(self, player)
+          let direction = directionToPlayer(k, self, player)
           if direction == k->Context.vec2Zero {
             self->setState(Attack)
           } else {
@@ -63,12 +62,12 @@ let addEnemyAI = (player: Pokemon.t) => {
   })
 }
 
-let make = (~pokemonId: int, ~level: int, player: Pokemon.t): Pokemon.t => {
-  let gameObj: Pokemon.t = Pokemon.make(~pokemonId, ~level, Opponent)
+let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Pokemon.t => {
+  let gameObj: Pokemon.t = Pokemon.make(k, ~pokemonId, ~level, Opponent)
 
   gameObj->setState(Thinking)
 
-  gameObj->Pokemon.use(addEnemyAI(player))
+  gameObj->Pokemon.use(addEnemyAI(k, player))
 
   gameObj
 }
