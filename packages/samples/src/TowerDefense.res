@@ -255,7 +255,11 @@ module Tower = {
 
     bubble->Bubble.onCollide(Tags.enemy, (enemy: Charmander.t, _) => {
       bubble->Bubble.destroy
-      enemy->Charmander.setHp(enemy->Charmander.getHp - 1)
+      let newHp = enemy->Charmander.getHp - 1
+      if newHp == 0 {
+        viewport.inSight->Map.delete(enemy->Charmander.getId)->ignore
+      }
+      enemy->Charmander.setHp(newHp)
       switch enemy->Charmander.get(Tags.solidHeart)->Array.at(0) {
       | None => ()
       | Some(heart) => {

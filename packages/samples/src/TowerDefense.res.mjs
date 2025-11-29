@@ -273,7 +273,11 @@ function fireHomingBullet(tower, viewport, target) {
   });
   bubble.onCollide(enemy, (enemy, param) => {
     bubble.destroy();
-    enemy.hp = enemy.hp - 1 | 0;
+    let newHp = enemy.hp - 1 | 0;
+    if (newHp === 0) {
+      viewport.inSight.delete(enemy.id);
+    }
+    enemy.hp = newHp;
     let heart = enemy.get(solidHeart).at(0);
     if (heart === undefined) {
       return;
