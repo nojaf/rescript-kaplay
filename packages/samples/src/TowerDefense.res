@@ -11,7 +11,7 @@ module Tags = {
   let solidHeart = "solid-heart"
 }
 
-let circlePolygon = (center: Vec2.t, radius: float, ~segments: int=32): Types.shape => {
+let circlePolygon = (center: Vec2.Local.t, radius: float, ~segments: int=32): Types.shape => {
   let points = Array.fromInitializer(~length=segments, idx => {
     let theta = Int.toFloat(idx) / Int.toFloat(segments) * 2. * Stdlib_Math.Constants.pi
     k->vec2World(
@@ -154,7 +154,7 @@ module Viewport = {
       k->addCircle(200., ~options={fill: true}),
       k->addColor(k->Color.fromHex("#D1FEB8")),
       k->addOpacity(0.2),
-      k->addArea(~options={shape: circlePolygon(k->vec2(0., 0.), 200., ~segments=32)}),
+      k->addArea(~options={shape: circlePolygon(k->Context.vec2ZeroLocal, 200., ~segments=32)}),
       defaultState({inSight: Map.make()}),
     ]
   }

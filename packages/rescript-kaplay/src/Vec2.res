@@ -21,6 +21,9 @@ This is the same as `vec2.y` but more convenient to use when piping.
   external add: (T.t, T.t) => T.t = "add"
 
   @send
+  external addWithXY: (T.t, float, float) => T.t = "add"
+
+  @send
   external sub: (T.t, T.t) => T.t = "sub"
 
   @send
@@ -45,6 +48,9 @@ This is the same as `vec2.y` but more convenient to use when piping.
   external dot: (T.t, T.t) => float = "dot"
 }
 
+/**
+ Absolute coordinate system based on the root object.
+ */
 module World = {
   type t = {
     mutable x: float,
@@ -54,6 +60,9 @@ module World = {
   include Impl({type t = t})
 }
 
+/**
+ Camera-relative coordinate system based on the camera position.
+ */
 module Screen = {
   type t = {
     mutable x: float,
@@ -63,6 +72,9 @@ module Screen = {
   include Impl({type t = t})
 }
 
+/**
+ Relative coordinate system based on the parent object.
+ */
 module Local = {
   type t = {
     mutable x: float,
@@ -73,6 +85,16 @@ module Local = {
 
   /** Use with caution, this is useful in additions or scaling operations */
   external asWorld: t => World.t = "%identity"
+}
+
+/**
+ Use in tile-based coordinate systems.
+ Like in `level` components.
+ */
+module Tile = {
+  type t = {mutable x: float, mutable y: float}
+
+  include Impl({type t = t})
 }
 
 /**
@@ -91,11 +113,3 @@ module Unit = {
   external asWorld: t => World.t = "%identity"
   external asLocal: t => Local.t = "%identity"
 }
-
-/**
- * Type alias for backward compatibility.
- * Defaults to LocalVec2.t - use specific types (LocalVec2.t, World.t, Screen.t) when possible.
- */
-type t = Local.t
-
-include Impl({type t = t})

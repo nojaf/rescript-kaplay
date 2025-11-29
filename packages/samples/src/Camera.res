@@ -24,7 +24,7 @@ let cameraBounds = {
 
 // Velocity for momentum effect (world-space offset)
 let cameraVelocity: ref<Vec2.World.t> = ref(k->vec2ZeroWorld)
-let lastTouchStart: ref<Vec2.Screen.t> = ref(k->vec2ZeroScreen)
+let lastTouchStart: ref<Vec2.World.t> = ref(k->vec2ZeroWorld)
 let isDragging = ref(false)
 
 let updateCamera = (result: Vec2.World.t) => {
@@ -94,7 +94,7 @@ let onLoad = () => {
   let map = Map.make()
 
   let touchStart = (pos: Vec2.Screen.t) => {
-    lastTouchStart := pos
+    lastTouchStart := Context.toWorld(k, pos)
     isDragging := true
     cameraVelocity := k->vec2ZeroWorld // Reset velocity
   }
@@ -105,17 +105,16 @@ let onLoad = () => {
 
   let touchMove = (pos: Vec2.Screen.t) => {
     if isDragging.contents {
-      // Calculate screen-space delta
-      let delta: Vec2.Screen.t = pos->Vec2.Screen.sub(lastTouchStart.contents)
-      // Scale for responsiveness
-      // Note: Scaling by world-space factors (-150., -100.) conceptually converts the delta to world space
-      // We use Obj.magic to cast the type without creating a redundant vector allocation
-      // Trust me bro
-      let worldOffset: Vec2.World.t = Obj.magic(
-        delta->Vec2.Screen.scale(k->vec2Screen(-150., -100.)),
-      )
-      cameraVelocity := worldOffset
-      lastTouchStart := pos
+      // Convert screen position to world position
+      let worldPos = Context.toWorld(k, pos)
+      // Calculate world-space delta (displacement)
+      let delta: Vec2.World.t = worldPos->Vec2.World.sub(lastTouchStart.contents)
+      // Camera moves opposite to finger drag direction, scaled for responsiveness
+      // Scaling preserves the World coordinate system type
+      let sensitivity = k->Context.vec2World(-150., -100.)
+      let worldDelta: Vec2.World.t = delta->Vec2.World.scale(sensitivity)
+      cameraVelocity := worldDelta
+      lastTouchStart := worldPos
     }
   }
 

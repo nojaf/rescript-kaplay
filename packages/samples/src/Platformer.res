@@ -35,7 +35,7 @@ module GameBounds = {
       addBody(k, ~options={isStatic: true}),
     ])
 
-    let rightPos = k->Context.vec2(k->Context.width - 1., 0.)
+    let rightPos = k->Context.vec2Local(k->Context.width - 1., 0.)
 
     let _right = k->Context.add([
       addPosFromVec2(k, rightPos),

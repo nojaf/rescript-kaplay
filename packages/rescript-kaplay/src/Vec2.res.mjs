@@ -11,6 +11,8 @@ let Screen = {};
 
 let Local = {};
 
+let Tile = {};
+
 let Unit = {};
 
 export {
@@ -18,6 +20,7 @@ export {
   World,
   Screen,
   Local,
+  Tile,
   Unit,
 }
 /* No side effect */

@@ -220,12 +220,12 @@ type textAlign =
 
 type shape
 type rect = {
-  pos: Vec2.t,
+  pos: Vec2.World.t,
   width: float,
   height: float,
 }
 type circle = {
   radius: float,
-  center: Vec2.t,
+  center: Vec2.World.t,
 }
 type polygon

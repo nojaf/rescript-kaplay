@@ -102,7 +102,7 @@ let $$Map = {
 function onLoad() {
   let map = make$1();
   k.onTouchStart((pos, _touch) => {
-    lastTouchStart.contents = pos;
+    lastTouchStart.contents = k.toWorld(pos);
     isDragging.contents = true;
     cameraVelocity.contents = k.Vec2.ZERO;
   });
@@ -110,10 +110,12 @@ function onLoad() {
     if (!isDragging.contents) {
       return;
     }
-    let delta = pos.sub(lastTouchStart.contents);
-    let worldOffset = delta.scale(k.vec2(-150, -100));
-    cameraVelocity.contents = worldOffset;
-    lastTouchStart.contents = pos;
+    let worldPos = k.toWorld(pos);
+    let delta = worldPos.sub(lastTouchStart.contents);
+    let sensitivity = k.vec2(-150, -100);
+    let worldDelta = delta.scale(sensitivity);
+    cameraVelocity.contents = worldDelta;
+    lastTouchStart.contents = worldPos;
   });
   k.onTouchEnd((param, _touch) => {
     isDragging.contents = false;

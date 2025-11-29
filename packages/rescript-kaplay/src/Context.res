@@ -262,16 +262,19 @@ external vec2Up: t => Vec2.Unit.t = "UP"
 external vec2Down: t => Vec2.Unit.t = "DOWN"
 
 @send
-external vec2: (t, float, float) => Vec2.t = "vec2"
+external vec2Local: (t, float, float) => Vec2.Local.t = "vec2"
 
 @send
-external vec2FromXY: (t, float) => Vec2.t = "vec2"
+external vec2LocalFromXY: (t, float) => Vec2.Local.t = "vec2"
 
 @send
 external vec2World: (t, float, float) => Vec2.World.t = "vec2"
 
 @send
 external vec2Screen: (t, float, float) => Vec2.Screen.t = "vec2"
+
+@send
+external vec2Tile: (t, float, float) => Vec2.Tile.t = "vec2"
 
 @send
 external center: t => Vec2.World.t = "center"
@@ -410,7 +413,7 @@ module Level = {
   type t
 
   @send
-  external spawn: (t, array<comp>, Vec2.t) => 't = "spawn"
+  external spawn: (t, array<comp>, Vec2.Tile.t) => 't = "spawn"
 }
 
 @send
@@ -518,8 +521,8 @@ external onMouseReleaseWithController: (t, mouseButton => unit) => KEventControl
   "onMouseRelease"
 
 type renderProps = {
-  pos?: Vec2.t,
-  scale?: Vec2.t,
+  pos?: Vec2.Local.t,
+  scale?: Vec2.Local.t,
   angle?: float,
   color?: color,
   opacity?: float,
@@ -535,7 +538,7 @@ external makeDrawSpriteInfoFromAsset: Asset.t<SpriteData.t> => drawSpriteInfo = 
 
 type drawAnchor
 external makeDrawAnchorFromString: string => drawAnchor = "%identity"
-external makeDrawAnchorFromVec2: Vec2.t => drawAnchor = "%identity"
+external makeDrawAnchorFromVec2: Vec2.Local.t => drawAnchor = "%identity"
 
 type drawSpriteOptions = {
   ...renderProps,
@@ -587,8 +590,8 @@ type drawRectOptions = {
 external drawRect: (t, drawRectOptions) => unit = "drawRect"
 
 type drawLineOptions = {
-  p1: Vec2.t,
-  p2: Vec2.t,
+  p1: Vec2.Local.t,
+  p2: Vec2.Local.t,
   width?: float,
   color?: color,
   opacity?: float,
@@ -600,8 +603,8 @@ external drawLine: (t, drawLineOptions) => unit = "drawLine"
 /** Options for drawing connected lines */
 type drawLinesOptions = {
   /** The points that should be connected with a line */
-  pts: array<Vec2.t>,
-  pos?: Vec2.t,
+  pts: array<Vec2.Local.t>,
+  pos?: Vec2.Local.t,
   color?: Types.color,
   opacity?: float,
   /** The width, or thickness of the lines */
@@ -628,14 +631,14 @@ type drawCurveOptions = {
 }
 
 @send
-external drawCurve: (t, float => Vec2.t, drawCurveOptions) => unit = "drawCurve"
+external drawCurve: (t, float => Vec2.Local.t, drawCurveOptions) => unit = "drawCurve"
 
 type drawBezierOptions = {
   ...drawCurveOptions,
-  pt1: Vec2.t,
-  pt2: Vec2.t,
-  pt3: Vec2.t,
-  pt4: Vec2.t,
+  pt1: Vec2.Local.t,
+  pt2: Vec2.Local.t,
+  pt3: Vec2.Local.t,
+  pt4: Vec2.Local.t,
 }
 
 @send
@@ -643,9 +646,9 @@ external drawBezier: (t, drawBezierOptions) => unit = "drawBezier"
 
 type drawTriangleOptions = {
   ...renderProps,
-  p1: Vec2.t,
-  p2: Vec2.t,
-  p3: Vec2.t,
+  p1: Vec2.Local.t,
+  p2: Vec2.Local.t,
+  p3: Vec2.Local.t,
   fill?: bool,
   radius?: float,
 }
@@ -654,8 +657,8 @@ type drawTriangleOptions = {
 external drawTriangle: (t, drawTriangleOptions) => unit = "drawTriangle"
 
 type drawCircleOptions = {
-  pos?: Vec2.t,
-  scale?: Vec2.t,
+  pos?: Vec2.Local.t,
+  scale?: Vec2.Local.t,
   color?: color,
   opacity?: float,
   fixed?: bool,
@@ -688,13 +691,13 @@ external drawEllipse: (t, drawEllipseOptions) => unit = "drawEllipse"
 
 type drawPolygonOptions = {
   ...renderProps,
-  pts: array<Vec2.t>,
+  pts: array<Vec2.Local.t>,
   fill?: bool,
   indices?: array<float>,
-  offset?: Vec2.t,
+  offset?: Vec2.Local.t,
   radius?: array<float>,
   colors?: array<color>,
-  uv?: array<Vec2.t>,
+  uv?: array<Vec2.Local.t>,
   tex?: Texture.t,
   triangulate?: bool,
 }
@@ -704,7 +707,7 @@ external drawPolygon: (t, drawPolygonOptions) => unit = "drawPolygon"
 
 type drawQuadOptions = {
   ...renderProps,
-  p1: Vec2.t,
+  p1: Vec2.Local.t,
 }
 
 @send

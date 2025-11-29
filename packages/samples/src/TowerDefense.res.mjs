@@ -168,7 +168,7 @@ function make$3() {
     k.color(k.Color.fromHex("#D1FEB8")),
     k.opacity(0.2),
     k.area({
-      shape: Primitive_option.some(circlePolygon(k.vec2(0, 0), 200, 32))
+      shape: Primitive_option.some(circlePolygon(k.Vec2.ZERO, 200, 32))
     }),
     {
       inSight: new Map()

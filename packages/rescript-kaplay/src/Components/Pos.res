@@ -43,7 +43,7 @@ module Comp = (
   external setScreenPos: (T.t, Vec2.Screen.t) => unit = "screenPos"
 
   @get
-  external getPos: T.t => Vec2.t = "pos"
+  external getPos: T.t => Vec2.Local.t = "pos"
 
   @get @scope("pos")
   external getPosX: T.t => float = "x"
@@ -52,13 +52,13 @@ module Comp = (
   external getPosY: T.t => float = "y"
 
   @set
-  external setPos: (T.t, Vec2.t) => unit = "pos"
+  external setPos: (T.t, Vec2.Local.t) => unit = "pos"
 
   @send
   external addPos: (Context.t, float, float) => Types.comp = "pos"
 
   @send
-  external addPosFromVec2: (Context.t, Vec2.t) => Types.comp = "pos"
+  external addPosFromVec2: (Context.t, Vec2.Local.t) => Types.comp = "pos"
 
   /**
    * Add position from world coordinates.

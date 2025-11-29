@@ -1,7 +1,7 @@
 open Kaplay
 open GameContext
 
-type t = {points: array<Vec2.Local.t>}
+type t = {points: array<Vec2.World.t>}
 
 include Pos.Comp({type t = t})
 include Anchor.Comp({type t = t})
@@ -30,8 +30,10 @@ let lighting2 = k->Color.fromHex("#fff085")
 let draw =
   @this
   (t: t) => {
+    // Convert world coordinates to local coordinates for drawing
+    let localPoints = t.points->Array.map(point => t->fromWorld(point))
     k->Context.drawLines({
-      pts: t.points,
+      pts: localPoints,
       width: 2.,
       color: lighting,
       cap: Square,
@@ -50,9 +52,9 @@ let worldRect = Kaplay.Math.Rect.make(
 let intervalSeconds = 0.050
 let deviationOffset = 7.
 let distance = 20.
-// Scale unit direction vectors to create local coordinate offsets
-let up: Vec2.Local.t = k->Context.vec2Up->Vec2.Unit.asLocal->Vec2.Local.scaleWith(distance)
-let down: Vec2.Local.t = k->Context.vec2Down->Vec2.Unit.asLocal->Vec2.Local.scaleWith(distance)
+// Scale unit direction vectors to create world coordinate offsets
+let up: Vec2.World.t = k->Context.vec2Up->Vec2.Unit.asWorld->Vec2.World.scaleWith(distance)
+let down: Vec2.World.t = k->Context.vec2Down->Vec2.Unit.asWorld->Vec2.World.scaleWith(distance)
 
 external initialState: t => Types.comp = "%identity"
 
@@ -66,7 +68,7 @@ let cast = (pokemon: Pokemon.t) => {
   let direction = pokemon.facing == FacingUp ? up : down
 
   let thundershock: t = pokemon->Pokemon.addChild([
-    initialState({points: [k->Context.vec2ZeroLocal]}),
+    initialState({points: []}),
     k->addPos(0., 0.),
     k->addZ(-1),
     CustomComponent.make({
@@ -74,6 +76,10 @@ let cast = (pokemon: Pokemon.t) => {
       draw,
     }),
   ])
+
+  // Initialize with Pokemon's world position as first point
+  let initialWorldPos = pokemon->Pokemon.worldPos
+  thundershock.points->Array.push(initialWorldPos)
 
   let otherPokemon =
     k
@@ -86,7 +92,7 @@ let cast = (pokemon: Pokemon.t) => {
     addShader(k, "glow", ~uniform=() =>
       {
         "u_time": k->Context.time,
-        "u_resolution": k->Context.vec2(pokemon->Pokemon.getWidth, pokemon->Pokemon.getHeight),
+        "u_resolution": k->Context.vec2World(pokemon->Pokemon.getWidth, pokemon->Pokemon.getHeight),
         "u_thickness": 0.7,
         "u_color": lighting,
         "u_intensity": 0.66,
@@ -99,34 +105,26 @@ let cast = (pokemon: Pokemon.t) => {
   timerRef :=
     Some(
       k->Context.loopWithController(intervalSeconds, () => {
-        // Propose the next point (from origin), avoiding accumulated lateral drift
-        let candidate: Vec2.Local.t = {
+        // Propose the next point in world coordinates
+        let candidate: Vec2.World.t = {
           let lastPoint = switch thundershock.points->Array.last {
           | Some(point) => point
-          | None => k->Context.vec2ZeroLocal
+          | None => pokemon->Pokemon.worldPos
           }
 
           let deviation = k->Context.randf(-1. * deviationOffset, deviationOffset)
-          k->Context.vec2(deviation, lastPoint.y + direction.y)
+          lastPoint->Vec2.World.addWithXY(deviation, direction.y)
         }
 
-        // Convert local candidate to world coordinates for bounds checking
-        // candidate is in local space relative to thundershock, so add it to worldPos
-        let candidateInWorldRect: Vec2.World.t =
-          thundershock
-          ->worldPos
-          ->Vec2.World.add(candidate->Vec2.Local.asWorld)
-        if !Kaplay.Math.Rect.contains(worldRect, candidateInWorldRect) {
+        // Check bounds in world coordinates
+        if !Kaplay.Math.Rect.contains(worldRect, candidate) {
           // Cap the last point to the game bounds edge, then stop
-          let cap: Vec2.World.t = {
-            let v = candidateInWorldRect
-            v.x = k->Context.clampFloat(v.x, 0., k->Context.width)
-            v.y = k->Context.clampFloat(v.y, 0., k->Context.height)
-            v
-          }
-          // Convert world coordinate back to local coordinate relative to thundershock
-          let cappedLocal: Vec2.t = thundershock->fromWorld(cap)
-          thundershock.points->Array.push(cappedLocal)
+          let cap: Vec2.World.t =
+            k->Context.vec2World(
+              k->Context.clampFloat(candidate.x, 0., k->Context.width),
+              k->Context.clampFloat(candidate.y, 0., k->Context.height),
+            )
+          thundershock.points->Array.push(cap)
 
           // Remove timer
           switch timerRef.contents {
@@ -149,11 +147,11 @@ let cast = (pokemon: Pokemon.t) => {
           thundershock.points->Array.push(candidate)
         }
 
-        // Check collision with other Pokemon
+        // Check collision with other Pokemon (candidate is already in world coordinates)
         otherPokemon->Array.forEach(otherPokemon => {
           // TODO: all points should be check here, not just the last one
 
-          if otherPokemon->Pokemon.hasPoint(candidateInWorldRect) {
+          if otherPokemon->Pokemon.hasPoint(candidate) {
             otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 1)
           }
         })

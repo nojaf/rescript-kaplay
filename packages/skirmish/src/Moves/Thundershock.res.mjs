@@ -40,8 +40,9 @@ let lighting2 = GameContext$Skirmish.k.Color.fromHex("#fff085");
 
 function draw() {
   let t = this ;
+  let localPoints = t.points.map(point => t.fromWorld(point));
   GameContext$Skirmish.k.drawLines({
-    pts: t.points,
+    pts: localPoints,
     color: lighting,
     width: 2,
     cap: "square"
@@ -60,7 +61,7 @@ function cast(pokemon) {
   let direction = pokemon.facing === true ? up : down;
   let thundershock = pokemon.add([
     {
-      points: [GameContext$Skirmish.k.Vec2.ZERO]
+      points: []
     },
     GameContext$Skirmish.k.pos(0, 0),
     GameContext$Skirmish.k.z(-1),
@@ -69,6 +70,8 @@ function cast(pokemon) {
       draw: draw
     }
   ]);
+  let initialWorldPos = pokemon.worldPos();
+  thundershock.points.push(initialWorldPos);
   let otherPokemon = GameContext$Skirmish.k.query({
     include: ["pokemon"]
   }).filter(p => p.id !== pokemon.id);
@@ -85,17 +88,14 @@ function cast(pokemon) {
   };
   timerRef.contents = GameContext$Skirmish.k.loop(0.050, () => {
     let point = Stdlib_Array.last(thundershock.points);
-    let lastPoint = point !== undefined ? point : GameContext$Skirmish.k.Vec2.ZERO;
+    let lastPoint = point !== undefined ? point : pokemon.worldPos();
     let deviation = GameContext$Skirmish.k.rand(-1 * 7, 7);
-    let candidate = GameContext$Skirmish.k.vec2(deviation, lastPoint.y + direction.y);
-    let candidateInWorldRect = thundershock.worldPos().add(candidate);
-    if (worldRect.contains(candidateInWorldRect)) {
+    let candidate = lastPoint.add(deviation, direction.y);
+    if (worldRect.contains(candidate)) {
       thundershock.points.push(candidate);
     } else {
-      candidateInWorldRect.x = GameContext$Skirmish.k.clamp(candidateInWorldRect.x, 0, GameContext$Skirmish.k.width());
-      candidateInWorldRect.y = GameContext$Skirmish.k.clamp(candidateInWorldRect.y, 0, GameContext$Skirmish.k.height());
-      let cappedLocal = thundershock.fromWorld(candidateInWorldRect);
-      thundershock.points.push(cappedLocal);
+      let cap = GameContext$Skirmish.k.vec2(GameContext$Skirmish.k.clamp(candidate.x, 0, GameContext$Skirmish.k.width()), GameContext$Skirmish.k.clamp(candidate.y, 0, GameContext$Skirmish.k.height()));
+      thundershock.points.push(cap);
       let t = timerRef.contents;
       if (t !== undefined) {
         t.cancel();
@@ -108,7 +108,7 @@ function cast(pokemon) {
       });
     }
     otherPokemon.forEach(otherPokemon => {
-      if (otherPokemon.hasPoint(candidateInWorldRect)) {
+      if (otherPokemon.hasPoint(candidate)) {
         otherPokemon.hp = otherPokemon.hp - 1 | 0;
         return;
       }

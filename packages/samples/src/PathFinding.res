@@ -122,8 +122,8 @@ let onLoad = () => {
     },
   )
 
-  let squirtle = level->Level.spawn(SquirtleTile.make(), k->vec2(1., 1.))
-  let charmander = level->Level.spawn(CharmanderTile.make(), k->vec2(7., 4.))
+  let squirtle = level->Level.spawn(SquirtleTile.make(), k->vec2Tile(1., 1.))
+  let charmander = level->Level.spawn(CharmanderTile.make(), k->vec2Tile(7., 4.))
 
   let _text = Text.make()
   let audio = ref(None)
