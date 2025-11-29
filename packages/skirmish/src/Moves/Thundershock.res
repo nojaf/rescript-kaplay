@@ -1,7 +1,10 @@
 open Kaplay
 open GameContext
 
-type t = {points: array<Vec2.World.t>}
+type t = {
+  points: array<Vec2.World.t>,
+  timerRef: Kaplay.TimerController.t,
+}
 
 include Pos.Comp({type t = t})
 include Anchor.Comp({type t = t})
@@ -25,7 +28,6 @@ let load = (): unit => {
 }
 
 let lighting = k->Color.fromHex("#fef9c2")
-let lighting2 = k->Color.fromHex("#fff085")
 
 let draw =
   @this
@@ -58,6 +60,69 @@ let down: Vec2.World.t = k->Context.vec2Down->Vec2.Unit.asWorld->Vec2.World.scal
 
 external initialState: t => Types.comp = "%identity"
 
+let destroy = (pokemon: Pokemon.t, thundershock: t) => {
+  thundershock.timerRef->Kaplay.TimerController.cancel
+
+  k->Context.wait(5. * intervalSeconds, () => {
+    // Remove the shader from the Pokemon
+    pokemon->Pokemon.unuse("shader")
+
+    // Allow the Pokemon to move again
+    pokemon.mobility = CanMove
+    pokemon.attackStatus = CanAttack
+    // Destroy the Thundershock game object
+    thundershock->destroy
+  })
+}
+
+let nextPartOfBolt = (
+  pokemon: Pokemon.t,
+  otherPokemon: array<Pokemon.t>,
+  direction: Vec2.World.t,
+  thundershock: t,
+  (),
+) => {
+  // Propose the next point in world coordinates
+  let candidate: Vec2.World.t = {
+    let pkmnWorldPos = pokemon->Pokemon.worldPos
+    // We use the last point.y + direction.y as the starting point for the next part of the bolt
+    let lastPoint = switch thundershock.points->Array.last {
+    | Some(point) => point
+    | None => pkmnWorldPos
+    }
+
+    // We determine the deviation in the x direction, which is a random value between -deviationOffset and deviationOffset
+    // Note that the pokemon is anchored in the center.
+    let deviationX = k->Context.randf(-1. * deviationOffset, deviationOffset)
+    k->Context.vec2World(pkmnWorldPos.x + deviationX, lastPoint.y + direction.y)
+  }
+
+  // Check bounds in world coordinates
+  if Kaplay.Math.Rect.containsWorld(worldRect, candidate) {
+    thundershock.points->Array.push(candidate)
+  } else {
+    // Cap the last point to the game bounds edge, then stop
+    let cap: Vec2.World.t =
+      k->Context.vec2World(
+        k->Context.clampFloat(candidate.x, 0., k->Context.width),
+        k->Context.clampFloat(candidate.y, 0., k->Context.height),
+      )
+    thundershock.points->Array.push(cap)
+
+    // Schedule own destruction
+    destroy(pokemon, thundershock)
+  }
+
+  // Check collision with other Pokemon (candidate is already in world coordinates)
+  otherPokemon->Array.forEach(otherPokemon => {
+    // All points should be check here, not just the last one
+    if thundershock.points->Array.some(point => otherPokemon->Pokemon.hasPoint(point)) {
+      otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 1)
+      destroy(pokemon, thundershock)
+    }
+  })
+}
+
 let cast = (pokemon: Pokemon.t) => {
   // Prevent the Pokemon from moving while the Thundershock is active
   pokemon.mobility = CannotMove
@@ -67,8 +132,14 @@ let cast = (pokemon: Pokemon.t) => {
   // We used cached vectors with the distance already applied to them
   let direction = pokemon.facing == FacingUp ? up : down
 
+  let otherPokemon =
+    k
+    ->Context.query({
+      include_: ["pokemon"],
+    })
+    ->Array.filter(p => p->Pokemon.getId != pokemon->Pokemon.getId)
+
   let thundershock: t = pokemon->Pokemon.addChild([
-    initialState({points: []}),
     k->addPos(0., 0.),
     k->addZ(-1),
     CustomComponent.make({
@@ -77,16 +148,15 @@ let cast = (pokemon: Pokemon.t) => {
     }),
   ])
 
-  // Initialize with Pokemon's world position as first point
-  let initialWorldPos = pokemon->Pokemon.worldPos
-  thundershock.points->Array.push(initialWorldPos)
-
-  let otherPokemon =
-    k
-    ->Context.query({
-      include_: ["pokemon"],
-    })
-    ->Array.filter(p => p->Pokemon.getId != pokemon->Pokemon.getId)
+  thundershock->use(
+    initialState({
+      points: [pokemon->Pokemon.worldPos],
+      timerRef: k->Context.loopWithController(
+        intervalSeconds,
+        nextPartOfBolt(pokemon, otherPokemon, direction, thundershock, ...),
+      ),
+    }),
+  )
 
   pokemon->Pokemon.use(
     addShader(k, "glow", ~uniform=() =>
@@ -100,61 +170,4 @@ let cast = (pokemon: Pokemon.t) => {
       }
     ),
   )
-
-  let timerRef: ref<option<Kaplay.TimerController.t>> = ref(None)
-  timerRef :=
-    Some(
-      k->Context.loopWithController(intervalSeconds, () => {
-        // Propose the next point in world coordinates
-        let candidate: Vec2.World.t = {
-          let lastPoint = switch thundershock.points->Array.last {
-          | Some(point) => point
-          | None => pokemon->Pokemon.worldPos
-          }
-
-          let deviation = k->Context.randf(-1. * deviationOffset, deviationOffset)
-          lastPoint->Vec2.World.addWithXY(deviation, direction.y)
-        }
-
-        // Check bounds in world coordinates
-        if !Kaplay.Math.Rect.containsWorld(worldRect, candidate) {
-          // Cap the last point to the game bounds edge, then stop
-          let cap: Vec2.World.t =
-            k->Context.vec2World(
-              k->Context.clampFloat(candidate.x, 0., k->Context.width),
-              k->Context.clampFloat(candidate.y, 0., k->Context.height),
-            )
-          thundershock.points->Array.push(cap)
-
-          // Remove timer
-          switch timerRef.contents {
-          | None => ()
-          | Some(t) => t->Kaplay.TimerController.cancel
-          }
-
-          // Schedule own destruction
-          k->Context.wait(5. * intervalSeconds, () => {
-            // Remove the shader from the Pokemon
-            pokemon->Pokemon.unuse("shader")
-
-            // Allow the Pokemon to move again
-            pokemon.mobility = CanMove
-            pokemon.attackStatus = CanAttack
-            // Destroy the Thundershock game object
-            thundershock->destroy
-          })
-        } else {
-          thundershock.points->Array.push(candidate)
-        }
-
-        // Check collision with other Pokemon (candidate is already in world coordinates)
-        otherPokemon->Array.forEach(otherPokemon => {
-          // TODO: all points should be check here, not just the last one
-
-          if otherPokemon->Pokemon.hasPoint(candidate) {
-            otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 1)
-          }
-        })
-      }),
-    )
 }

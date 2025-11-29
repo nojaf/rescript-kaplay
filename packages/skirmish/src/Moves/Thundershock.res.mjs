@@ -36,8 +36,6 @@ function load() {
 
 let lighting = GameContext$Skirmish.k.Color.fromHex("#fef9c2");
 
-let lighting2 = GameContext$Skirmish.k.Color.fromHex("#fff085");
-
 function draw() {
   let t = this ;
   let localPoints = t.points.map(point => t.fromWorld(point));
@@ -55,14 +53,24 @@ let up = GameContext$Skirmish.k.Vec2.UP.scale(20);
 
 let down = GameContext$Skirmish.k.Vec2.DOWN.scale(20);
 
+function destroy(pokemon, thundershock) {
+  thundershock.timerRef.cancel();
+  GameContext$Skirmish.k.wait(5 * 0.050, () => {
+    pokemon.unuse("shader");
+    pokemon.mobility = true;
+    pokemon.attackStatus = true;
+    thundershock.destroy();
+  });
+}
+
 function cast(pokemon) {
   pokemon.mobility = false;
   pokemon.attackStatus = false;
   let direction = pokemon.facing === true ? up : down;
+  let otherPokemon = GameContext$Skirmish.k.query({
+    include: ["pokemon"]
+  }).filter(p => p.id !== pokemon.id);
   let thundershock = pokemon.add([
-    {
-      points: []
-    },
     GameContext$Skirmish.k.pos(0, 0),
     GameContext$Skirmish.k.z(-1),
     {
@@ -70,11 +78,29 @@ function cast(pokemon) {
       draw: draw
     }
   ]);
-  let initialWorldPos = pokemon.worldPos();
-  thundershock.points.push(initialWorldPos);
-  let otherPokemon = GameContext$Skirmish.k.query({
-    include: ["pokemon"]
-  }).filter(p => p.id !== pokemon.id);
+  thundershock.use({
+    points: [pokemon.worldPos()],
+    timerRef: GameContext$Skirmish.k.loop(0.050, extra => {
+      let pkmnWorldPos = pokemon.worldPos();
+      let point = Stdlib_Array.last(thundershock.points);
+      let lastPoint = point !== undefined ? point : pkmnWorldPos;
+      let deviationX = GameContext$Skirmish.k.rand(-1 * 7, 7);
+      let candidate = GameContext$Skirmish.k.vec2(pkmnWorldPos.x + deviationX, lastPoint.y + direction.y);
+      if (worldRect.contains(candidate)) {
+        thundershock.points.push(candidate);
+      } else {
+        let cap = GameContext$Skirmish.k.vec2(GameContext$Skirmish.k.clamp(candidate.x, 0, GameContext$Skirmish.k.width()), GameContext$Skirmish.k.clamp(candidate.y, 0, GameContext$Skirmish.k.height()));
+        thundershock.points.push(cap);
+        destroy(pokemon, thundershock);
+      }
+      otherPokemon.forEach(otherPokemon => {
+        if (thundershock.points.some(point => otherPokemon.hasPoint(point))) {
+          otherPokemon.hp = otherPokemon.hp - 1 | 0;
+          return destroy(pokemon, thundershock);
+        }
+      });
+    })
+  });
   pokemon.use(GameContext$Skirmish.k.shader("glow", () => ({
     u_time: GameContext$Skirmish.k.time(),
     u_resolution: GameContext$Skirmish.k.vec2(pokemon.width, pokemon.height),
@@ -83,59 +109,10 @@ function cast(pokemon) {
     u_intensity: 0.66,
     u_pulse_speed: 5.0
   })));
-  let timerRef = {
-    contents: undefined
-  };
-  timerRef.contents = GameContext$Skirmish.k.loop(0.050, () => {
-    let point = Stdlib_Array.last(thundershock.points);
-    let lastPoint = point !== undefined ? point : pokemon.worldPos();
-    let deviation = GameContext$Skirmish.k.rand(-1 * 7, 7);
-    let candidate = lastPoint.add(deviation, direction.y);
-    if (worldRect.contains(candidate)) {
-      thundershock.points.push(candidate);
-    } else {
-      let cap = GameContext$Skirmish.k.vec2(GameContext$Skirmish.k.clamp(candidate.x, 0, GameContext$Skirmish.k.width()), GameContext$Skirmish.k.clamp(candidate.y, 0, GameContext$Skirmish.k.height()));
-      thundershock.points.push(cap);
-      let t = timerRef.contents;
-      if (t !== undefined) {
-        t.cancel();
-      }
-      GameContext$Skirmish.k.wait(5 * 0.050, () => {
-        pokemon.unuse("shader");
-        pokemon.mobility = true;
-        pokemon.attackStatus = true;
-        thundershock.destroy();
-      });
-    }
-    otherPokemon.forEach(otherPokemon => {
-      if (otherPokemon.hasPoint(candidate)) {
-        otherPokemon.hp = otherPokemon.hp - 1 | 0;
-        return;
-      }
-    });
-  });
 }
 
-let intervalSeconds = 0.050;
-
-let deviationOffset = 7;
-
-let distance = 20;
-
 export {
-  glowSource,
-  outline2pxSource,
-  darkenSource,
   load,
-  lighting,
-  lighting2,
-  draw,
-  worldRect,
-  intervalSeconds,
-  deviationOffset,
-  distance,
-  up,
-  down,
   cast,
 }
 /*  Not a pure module */
