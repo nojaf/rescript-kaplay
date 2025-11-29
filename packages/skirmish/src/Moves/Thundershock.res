@@ -115,7 +115,7 @@ let nextPartOfBolt = (
 
   // Check collision with other Pokemon (candidate is already in world coordinates)
   otherPokemon->Array.forEach(otherPokemon => {
-    // All points should be check here, not just the last one
+    // All points should be checked here, not just the last one
     if thundershock.points->Array.some(point => otherPokemon->Pokemon.hasPoint(point)) {
       otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 1)
       destroy(pokemon, thundershock)

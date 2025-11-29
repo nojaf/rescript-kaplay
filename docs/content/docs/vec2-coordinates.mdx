@@ -19,7 +19,8 @@ KAPLAY uses different coordinate systems to represent positions, directions, and
 ## Creating Vectors
 
 <Aside type="tip">
-Always use the Context API to create vectors. Never construct Vec2 records manually!
+  Always use the Context API to create vectors. Never construct Vec2 records
+  manually!
 </Aside>
 
 ```ReScript
@@ -61,7 +62,8 @@ let offset = pos1->Vec2.World.addWithXY(10., 20.)
 ```
 
 <Aside type="caution">
-You cannot mix coordinate systems in operations. Adding `Vec2.Local.t` to `Vec2.World.t` will not compile.
+  You cannot mix coordinate systems in operations. Adding `Vec2.Local.t` to
+  `Vec2.World.t` will not compile.
 </Aside>
 
 ## Best Practices
@@ -88,7 +90,7 @@ Convert coordinate systems at the boundaries of your logic:
 let worldPos = k->Context.toWorld(k->Context.mousePos)
 
 // Convert world to local for drawing
-let localPoints = worldPoints->Array.map(point => 
+let localPoints = worldPoints->Array.map(point =>
   gameObj->GameObj.fromWorld(point)
 )
 ```
