@@ -218,14 +218,14 @@ type textAlign =
   | @as("center") Center
   | @as("right") Right
 
-type shape
-type rect = {
-  pos: Vec2.t,
+type shape<'vec2>
+type rect<'vec2> = {
+  pos: 'vec2,
   width: float,
   height: float,
 }
-type circle = {
+type circle<'vec2> = {
   radius: float,
-  center: Vec2.t,
+  center: 'vec2,
 }
-type polygon
+type polygon<'vec2>

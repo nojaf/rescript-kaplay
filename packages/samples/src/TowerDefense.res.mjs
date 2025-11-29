@@ -43,9 +43,9 @@ function circlePolygon(center, radius, segmentsOpt) {
   let segments = segmentsOpt !== undefined ? segmentsOpt : 32;
   let points = Stdlib_Array.fromInitializer(segments, idx => {
     let theta = idx / segments * 2 * Math.PI;
-    return k.vec2(center.x + Math.cos(theta) * radius, center.y + Math.sin(theta) * radius);
+    return center.add(Math.cos(theta) * radius, Math.sin(theta) * radius);
   });
-  return Math$Kaplay.Polygon.make(k, points);
+  return Math$Kaplay.Polygon.makeLocal(k, points);
 }
 
 function tryHeadOfMap(map) {
@@ -121,7 +121,7 @@ function make$2() {
     k.pos(0, 300),
     k.area(),
     k.anchor("center"),
-    k.move(k.vec2(1, 0), 100),
+    k.move(k.Vec2.RIGHT, 100),
     k.offscreen({
       destroy: true
     }),
@@ -168,7 +168,7 @@ function make$3() {
     k.color(k.Color.fromHex("#D1FEB8")),
     k.opacity(0.2),
     k.area({
-      shape: Primitive_option.some(circlePolygon(k.vec2(0, 0), 200, 32))
+      shape: Primitive_option.some(circlePolygon(k.Vec2.ZERO, 200, 32))
     }),
     {
       inSight: new Map()
@@ -257,13 +257,12 @@ Body$Kaplay.Comp({});
 
 function fireHomingBullet(tower, viewport, target) {
   let maxDistance = viewport.radius;
-  let bulletSpeed = k.vec2(500);
-  let homingVelocity = target.worldPos().sub(tower.worldPos()).unit().scale(bulletSpeed);
+  let homingVelocity = target.worldPos().sub(tower.worldPos()).unit().scale(500);
   let bubble = tower.add(make$5(homingVelocity, 0.2));
   bubble.onUpdate(() => {
     if (bubble.homingTimer > 0) {
       let toTarget = target.worldPos().sub(bubble.worldPos()).unit();
-      bubble.homingVelocity = bubble.homingVelocity.lerp(toTarget.scale(bulletSpeed), 0.1);
+      bubble.homingVelocity = bubble.homingVelocity.lerp(toTarget.scale(500), 0.1);
       bubble.homingTimer = bubble.homingTimer - k.dt();
     }
     bubble.move(bubble.homingVelocity);
@@ -274,7 +273,11 @@ function fireHomingBullet(tower, viewport, target) {
   });
   bubble.onCollide(enemy, (enemy, param) => {
     bubble.destroy();
-    enemy.hp = enemy.hp - 1 | 0;
+    let newHp = enemy.hp - 1 | 0;
+    if (newHp === 0) {
+      viewport.inSight.delete(enemy.id);
+    }
+    enemy.hp = newHp;
     let heart = enemy.get(solidHeart).at(0);
     if (heart === undefined) {
       return;

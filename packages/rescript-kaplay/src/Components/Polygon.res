@@ -4,10 +4,10 @@ module Comp = (
   },
 ) => {
   @get
-  external getPts: T.t => array<Vec2.t> = "pts"
+  external getPts: T.t => array<Vec2.Local.t> = "pts"
 
   @set
-  external setPts: (T.t, array<Vec2.t>) => unit = "pts"
+  external setPts: (T.t, array<Vec2.Local.t>) => unit = "pts"
 
   @get
   external getRadius: T.t => option<array<float>> = "radius"
@@ -28,10 +28,10 @@ module Comp = (
   external setOpacities: (T.t, array<float>) => unit = "opacities"
 
   @get
-  external getUv: T.t => option<array<Vec2.t>> = "uv"
+  external getUv: T.t => option<array<Vec2.Local.t>> = "uv"
 
   @set
-  external setUv: (T.t, array<Vec2.t>) => unit = "uv"
+  external setUv: (T.t, array<Vec2.Local.t>) => unit = "uv"
 
   @get
   external getTexture: T.t => option<Texture.t> = "tex"
@@ -45,13 +45,13 @@ module Comp = (
     /** Manual triangulation. */
     indices?: array<float>,
     /** The center point of transformation in relation to the position. */
-    offset?: Vec2.t,
+    offset?: Vec2.Local.t,
     /** The radius of each corner. */
     radius?: array<float>,
     /** The color of each vertex. */
     color?: array<Types.color>,
     /** The uv of each vertex. */
-    uv?: array<Vec2.t>,
+    uv?: array<Vec2.Local.t>,
     /** The texture if uv are supplied. */
     texture?: Texture.t,
     /** Triangulate concave polygons. */
@@ -59,6 +59,6 @@ module Comp = (
   }
 
   @send
-  external addPolygon: (Context.t, array<Vec2.t>, ~options: polygonCompOpt=?) => Types.comp =
+  external addPolygon: (Context.t, array<Vec2.Local.t>, ~options: polygonCompOpt=?) => Types.comp =
     "polygon"
 }

@@ -20,27 +20,31 @@ module GameBounds = {
   include Body.Comp({type t = t})
 
   let make = () => {
-    let leftPos = k->Context.vec2Zero
+    let leftPos = k->Context.vec2ZeroLocal
     let _left = k->Context.add([
       addPosFromVec2(k, leftPos),
       addArea(
         k,
         ~options={
-          shape: k->Rectangle.make(leftPos, 1., k->Context.height)->Rectangle.asShape,
+          // Area shapes use local coordinates (transformed automatically by Kaplay)
+          shape: k
+          ->Rectangle.makeLocal(k->Context.vec2ZeroLocal, 1., k->Context.height)
+          ->Rectangle.asShape,
         },
       ),
       addBody(k, ~options={isStatic: true}),
     ])
 
-    let rightPos = k->Context.vec2(k->Context.width - 1., 0.)
+    let rightPos = k->Context.vec2Local(k->Context.width - 1., 0.)
 
     let _right = k->Context.add([
       addPosFromVec2(k, rightPos),
       addArea(
         k,
         ~options={
+          // Area shapes use local coordinates (transformed automatically by Kaplay)
           shape: k
-          ->Rectangle.make(k->Context.vec2Zero, 1., k->Context.width - 1.)
+          ->Rectangle.makeLocal(k->Context.vec2ZeroLocal, 1., k->Context.width - 1.)
           ->Rectangle.asShape,
         },
       ),
@@ -237,8 +241,8 @@ let scene = () => {
   k
   ->Context.onKeyDown(key => {
     switch key {
-    | Left => squirtle->Squirtle.move(k->Context.vec2(-speed, 0.))
-    | Right => squirtle->Squirtle.move(k->Context.vec2(speed, 0.))
+    | Left => squirtle->Squirtle.move(k->Context.vec2World(-speed, 0.))
+    | Right => squirtle->Squirtle.move(k->Context.vec2World(speed, 0.))
     | _ => ()
     }
   })

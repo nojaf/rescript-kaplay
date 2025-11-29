@@ -6,7 +6,7 @@ module Comp = (
   type tileOptions = {
     isObstacle?: bool,
     cost?: int,
-    offset?: Vec2.t,
+    offset?: Vec2.World.t,
   }
 
   @send

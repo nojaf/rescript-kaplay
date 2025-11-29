@@ -173,7 +173,7 @@ function onLoad() {
     if (key !== "space") {
       return;
     }
-    let target = squirtle.pos;
+    let target = squirtle.worldPos();
     charmander.setTarget(target);
     let audio$1 = audio.contents;
     if (audio$1 !== undefined) {

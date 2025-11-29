@@ -5,7 +5,7 @@ module Comp = (
 ) => {
   /** Part of the agent comp  */
   @send
-  external setTarget: (T.t, Vec2.t) => unit = "setTarget"
+  external setTarget: (T.t, Vec2.World.t) => unit = "setTarget"
 
   type agentOptions = {
     speed?: float,

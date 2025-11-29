@@ -111,7 +111,14 @@ module Text = {
 
 let onLoad = () => {
   let level = k->addLevel(
-    ["############", "#          #", "#          #", "#          #", "############"],
+    [
+      //
+      "############",
+      "#          #",
+      "#          #",
+      "#          #",
+      "############",
+    ],
     {
       tileWidth: tileSize,
       tileHeight: tileSize,
@@ -122,8 +129,8 @@ let onLoad = () => {
     },
   )
 
-  let squirtle = level->Level.spawn(SquirtleTile.make(), k->vec2(1., 1.))
-  let charmander = level->Level.spawn(CharmanderTile.make(), k->vec2(7., 4.))
+  let squirtle = level->Level.spawn(SquirtleTile.make(), k->vec2Tile(1., 1.))
+  let charmander = level->Level.spawn(CharmanderTile.make(), k->vec2Tile(7., 4.))
 
   let _text = Text.make()
   let audio = ref(None)
@@ -131,7 +138,7 @@ let onLoad = () => {
   k->onKeyPress(key => {
     switch key {
     | Space => {
-        let target = squirtle->SquirtleTile.getPos
+        let target = squirtle->SquirtleTile.worldPos
         charmander->CharmanderTile.setTarget(target)
         switch audio.contents {
         | None => audio := Some(k->play("beast-in-black"))

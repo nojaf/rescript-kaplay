@@ -63,26 +63,32 @@ function getHealthPercentage(pokemon) {
   return currentHp / maxHp * 100;
 }
 
-function make(id, level, team) {
+function make(pokemonId, level, team) {
   let gameObj = GameContext$Skirmish.k.add(Belt_Array.concatMany([
-    team === "Player" ? [
+    team === true ? [
         {
           direction: GameContext$Skirmish.k.Vec2.UP,
+          facing: true,
+          mobility: true,
+          attackStatus: true,
           level: level,
-          pokemonId: id,
+          pokemonId: pokemonId,
           team: team
         },
         GameContext$Skirmish.k.pos(GameContext$Skirmish.k.center().x, GameContext$Skirmish.k.height() * 0.8),
-        GameContext$Skirmish.k.sprite(backSpriteName(id))
+        GameContext$Skirmish.k.sprite(backSpriteName(pokemonId))
       ] : [
         {
           direction: GameContext$Skirmish.k.Vec2.DOWN,
+          facing: false,
+          mobility: true,
+          attackStatus: true,
           level: level,
-          pokemonId: id,
+          pokemonId: pokemonId,
           team: team
         },
-        GameContext$Skirmish.k.pos(GameContext$Skirmish.k.center().x, GameContext$Skirmish.k.height() * 0.2),
-        GameContext$Skirmish.k.sprite(frontSpriteName(id))
+        GameContext$Skirmish.k.pos(20, GameContext$Skirmish.k.height() * 0.2),
+        GameContext$Skirmish.k.sprite(frontSpriteName(pokemonId))
       ],
     [
       GameContext$Skirmish.k.area(),
@@ -93,38 +99,6 @@ function make(id, level, team) {
       tag
     ]
   ]));
-  if (team === "Player") {
-    GameContext$Skirmish.k.onUpdate(() => {
-      let leftDown = GameContext$Skirmish.k.isKeyDown("left") || GameContext$Skirmish.k.isKeyDown("a");
-      let rightDown = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
-      let upDown = GameContext$Skirmish.k.isKeyDown("up") || GameContext$Skirmish.k.isKeyDown("w");
-      let downDown = GameContext$Skirmish.k.isKeyDown("down") || GameContext$Skirmish.k.isKeyDown("s");
-      if (leftDown || rightDown || upDown || downDown) {
-        if (upDown && !downDown) {
-          gameObj.direction = GameContext$Skirmish.k.Vec2.UP;
-          gameObj.sprite = backSpriteName(id);
-        } else if (downDown && !upDown) {
-          gameObj.direction = GameContext$Skirmish.k.Vec2.DOWN;
-          gameObj.sprite = frontSpriteName(id);
-        } else if (leftDown && !rightDown) {
-          gameObj.direction = GameContext$Skirmish.k.Vec2.LEFT;
-        } else if (rightDown && !leftDown) {
-          gameObj.direction = GameContext$Skirmish.k.Vec2.RIGHT;
-        }
-        gameObj.move(gameObj.direction.scale(200));
-        return;
-      }
-    });
-    GameContext$Skirmish.k.onKeyRelease(key => {
-      if (key !== "f1" && key !== "shift" && key !== "f2" && key !== "down" && key !== "f3" && key !== "up" && key !== "f4" && key !== "right" && key !== "f5" && key !== "left" && key !== "f6" && key !== " " && key !== "f7" && key !== "space" && key !== "f8" && key !== "meta" && key !== "f9" && key !== "alt" && key !== "f10" && key !== "control" && key !== "f11" && key !== "tab" && key !== "f12" && key !== "enter" && key !== "`" && key !== "backspace" && key !== "1" && key !== "escape" && key !== "2" && key !== "/" && key !== "3" && key !== "." && key !== "4" && key !== "," && key !== "5" && key !== "m" && key !== "6" && key !== "n" && key !== "7" && key !== "b" && key !== "8" && key !== "v" && key !== "9" && key !== "c" && key !== "0" && key !== "x" && key !== "-" && key !== "z" && key !== "+" && key !== "'" && key !== "=" && key !== ";" && key !== "q" && key !== "l" && key !== "w" && key !== "k" && key !== "e" && key !== "j" && key !== "r" && key !== "h" && key !== "t" && key !== "g" && key !== "y" && key !== "f" && key !== "u" && key !== "d" && key !== "i" && key !== "s" && key !== "o" && key !== "a" && key !== "p" && key !== "\\" && key !== "[" && key !== "]") {
-        return;
-      }
-      if (key !== "space") {
-        return;
-      }
-      gameObj.trigger("Thundershock", gameObj);
-    });
-  }
   gameObj.onHurt(deltaHp => {
     console.log("I hurt myself today", deltaHp);
     gameObj.unanimate("opacity");
@@ -132,9 +106,9 @@ function make(id, level, team) {
     animation.seek(0);
     gameObj.animate("opacity", [
       1,
-      0.5,
+      0.3,
       1,
-      0.75,
+      0.5,
       1
     ], {
       duration: 0.4,

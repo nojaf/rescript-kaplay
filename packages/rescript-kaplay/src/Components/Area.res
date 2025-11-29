@@ -17,7 +17,7 @@ module Comp = (
   external onCollideEnd: (T.t, 'tag, 't => unit) => KEventController.t = "onCollideEnd"
 
   @send
-  external hasPoint: (T.t, Vec2.t) => bool = "hasPoint"
+  external hasPoint: (T.t, Vec2.World.t) => bool = "hasPoint"
 
   /**
 Register an event runs when clicked
@@ -63,8 +63,8 @@ Register an event runs once when hovered.
 
   type areaCompOptions = {
     /** Only Rect and Polygon are supported */
-    shape?: Types.shape,
-    offset?: Vec2.t,
+    shape?: Types.shape<Vec2.Local.t>,
+    offset?: Vec2.Local.t,
     scale?: float,
   }
 

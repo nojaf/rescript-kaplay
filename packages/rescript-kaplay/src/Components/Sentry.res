@@ -7,7 +7,7 @@ module Comp = (
   external onObjectsSpotted: (T.t, array<'t> => unit) => KEventController.t = "onObjectsSpotted"
 
   type sentryOptions = {
-    direction?: Vec2.t,
+    direction?: Vec2.Unit.t,
     fieldOfView?: float,
     lineOfSight?: bool,
     raycastExclude?: array<string>,

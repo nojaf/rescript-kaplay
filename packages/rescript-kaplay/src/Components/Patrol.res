@@ -4,10 +4,10 @@ module Comp = (
   },
 ) => {
   @get
-  external getWaypoints: T.t => option<array<Vec2.t>> = "waypoints"
+  external getWaypoints: T.t => option<array<Vec2.World.t>> = "waypoints"
 
   @set
-  external setWaypoints: (T.t, array<Vec2.t>) => unit = "waypoints"
+  external setWaypoints: (T.t, array<Vec2.World.t>) => unit = "waypoints"
 
   @get
   external getPatrolSpeed: T.t => float = "patrolSpeed"
@@ -16,10 +16,10 @@ module Comp = (
   external setPatrolSpeed: (T.t, float) => unit = "patrolSpeed"
 
   @get
-  external getNextLocation: T.t => option<Vec2.t> = "nextLocation"
+  external getNextLocation: T.t => option<Vec2.World.t> = "nextLocation"
 
   @set
-  external setNextLocation: (T.t, Vec2.t) => unit = "nextLocation"
+  external setNextLocation: (T.t, Vec2.World.t) => unit = "nextLocation"
 
   /**
 `onPatrolFinished(context, (t) => unit)`
@@ -44,7 +44,7 @@ Attaches an event handler which is called when using "stop" and the end of the p
     | @as("stop") Stop
 
   type patrolCompOptions = {
-    waypoints?: array<Vec2.t>,
+    waypoints?: array<Vec2.World.t>,
     speed?: float,
     endBehavior?: endBehavior,
   }

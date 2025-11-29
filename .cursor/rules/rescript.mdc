@@ -173,3 +173,8 @@ When defining optional fields in records for external bindings, use `?` syntax:
     background?: {r: int, g: int, b: int, alpha: int},  // Optional field
   }
   ```
+
+## CLI usage
+
+- You are **NOT allowed** to run a ReScript build. When the user is interacting with an LLM, it will either have `bunx rescript watch` running in a terminal or you can ask the user to run a build.
+  If ReScript is already running in watch mode, any subsequent builds will fail. This is a known limitation of the ReScript v12 CLI.

@@ -53,7 +53,7 @@ module Flareon = {
         [squirtle],
         ~options={
           fieldOfView: 45.,
-          direction: k->vec2(0., 0.),
+          direction: k->Context.vec2Zero,
           lineOfSight: true,
           checkFrequency: 0.200,
         },
@@ -119,10 +119,10 @@ let onLoad = () => {
   squirtle
   ->Squirtle.onKeyDown(key => {
     switch key {
-    | Left => squirtle->Squirtle.move(k->vec2(-400., 0.))
-    | Right => squirtle->Squirtle.move(k->vec2(400., 0.))
-    | Up => squirtle->Squirtle.move(k->vec2(0., -400.))
-    | Down => squirtle->Squirtle.move(k->vec2(0., 400.))
+    | Left => squirtle->Squirtle.move(k->vec2World(-400., 0.))
+    | Right => squirtle->Squirtle.move(k->vec2World(400., 0.))
+    | Up => squirtle->Squirtle.move(k->vec2World(0., -400.))
+    | Down => squirtle->Squirtle.move(k->vec2World(0., 400.))
     | _ => ()
     }
   })

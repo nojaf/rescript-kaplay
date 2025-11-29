@@ -53,10 +53,10 @@ Go to a scene with data passed to the scene.
 external goWithData: (t, string, 'a) => unit = "go"
 
 @send
-external setCamPos: (t, Vec2.t) => unit = "setCamPos"
+external setCamPos: (t, Vec2.World.t) => unit = "setCamPos"
 
 @send
-external getCamPos: t => Vec2.t = "getCamPos"
+external getCamPos: t => Vec2.World.t = "getCamPos"
 
 @send
 external clamp: (t, int, int, int) => int = "clamp"
@@ -121,24 +121,25 @@ external onKeyReleaseWithController: (t, key => unit) => KEventController.t = "o
 external isKeyDown: (t, key) => bool = "isKeyDown"
 
 @send
-external onTouchStart: (t, (Vec2.t, touch) => unit) => unit = "onTouchStart"
+external onTouchStart: (t, (Vec2.Screen.t, touch) => unit) => unit = "onTouchStart"
 
 @send
-external onTouchStartWithController: (t, (Vec2.t, touch) => unit) => KEventController.t =
+external onTouchStartWithController: (t, (Vec2.Screen.t, touch) => unit) => KEventController.t =
   "onTouchStart"
 
 @send
-external onTouchMove: (t, (Vec2.t, touch) => unit) => unit = "onTouchMove"
+external onTouchMove: (t, (Vec2.Screen.t, touch) => unit) => unit = "onTouchMove"
 
 @send
-external onTouchMoveWithController: (t, (Vec2.t, touch) => unit) => KEventController.t =
+external onTouchMoveWithController: (t, (Vec2.Screen.t, touch) => unit) => KEventController.t =
   "onTouchMove"
 
 @send
-external onTouchEnd: (t, (Vec2.t, touch) => unit) => unit = "onTouchEnd"
+external onTouchEnd: (t, (Vec2.Screen.t, touch) => unit) => unit = "onTouchEnd"
 
 @send
-external onTouchEndWithController: (t, (Vec2.t, touch) => unit) => KEventController.t = "onTouchEnd"
+external onTouchEndWithController: (t, (Vec2.Screen.t, touch) => unit) => KEventController.t =
+  "onTouchEnd"
 
 @send
 external onUpdate: (t, unit => unit) => unit = "onUpdate"
@@ -224,31 +225,59 @@ external loadShader: (t, string, ~vert: string=?, ~frag: string=?) => unit = "lo
 external loadFont: (t, string, string) => unit = "loadFont"
 
 @get @scope("Vec2")
-external vec2Zero: t => Vec2.t = "ZERO"
+external vec2Zero: t => Vec2.Unit.t = "ZERO"
 
 @get @scope("Vec2")
-external vec2One: t => Vec2.t = "ONE"
+external vec2ZeroLocal: t => Vec2.Local.t = "ZERO"
 
 @get @scope("Vec2")
-external vec2Left: t => Vec2.t = "LEFT"
+external vec2ZeroWorld: t => Vec2.World.t = "ZERO"
 
 @get @scope("Vec2")
-external vec2Right: t => Vec2.t = "RIGHT"
+external vec2ZeroScreen: t => Vec2.Screen.t = "ZERO"
 
 @get @scope("Vec2")
-external vec2Up: t => Vec2.t = "UP"
+external vec2One: t => Vec2.Unit.t = "ONE"
+
+/**
+ * Unit direction vectors - represent direction, not position.
+ * These are normalized vectors that can be used in any coordinate space.
+ */
+@get @scope("Vec2")
+external vec2Left: t => Vec2.Unit.t = "LEFT"
 
 @get @scope("Vec2")
-external vec2Down: t => Vec2.t = "DOWN"
+external vec2LeftWorld: t => Vec2.World.t = "LEFT"
+
+@get @scope("Vec2")
+external vec2Right: t => Vec2.Unit.t = "RIGHT"
+
+@get @scope("Vec2")
+external vec2RightWorld: t => Vec2.World.t = "RIGHT"
+
+@get @scope("Vec2")
+external vec2Up: t => Vec2.Unit.t = "UP"
+
+@get @scope("Vec2")
+external vec2Down: t => Vec2.Unit.t = "DOWN"
 
 @send
-external vec2: (t, float, float) => Vec2.t = "vec2"
+external vec2Local: (t, float, float) => Vec2.Local.t = "vec2"
 
 @send
-external vec2FromXY: (t, float) => Vec2.t = "vec2"
+external vec2LocalFromXY: (t, float) => Vec2.Local.t = "vec2"
 
 @send
-external center: t => Vec2.t = "center"
+external vec2World: (t, float, float) => Vec2.World.t = "vec2"
+
+@send
+external vec2Screen: (t, float, float) => Vec2.Screen.t = "vec2"
+
+@send
+external vec2Tile: (t, float, float) => Vec2.Tile.t = "vec2"
+
+@send
+external center: t => Vec2.World.t = "center"
 
 @send
 external width: t => float = "width"
@@ -265,11 +294,11 @@ external height: t => float = "height"
  ```
  */
 @send
-external toWorld: (t, Vec2.t) => Vec2.t = "toWorld"
+external toWorld: (t, Vec2.Screen.t) => Vec2.World.t = "toWorld"
 
 /** Transform a point from world position (relative to the root) to screen position (relative to the screen). */
 @send
-external toScreen: (t, Vec2.t) => Vec2.t = "toScreen"
+external toScreen: (t, Vec2.World.t) => Vec2.Screen.t = "toScreen"
 
 /** Run the function every n seconds. */
 @send
@@ -384,7 +413,7 @@ module Level = {
   type t
 
   @send
-  external spawn: (t, array<comp>, Vec2.t) => 't = "spawn"
+  external spawn: (t, array<comp>, Vec2.Tile.t) => 't = "spawn"
 }
 
 @send
@@ -445,7 +474,7 @@ external trigger: (t, string, string, 't) => unit = "trigger"
  Get current mouse position (without camera transform).
  */
 @send
-external mousePos: t => Vec2.t = "mousePos"
+external mousePos: t => Vec2.Screen.t = "mousePos"
 
 /**
  Register an event that runs whenever user presses a mouse button.
@@ -465,7 +494,7 @@ external onMousePressWithController: (t, mouseButton => unit) => KEventControlle
 Register an event that runs whenever user moves the mouse.
 */
 @send
-external onMouseMove: (t, (Vec2.t, Vec2.t) => unit) => unit = "onMouseMove"
+external onMouseMove: (t, (Vec2.Screen.t, Vec2.Screen.t) => unit) => unit = "onMouseMove"
 
 /**
 `onMouseMove(context, (pos, delta) => KEventController.t)`
@@ -473,8 +502,10 @@ external onMouseMove: (t, (Vec2.t, Vec2.t) => unit) => unit = "onMouseMove"
 Register an event that runs whenever user moves the mouse.
 */
 @send
-external onMouseMoveWithController: (t, (Vec2.t, Vec2.t) => unit) => KEventController.t =
-  "onMouseMove"
+external onMouseMoveWithController: (
+  t,
+  (Vec2.Screen.t, Vec2.Screen.t) => unit,
+) => KEventController.t = "onMouseMove"
 
 /**
  Register an event that runs whenever user releases a mouse button.
@@ -490,8 +521,8 @@ external onMouseReleaseWithController: (t, mouseButton => unit) => KEventControl
   "onMouseRelease"
 
 type renderProps = {
-  pos?: Vec2.t,
-  scale?: Vec2.t,
+  pos?: Vec2.Local.t,
+  scale?: Vec2.Local.t,
   angle?: float,
   color?: color,
   opacity?: float,
@@ -507,7 +538,7 @@ external makeDrawSpriteInfoFromAsset: Asset.t<SpriteData.t> => drawSpriteInfo = 
 
 type drawAnchor
 external makeDrawAnchorFromString: string => drawAnchor = "%identity"
-external makeDrawAnchorFromVec2: Vec2.t => drawAnchor = "%identity"
+external makeDrawAnchorFromVec2: Vec2.Local.t => drawAnchor = "%identity"
 
 type drawSpriteOptions = {
   ...renderProps,
@@ -559,8 +590,8 @@ type drawRectOptions = {
 external drawRect: (t, drawRectOptions) => unit = "drawRect"
 
 type drawLineOptions = {
-  p1: Vec2.t,
-  p2: Vec2.t,
+  p1: Vec2.Local.t,
+  p2: Vec2.Local.t,
   width?: float,
   color?: color,
   opacity?: float,
@@ -572,8 +603,8 @@ external drawLine: (t, drawLineOptions) => unit = "drawLine"
 /** Options for drawing connected lines */
 type drawLinesOptions = {
   /** The points that should be connected with a line */
-  pts: array<Vec2.t>,
-  pos?: Vec2.t,
+  pts: array<Vec2.Local.t>,
+  pos?: Vec2.Local.t,
   color?: Types.color,
   opacity?: float,
   /** The width, or thickness of the lines */
@@ -600,14 +631,14 @@ type drawCurveOptions = {
 }
 
 @send
-external drawCurve: (t, float => Vec2.t, drawCurveOptions) => unit = "drawCurve"
+external drawCurve: (t, float => Vec2.Local.t, drawCurveOptions) => unit = "drawCurve"
 
 type drawBezierOptions = {
   ...drawCurveOptions,
-  pt1: Vec2.t,
-  pt2: Vec2.t,
-  pt3: Vec2.t,
-  pt4: Vec2.t,
+  pt1: Vec2.Local.t,
+  pt2: Vec2.Local.t,
+  pt3: Vec2.Local.t,
+  pt4: Vec2.Local.t,
 }
 
 @send
@@ -615,9 +646,9 @@ external drawBezier: (t, drawBezierOptions) => unit = "drawBezier"
 
 type drawTriangleOptions = {
   ...renderProps,
-  p1: Vec2.t,
-  p2: Vec2.t,
-  p3: Vec2.t,
+  p1: Vec2.Local.t,
+  p2: Vec2.Local.t,
+  p3: Vec2.Local.t,
   fill?: bool,
   radius?: float,
 }
@@ -626,8 +657,8 @@ type drawTriangleOptions = {
 external drawTriangle: (t, drawTriangleOptions) => unit = "drawTriangle"
 
 type drawCircleOptions = {
-  pos?: Vec2.t,
-  scale?: Vec2.t,
+  pos?: Vec2.Local.t,
+  scale?: Vec2.Local.t,
   color?: color,
   opacity?: float,
   fixed?: bool,
@@ -660,13 +691,13 @@ external drawEllipse: (t, drawEllipseOptions) => unit = "drawEllipse"
 
 type drawPolygonOptions = {
   ...renderProps,
-  pts: array<Vec2.t>,
+  pts: array<Vec2.Local.t>,
   fill?: bool,
   indices?: array<float>,
-  offset?: Vec2.t,
+  offset?: Vec2.Local.t,
   radius?: array<float>,
   colors?: array<color>,
-  uv?: array<Vec2.t>,
+  uv?: array<Vec2.Local.t>,
   tex?: Texture.t,
   triangulate?: bool,
 }
@@ -676,7 +707,7 @@ external drawPolygon: (t, drawPolygonOptions) => unit = "drawPolygon"
 
 type drawQuadOptions = {
   ...renderProps,
-  p1: Vec2.t,
+  p1: Vec2.Local.t,
 }
 
 @send
