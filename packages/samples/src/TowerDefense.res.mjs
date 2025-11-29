@@ -43,9 +43,9 @@ function circlePolygon(center, radius, segmentsOpt) {
   let segments = segmentsOpt !== undefined ? segmentsOpt : 32;
   let points = Stdlib_Array.fromInitializer(segments, idx => {
     let theta = idx / segments * 2 * Math.PI;
-    return k.vec2(center.x + Math.cos(theta) * radius, center.y + Math.sin(theta) * radius);
+    return center.add(Math.cos(theta) * radius, Math.sin(theta) * radius);
   });
-  return Math$Kaplay.Polygon.make(k, points);
+  return Math$Kaplay.Polygon.makeLocal(k, points);
 }
 
 function tryHeadOfMap(map) {

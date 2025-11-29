@@ -49,7 +49,7 @@ function draw() {
   });
 }
 
-let worldRect = Math$Kaplay.Rect.make(GameContext$Skirmish.k, GameContext$Skirmish.k.Vec2.ZERO, GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height());
+let worldRect = Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, GameContext$Skirmish.k.Vec2.ZERO, GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height());
 
 let up = GameContext$Skirmish.k.Vec2.UP.scale(20);
 

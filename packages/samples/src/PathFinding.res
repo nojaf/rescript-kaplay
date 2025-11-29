@@ -111,7 +111,14 @@ module Text = {
 
 let onLoad = () => {
   let level = k->addLevel(
-    ["############", "#          #", "#          #", "#          #", "############"],
+    [
+      //
+      "############",
+      "#          #",
+      "#          #",
+      "#          #",
+      "############",
+    ],
     {
       tileWidth: tileSize,
       tileHeight: tileSize,

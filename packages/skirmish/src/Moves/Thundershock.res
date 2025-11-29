@@ -41,7 +41,7 @@ let draw =
   }
 
 // TODO: extract and figure out proper world coordinates rect (keeping status bars in mind)
-let worldRect = Kaplay.Math.Rect.make(
+let worldRect = Kaplay.Math.Rect.makeWorld(
   k,
   k->Context.vec2ZeroWorld,
   k->Context.width,
@@ -117,7 +117,7 @@ let cast = (pokemon: Pokemon.t) => {
         }
 
         // Check bounds in world coordinates
-        if !Kaplay.Math.Rect.contains(worldRect, candidate) {
+        if !Kaplay.Math.Rect.containsWorld(worldRect, candidate) {
           // Cap the last point to the game bounds edge, then stop
           let cap: Vec2.World.t =
             k->Context.vec2World(

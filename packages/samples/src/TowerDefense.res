@@ -11,16 +11,14 @@ module Tags = {
   let solidHeart = "solid-heart"
 }
 
-let circlePolygon = (center: Vec2.Local.t, radius: float, ~segments: int=32): Types.shape => {
+let circlePolygon = (center: Vec2.Local.t, radius: float, ~segments: int=32): Types.shape<
+  Vec2.Local.t,
+> => {
   let points = Array.fromInitializer(~length=segments, idx => {
     let theta = Int.toFloat(idx) / Int.toFloat(segments) * 2. * Stdlib_Math.Constants.pi
-    k->vec2World(
-      //
-      center.x + Stdlib_Math.cos(theta) * radius,
-      center.y + Stdlib_Math.sin(theta) * radius,
-    )
+    center->Vec2.Local.addWithXY(Stdlib_Math.cos(theta) * radius, Stdlib_Math.sin(theta) * radius)
   })
-  Polygon.make(k, points)->Polygon.asShape
+  Polygon.makeLocal(k, points)->Polygon.asShape
 }
 
 let tryHeadOfMap = map => {
@@ -154,6 +152,7 @@ module Viewport = {
       k->addCircle(200., ~options={fill: true}),
       k->addColor(k->Color.fromHex("#D1FEB8")),
       k->addOpacity(0.2),
+      // Area shapes use local coordinates - centered at (0, 0) relative to viewport
       k->addArea(~options={shape: circlePolygon(k->Context.vec2ZeroLocal, 200., ~segments=32)}),
       defaultState({inSight: Map.make()}),
     ]

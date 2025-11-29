@@ -26,9 +26,9 @@ module GameBounds = {
       addArea(
         k,
         ~options={
-          // Math shapes use world coordinates
+          // Area shapes use local coordinates (transformed automatically by Kaplay)
           shape: k
-          ->Rectangle.make(k->Context.vec2ZeroWorld, 1., k->Context.height)
+          ->Rectangle.makeLocal(k->Context.vec2ZeroLocal, 1., k->Context.height)
           ->Rectangle.asShape,
         },
       ),
@@ -42,9 +42,9 @@ module GameBounds = {
       addArea(
         k,
         ~options={
-          // Math shapes use world coordinates
+          // Area shapes use local coordinates (transformed automatically by Kaplay)
           shape: k
-          ->Rectangle.make(k->Context.vec2ZeroWorld, 1., k->Context.width - 1.)
+          ->Rectangle.makeLocal(k->Context.vec2ZeroLocal, 1., k->Context.width - 1.)
           ->Rectangle.asShape,
         },
       ),

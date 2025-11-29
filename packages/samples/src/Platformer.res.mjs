@@ -34,7 +34,7 @@ function make() {
   k.add([
     k.pos(leftPos),
     k.area({
-      shape: Primitive_option.some(Math$Kaplay.Rect.make(k, k.Vec2.ZERO, 1, k.height()))
+      shape: Primitive_option.some(Math$Kaplay.Rect.makeLocal(k, k.Vec2.ZERO, 1, k.height()))
     }),
     k.body({
       isStatic: true
@@ -44,7 +44,7 @@ function make() {
   k.add([
     k.pos(rightPos),
     k.area({
-      shape: Primitive_option.some(Math$Kaplay.Rect.make(k, k.Vec2.ZERO, 1, k.width() - 1))
+      shape: Primitive_option.some(Math$Kaplay.Rect.makeLocal(k, k.Vec2.ZERO, 1, k.width() - 1))
     }),
     k.body({
       isStatic: true
