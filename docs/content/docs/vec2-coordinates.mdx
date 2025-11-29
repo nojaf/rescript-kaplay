@@ -1,0 +1,147 @@
+---
+title: Vec2 Coordinate Systems
+description: Understanding coordinate systems in KAPLAY and best practices for working with Vec2 types.
+slug: vec2-coordinates
+---
+
+import { Code, Aside } from "@astrojs/starlight/components";
+
+KAPLAY uses different coordinate systems to represent positions, directions, and offsets. The ReScript bindings provide distinct types for each coordinate system to ensure type safety and prevent coordinate system confusion.
+
+## Coordinate System Types
+
+- **`Vec2.World.t`**: Absolute positions in the game world (independent of camera/parent)
+- **`Vec2.Local.t`**: Positions relative to a parent object
+- **`Vec2.Screen.t`**: Positions relative to the camera/viewport
+- **`Vec2.Tile.t`**: Grid-based positions for tilemaps
+- **`Vec2.Unit.t`**: Direction vectors (not positions)
+
+## Creating Vectors
+
+<Aside type="tip">
+Always use the Context API to create vectors. Never construct Vec2 records manually!
+</Aside>
+
+```ReScript
+// ✅ Use Context API methods
+let worldPos = k->Context.vec2World(100., 200.)
+let localPos = k->Context.vec2Local(10., 5.)
+let screenPos = k->Context.vec2Screen(50., 75.)
+let direction = k->Context.vec2Up
+
+// ❌ Don't construct records manually
+let badPos: Vec2.World.t = {x: 100., y: 200.}
+```
+
+## Coordinate Conversions
+
+```ReScript
+// Screen ↔ World
+let worldPos = k->Context.toWorld(screenPos)
+let screenPos = k->Context.toScreen(worldPos)
+
+// Local ↔ World (via object transform)
+let worldPos = gameObj->GameObj.worldPos
+let localPos = gameObj->GameObj.fromWorld(worldPos)
+
+// Unit vectors (directions)
+let worldOffset = direction->Vec2.Unit.asWorld->Vec2.World.scaleWith(100.)
+```
+
+## Vector Operations
+
+All coordinate types support the same operations (`add`, `sub`, `scaleWith`, `addWithXY`), but you must operate within the same coordinate system:
+
+```ReScript
+let pos1 = k->Context.vec2World(100., 200.)
+let pos2 = k->Context.vec2World(50., 75.)
+
+let sum = pos1->Vec2.World.add(pos2)
+let offset = pos1->Vec2.World.addWithXY(10., 20.)
+```
+
+<Aside type="caution">
+You cannot mix coordinate systems in operations. Adding `Vec2.Local.t` to `Vec2.World.t` will not compile.
+</Aside>
+
+## Best Practices
+
+### Use Vector Operations Instead of Manual Math
+
+```ReScript
+// ✅ Good
+let newPos = lastPos->Vec2.World.addWithXY(deviation, direction.y)
+
+// ❌ Bad
+let newPos: Vec2.World.t = {
+  x: lastPos.x + deviation,
+  y: lastPos.y + direction.y,
+}
+```
+
+### Convert at Boundaries
+
+Convert coordinate systems at the boundaries of your logic:
+
+```ReScript
+// Convert screen input to world for game logic
+let worldPos = k->Context.toWorld(k->Context.mousePos)
+
+// Convert world to local for drawing
+let localPoints = worldPoints->Array.map(point => 
+  gameObj->GameObj.fromWorld(point)
+)
+```
+
+### Store Coordinates in the Appropriate System
+
+```ReScript
+// ✅ World positions for game logic (bounds checking, collisions)
+type t = {points: array<Vec2.World.t>}
+
+// ✅ Local offsets for drawing
+type t = {offset: Vec2.Local.t}
+```
+
+### Handle Deltas Correctly
+
+When computing deltas, convert positions first, then compute the difference:
+
+```ReScript
+// ✅ Good - convert first, then compute delta
+let worldPos1 = k->Context.toWorld(screenPos1)
+let worldPos2 = k->Context.toWorld(screenPos2)
+let worldDelta = worldPos1->Vec2.World.sub(worldPos2)
+
+// ❌ Bad - scaling doesn't convert coordinate systems
+let screenDelta = screenPos1->Vec2.Screen.sub(screenPos2)
+// This is still in screen space!
+```
+
+## Common Patterns
+
+### Touch/Mouse Input
+
+```ReScript
+k->Context.onTouchStart((screenPos: Vec2.Screen.t, _touch) => {
+  let worldPos = k->Context.toWorld(screenPos)
+  // Use worldPos for game logic
+})
+```
+
+### Child Objects
+
+```ReScript
+// Child uses local coordinates
+let localPos = child->Child.getPos
+let worldPos = child->Child.worldPos
+let localFromWorld = child->Child.fromWorld(worldPos)
+```
+
+## Summary
+
+- Always use `Context` API methods to create vectors
+- Never construct Vec2 records manually
+- Use vector operations (`addWithXY`, etc.) instead of manual math
+- Convert coordinate systems at boundaries
+- Store coordinates in the system that matches your use case
