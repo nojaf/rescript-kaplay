@@ -1,5 +1,4 @@
 open Kaplay
-open GameContext
 
 @unboxed
 type team = | @as(true) Player | @as(false) Opponent
@@ -43,7 +42,7 @@ let frontSpriteUrl = (id: int) => `/sprites/${Int.toString(id)}-front.png`
 let backSpriteUrl = (id: int) => `/sprites/${Int.toString(id)}-back.png`
 
 /* Load both front and back sprites for the given pokemon id */
-let load = (id: int): unit => {
+let load = (k: Context.t, id: int): unit => {
   k->Context.loadSprite(frontSpriteName(id), frontSpriteUrl(id), ~options={singular: true})
   k->Context.loadSprite(backSpriteName(id), backSpriteUrl(id), ~options={singular: true})
 }
@@ -58,7 +57,7 @@ let getHealthPercentage = (pokemon: t): float => {
   currentHp / maxHp * 100.
 }
 
-let make = (~pokemonId: int, ~level: int, team: team): t => {
+let make = (k: Context.t, ~pokemonId: int, ~level: int, team: team): t => {
   let gameObj: t = k->Context.add(
     [
       // initialState
@@ -86,7 +85,7 @@ let make = (~pokemonId: int, ~level: int, team: team): t => {
               mobility: CanMove,
               attackStatus: CanAttack,
             }),
-            k->addPos(20., k->Context.height * 0.2),
+            k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.2),
             k->addSprite(frontSpriteName(pokemonId)),
           ],
       k->addArea,

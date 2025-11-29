@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - Split `Vec2.t` into `Vec2.World.t`, `Vec2.Local.t`, `Vec2.Screen.t`, `Vec2.Unit.t` & `Vec2.Tile.t`
 
+### Added
+- `Context.onError`
+- `Context.quit`
+- `RuleSystem`, `Rule`
+
 ## [0.11.0] - 2025-11-26
 
 ### Changed

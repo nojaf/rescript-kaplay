@@ -5,7 +5,7 @@ import * as GameContext$Skirmish from "./GameContext.res.mjs";
 import * as Thundershock$Skirmish from "./Moves/Thundershock.res.mjs";
 
 function make(pokemonId, level) {
-  let gameObj = Pokemon$Skirmish.make(pokemonId, level, true);
+  let gameObj = Pokemon$Skirmish.make(GameContext$Skirmish.k, pokemonId, level, true);
   let spaceWasDown = {
     contents: false
   };
