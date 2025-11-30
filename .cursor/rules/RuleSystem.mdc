@@ -1,0 +1,935 @@
+# RuleSystem - Rule-Based AI System for KAPLAY
+
+## Overview
+
+The `RuleSystem` is a powerful rule-based AI system that allows you to create intelligent behaviors using a pattern of "if-then" rules. It's perfect for implementing decision-making logic, state management, and AI behaviors in your KAPLAY games.
+
+The system works by evaluating rules against a set of facts. When a rule's condition (predicate) is true, it executes its action. Facts are stored with a grade (0 to 1), allowing you to represent confidence levels or fuzzy logic.
+
+## Getting Started
+
+To use `RuleSystem`, you first need to create an instance. It's available through the KAPLAY context:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+// Create a new rule system
+let ai = RuleSystem.make(k)
+```
+
+## Core Concepts
+
+### Facts
+
+Facts are pieces of information stored in the system. Each fact has a name (string) and a grade (number between 0 and 1). The grade represents the strength or confidence of the fact.
+
+- **Grade 0**: The fact is not true (or has no confidence)
+- **Grade 1**: The fact is fully true (or has maximum confidence)
+- **Grades between 0 and 1**: Partial truth or confidence levels
+
+### Rules
+
+Rules define the behavior of your AI system. Each rule has:
+- **Predicate**: A condition that evaluates to true or false
+- **Action**: What happens when the predicate is true
+- **Salience**: Priority level (lower numbers execute first)
+
+### Execution Flow
+
+When you call `execute()`, the system:
+1. Sorts all rules by salience (ascending order)
+2. Evaluates each rule's predicate
+3. Executes the action for rules where the predicate is true
+
+## Basic Usage
+
+### Creating a Simple Rule
+
+Here's a basic example that demonstrates the core workflow:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type gameState = {mutable health: int}
+
+let ai = RuleSystem.make(k)
+
+// Set initial state
+ai.state = {health: 50}
+
+// Add a rule that executes an action when a condition is met
+ai->RuleSystem.addRuleExecutingAction(
+  // Predicate: when player health is low
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.health < 30
+  },
+  // Action: heal the player
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.health = state.health + 20
+    Console.log("Healing player!")
+  },
+  ~salient=Salience(0.0), // Salience (priority)
+)
+
+// Execute the rules
+ai->RuleSystem.execute() // Nothing happens (health is 50, not < 30)
+
+ai.state.health = 25
+ai->RuleSystem.execute() // "Healing player!" - health is now 45
+```
+
+### Working with Facts
+
+Facts allow you to build more complex decision-making systems:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+let ai = RuleSystem.make(k)
+
+// Assert some facts
+ai->RuleSystem.assertFact(Fact("playerNearby"), ~grade=Grade(0.8))  // 80% confidence player is nearby
+ai->RuleSystem.assertFact(Fact("lowHealth"), ~grade=Grade(1.0))     // 100% confidence health is low
+ai->RuleSystem.assertFact(Fact("hasAmmo"), ~grade=Grade(0.5))        // 50% confidence we have ammo
+
+// Check fact grades
+switch ai->RuleSystem.gradeForFact(Fact("playerNearby")) {
+| Grade(g) => Console.log(g) // 0.8
+}
+switch ai->RuleSystem.gradeForFact(Fact("lowHealth")) {
+| Grade(g) => Console.log(g) // 1.0
+}
+switch ai->RuleSystem.gradeForFact(Fact("hasAmmo")) {
+| Grade(g) => Console.log(g) // 0.5
+}
+```
+
+### Rules with Facts
+
+You can create rules that check facts and assert or retract other facts:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+let ai = RuleSystem.make(k)
+
+// Rule: If player is nearby and we have low health, assert "shouldRetreat"
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<'state>) => {
+    switch (rs->RuleSystem.gradeForFact(Fact("playerNearby")), rs->RuleSystem.gradeForFact(Fact("lowHealth"))) {
+    | (Grade(pn), Grade(lh)) => pn > 0.7 && lh > 0.8
+    | _ => false
+    }
+  },
+  Fact("shouldRetreat"),  // Fact to assert
+  ~grade=Grade(1.0),      // Grade to assert with
+)
+
+// Set up initial facts
+ai->RuleSystem.assertFact(Fact("playerNearby"), ~grade=Grade(0.9))
+ai->RuleSystem.assertFact(Fact("lowHealth"), ~grade=Grade(0.9))
+
+// Execute rules
+ai->RuleSystem.execute()
+
+// Check if the new fact was asserted
+switch ai->RuleSystem.gradeForFact(Fact("shouldRetreat")) {
+| Grade(g) => Console.log(g) // 1.0
+}
+```
+
+### Retracting Facts
+
+You can also create rules that retract (reduce the grade of) facts:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type gameState = {mutable distanceToPlayer: float}
+
+let ai = RuleSystem.make(k)
+
+// Rule: If player moves away, retract "playerNearby"
+ai->RuleSystem.addRuleRetractingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.distanceToPlayer > 100.0
+  },
+  Fact("playerNearby"),  // Fact to retract
+  ~grade=Grade(0.5),     // Grade to retract by
+)
+
+ai.state = {distanceToPlayer: 0.0}
+ai->RuleSystem.assertFact(Fact("playerNearby"), ~grade=Grade(1.0))
+
+ai.state.distanceToPlayer = 150.0
+ai->RuleSystem.execute()
+
+switch ai->RuleSystem.gradeForFact(Fact("playerNearby")) {
+| Grade(g) => Console.log(g) // 0.5 (reduced by 0.5)
+}
+```
+
+> **Important**: See the section on [Understanding Assert/Retract Pairs](#understanding-assertretract-pairs) below for guidance on when you need to pair assert and retract rules together.
+
+### Understanding Assert/Retract Pairs
+
+An important design consideration when using `addRuleAssertingFact` and `addRuleRetractingFact` is whether you need them in pairs. The answer depends on your use case:
+
+**Key Point**: Facts persist until explicitly retracted or reset. When a rule's predicate becomes false, the fact it asserted remains at its current grade unless another rule retracts it.
+
+#### When You Need Pairs (Mutually Exclusive States)
+
+For facts that represent **current state** or **mutually exclusive conditions**, you should use pairs to ensure facts accurately reflect reality:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type gameState = {mutable playerDistance: float}
+
+let ai = RuleSystem.make(k)
+
+// Assert "playerFar" when distance > 10
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.playerDistance > 10.0
+  },
+  Fact("playerFar"),
+  ~grade=Grade(1.0),
+)
+
+// Retract "playerFar" when distance <= 10 (the opposite condition)
+ai->RuleSystem.addRuleRetractingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.playerDistance <= 10.0
+  },
+  Fact("playerFar"),
+  ~grade=Grade(1.0),
+)
+
+// Now "playerFar" accurately reflects current state
+ai.state = {playerDistance: 15.0}
+ai->RuleSystem.execute()
+switch ai->RuleSystem.gradeForFact(Fact("playerFar")) {
+| Grade(g) => Console.log(g) // 1.0
+}
+
+ai.state.playerDistance = 5.0
+ai->RuleSystem.execute()
+switch ai->RuleSystem.gradeForFact(Fact("playerFar")) {
+| Grade(g) => Console.log(g) // 0.0
+}
+```
+
+**Why pairs matter here**: Without the retract rule, once `playerFar` is asserted, it would remain true even when the player gets close, leading to incorrect behavior.
+
+#### When You Don't Need Pairs (Accumulating Evidence)
+
+For facts that represent **accumulating evidence**, **events**, or **persistent knowledge**, you typically don't need retract rules:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type gameState = {mutable hasLineOfSight: bool}
+
+let ai = RuleSystem.make(k)
+
+// Assert "playerSeen" when player is visible
+// This fact persists - once seen, always "seen" (until reset)
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.hasLineOfSight
+  },
+  Fact("playerSeen"),
+  ~grade=Grade(1.0),
+)
+
+// No retract rule needed - "playerSeen" is a persistent fact
+// It represents historical knowledge, not current state
+```
+
+**When to use this pattern**: 
+- Historical events ("enemyAttacked", "keyCollected")
+- Accumulated evidence ("suspiciousActivity")
+- Persistent states that should remain until explicitly cleared
+
+#### The Twofold Pattern
+
+For facts representing **current conditions**, use the twofold pattern where each assertion has a corresponding retraction with the opposite condition:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type gameState = {mutable health: int}
+
+let ai = RuleSystem.make(k)
+
+// Pattern: Assert when condition is true
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.health < 30
+  },
+  Fact("lowHealth"),
+  ~grade=Grade(1.0),
+)
+
+// Pattern: Retract when condition is false (opposite)
+ai->RuleSystem.addRuleRetractingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.health >= 30
+  },
+  Fact("lowHealth"),
+  ~grade=Grade(1.0),
+)
+
+// This ensures "lowHealth" always reflects current reality
+```
+
+**Best Practice**: When a fact represents a **current state** (like "playerFar", "lowHealth", "inCombat"), use the twofold pattern. When it represents **historical knowledge** or **accumulated evidence**, you typically don't need pairs.
+
+#### Handling Multiple Sources
+
+Sometimes multiple rules can assert the same fact. In these cases, you might want selective retraction:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type gameState = {mutable health: int, mutable enemyCount: int}
+
+let ai = RuleSystem.make(k)
+
+// Source 1: Assert "danger" when health is low
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.health < 20
+  },
+  Fact("danger"),
+  ~grade=Grade(0.5),  // Partial grade
+)
+
+// Source 2: Assert "danger" when enemies nearby
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.enemyCount > 3
+  },
+  Fact("danger"),
+  ~grade=Grade(0.5),  // Partial grade
+)
+
+// Retract only when BOTH conditions are false
+ai->RuleSystem.addRuleRetractingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.health >= 20 && state.enemyCount <= 3
+  },
+  Fact("danger"),
+  ~grade=Grade(1.0),  // Full retraction
+)
+
+// Now "danger" can be 0.0, 0.5, or 1.0 depending on conditions
+```
+
+#### Common Pitfall: Forgetting Retract Rules
+
+A common mistake is asserting facts without corresponding retracts for state-based facts:
+
+```rescript
+// ❌ PROBLEMATIC: Fact persists even when condition becomes false
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.playerDistance > 10.0
+  },
+  Fact("playerFar"),
+  ~grade=Grade(1.0),
+)
+// Missing: retract rule for when distance <= 10
+
+// ✅ CORRECT: Twofold pattern ensures accuracy
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.playerDistance > 10.0
+  },
+  Fact("playerFar"),
+  ~grade=Grade(1.0),
+)
+ai->RuleSystem.addRuleRetractingFact(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.playerDistance <= 10.0
+  },
+  Fact("playerFar"),
+  ~grade=Grade(1.0),
+)
+```
+
+#### Summary: When to Use Pairs
+
+| Use Case | Need Pair? | Example |
+|----------|------------|---------|
+| Current state facts | ✅ Yes | "playerFar", "lowHealth", "inCombat" |
+| Historical events | ❌ No | "playerSeen", "keyCollected" |
+| Accumulated evidence | ❌ No | "suspiciousActivity" |
+| Temporary conditions | ✅ Yes | "underAttack", "nearGoal" |
+| Persistent knowledge | ❌ No | "hasVisitedArea", "knowsSecret" |
+
+**Rule of thumb**: If the fact should **automatically become false** when conditions change, use a pair. If the fact represents **something that happened** or **knowledge gained**, you typically don't need a retract rule.
+
+## Advanced Features
+
+### Salience (Rule Priority)
+
+Rules with lower salience values execute first. This is useful when you want certain rules to run before others:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type gameState = {mutable health: int, mutable alive: bool}
+
+let ai = RuleSystem.make(k)
+
+// High priority rule (executes first)
+ai->RuleSystem.addRuleExecutingAction(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.health <= 0
+  },
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    Console.log("Player died!")
+    state.alive = false
+  },
+  ~salient=Salience(-10.0), // Low salience = high priority
+)
+
+// Lower priority rule
+ai->RuleSystem.addRuleExecutingAction(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.health < 50
+  },
+  (rs: RuleSystem.t<gameState>) => {
+    Console.log("Health is low")
+  },
+  ~salient=Salience(10.0), // Higher salience = lower priority
+)
+
+ai.state = {health: 0, alive: true}
+ai->RuleSystem.execute() // "Player died!" executes first, then "Health is low"
+```
+
+### Working with Multiple Facts
+
+The system provides helper methods to work with multiple facts at once:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+let ai = RuleSystem.make(k)
+
+ai->RuleSystem.assertFact(Fact("fact1"), ~grade=Grade(0.3))
+ai->RuleSystem.assertFact(Fact("fact2"), ~grade=Grade(0.7))
+ai->RuleSystem.assertFact(Fact("fact3"), ~grade=Grade(0.5))
+
+// Get the minimum grade among facts
+let minGrade = ai->RuleSystem.minimumGradeForFacts(Fact("fact1"), Fact("fact2"), Fact("fact3"))
+switch minGrade {
+| Grade(g) => Console.log(g) // 0.3
+}
+
+// Get the maximum grade among facts
+let maxGrade = ai->RuleSystem.maximumGradeForFacts(Fact("fact1"), Fact("fact2"), Fact("fact3"))
+switch maxGrade {
+| Grade(g) => Console.log(g) // 0.7
+}
+```
+
+### Custom Rules
+
+For advanced scenarios, you can create custom rules by extending the `Rule` class:
+
+```javascript
+const ai = new k.RuleSystem();
+
+class CustomRule extends k.Rule {
+    constructor(predicate, salience) {
+        super(predicate, salience);
+    }
+
+    execute(system) {
+        // Your custom logic here
+        console.log("Custom rule executed!");
+    }
+}
+
+const customRule = new CustomRule(
+    (system) => system.state.customCondition === true,
+    0
+);
+
+ai.addRule(customRule);
+```
+
+### State Management
+
+The `state` property is a free-form object where you can store any game state:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type gameState = {
+  mutable playerHealth: int,
+  mutable enemyCount: int,
+  mutable distanceToGoal: float,
+  mutable hasKey: bool,
+  mutable shouldFlee: bool,
+}
+
+let ai = RuleSystem.make(k)
+
+// Store game state
+ai.state = {
+  playerHealth: 100,
+  enemyCount: 5,
+  distanceToGoal: 200.0,
+  hasKey: true,
+  shouldFlee: false,
+}
+
+// Use state in predicates
+ai->RuleSystem.addRuleExecutingAction(
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    state.playerHealth < 50 && state.enemyCount > 3
+  },
+  (rs: RuleSystem.t<gameState>) => {
+    let state = rs.state
+    Console.log("Dangerous situation!")
+    state.shouldFlee = true
+  },
+)
+```
+
+## Practical Example: Enemy AI
+
+Here's a complete example of an enemy AI using the RuleSystem:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type enemyState = {
+  mutable health: int,
+  mutable distanceToPlayer: float,
+  mutable ammo: int,
+  mutable hasLineOfSight: bool,
+  mutable movingAway: bool,
+}
+
+let enemyAI = RuleSystem.make(k)
+
+// Initialize enemy state
+enemyAI.state = {
+  health: 100,
+  distanceToPlayer: 50.0,
+  ammo: 10,
+  hasLineOfSight: true,
+  movingAway: false,
+}
+
+// Rule 1: If health is critically low, retreat
+enemyAI->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<enemyState>) => {
+    let state = rs.state
+    state.health < 20
+  },
+  Fact("shouldRetreat"),
+  ~grade=Grade(1.0),
+  ~salient=Salience(-10.0), // High priority
+)
+
+// Rule 2: If player is very close, assert "playerTooClose"
+enemyAI->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<enemyState>) => {
+    let state = rs.state
+    state.distanceToPlayer < 30.0
+  },
+  Fact("playerTooClose"),
+  ~grade=Grade(1.0),
+)
+
+// Rule 3: If we should retreat, move away
+enemyAI->RuleSystem.addRuleExecutingAction(
+  (rs: RuleSystem.t<enemyState>) => {
+    switch rs->RuleSystem.gradeForFact(Fact("shouldRetreat")) {
+    | Grade(g) => g > 0.5
+    | _ => false
+    }
+  },
+  (rs: RuleSystem.t<enemyState>) => {
+    let state = rs.state
+    Console.log("Enemy retreating!")
+    state.movingAway = true
+  },
+)
+
+// Rule 4: If player is too close and we have ammo, attack
+enemyAI->RuleSystem.addRuleExecutingAction(
+  (rs: RuleSystem.t<enemyState>) => {
+    let state = rs.state
+    switch rs->RuleSystem.gradeForFact(Fact("playerTooClose")) {
+    | Grade(g) => g > 0.5 && state.ammo > 0 && state.hasLineOfSight
+    | _ => false
+    }
+  },
+  (rs: RuleSystem.t<enemyState>) => {
+    let state = rs.state
+    Console.log("Enemy attacking!")
+    state.ammo = state.ammo - 1
+  },
+  ~salient=Salience(5.0),
+)
+
+// Rule 5: If out of ammo, retract "shouldRetreat" (can't fight anyway)
+enemyAI->RuleSystem.addRuleRetractingFact(
+  (rs: RuleSystem.t<enemyState>) => {
+    let state = rs.state
+    state.ammo == 0
+  },
+  Fact("shouldRetreat"),
+  ~grade=Grade(0.3),
+  ~salient=Salience(10.0),
+)
+
+// Game loop
+k->Context.onUpdate(() => {
+  // Update state based on game conditions
+  enemyAI.state.distanceToPlayer = calculateDistance()
+  enemyAI.state.hasLineOfSight = checkLineOfSight()
+  
+  // Execute AI rules
+  enemyAI->RuleSystem.execute()
+  
+  // Act on the results
+  if enemyAI.state.movingAway {
+    moveEnemyAway()
+    enemyAI.state.movingAway = false
+  }
+})
+```
+
+## API Reference
+
+### RuleSystem Class
+
+#### Constructor
+
+```typescript
+new RuleSystem()
+```
+
+Creates a new rule system instance.
+
+#### Properties
+
+- **`agenda: Rule[]`** - Array of all rules in the system
+- **`state: any`** - Free-form object for storing game state
+- **`facts: Map<string, number>`** - Map of fact names to their grades
+
+#### Methods
+
+##### `addRuleExecutingAction(predicate, action, salience?)`
+
+Adds a rule that executes an action when the predicate is true.
+
+- **`predicate: (system: RuleSystem) => boolean`** - Function that returns true when the rule should execute
+- **`action: (system: RuleSystem) => void`** - Function to execute when predicate is true
+- **`salience: number`** - Priority level (default: 0). Lower values execute first
+
+##### `addRuleAssertingFact(predicate, fact, grade?, salience?)`
+
+Adds a rule that asserts a fact when the predicate is true.
+
+- **`predicate: (system: RuleSystem) => boolean`** - Function that returns true when the rule should execute
+- **`fact: string`** - Name of the fact to assert
+- **`grade: number`** - Grade to add to the fact (default: 1)
+- **`salience: number`** - Priority level (default: 0)
+
+##### `addRuleRetractingFact(predicate, fact, grade?, salience?)`
+
+Adds a rule that retracts (reduces the grade of) a fact when the predicate is true.
+
+- **`predicate: (system: RuleSystem) => boolean`** - Function that returns true when the rule should execute
+- **`fact: string`** - Name of the fact to retract
+- **`grade: number`** - Grade to subtract from the fact (default: 1)
+- **`salience: number`** - Priority level (default: 0)
+
+##### `addRule(rule)`
+
+Adds a custom rule to the system.
+
+- **`rule: Rule`** - A custom rule instance
+
+##### `removeAllRules()`
+
+Removes all rules from the system.
+
+##### `execute()`
+
+Evaluates all rules and executes those whose predicates are true. Rules are executed in order of salience (ascending).
+
+##### `assertFact(fact, grade?)`
+
+Asserts a fact with a given grade. The grade is clamped to a maximum of 1.0.
+
+- **`fact: string`** - Name of the fact
+- **`grade: number`** - Grade to add (default: 1). If the fact already exists, grades are added together (capped at 1.0)
+
+##### `retractFact(fact, grade?)`
+
+Retracts a fact by reducing its grade. The grade is clamped to a minimum of 0.0.
+
+- **`fact: string`** - Name of the fact
+- **`grade: number`** - Grade to subtract (default: 1). If the fact doesn't exist, it's treated as having grade 0
+
+##### `gradeForFact(fact)`
+
+Returns the current grade of a fact.
+
+- **`fact: string`** - Name of the fact
+- **Returns:** `number` - The grade (0 if fact doesn't exist)
+
+##### `minimumGradeForFacts(...facts)`
+
+Returns the minimum grade among the specified facts.
+
+- **`...facts: string[]`** - Fact names to check
+- **Returns:** `number` - The minimum grade
+
+##### `maximumGradeForFacts(...facts)`
+
+Returns the maximum grade among the specified facts.
+
+- **`...facts: string[]`** - Fact names to check
+- **Returns:** `number` - The maximum grade
+
+##### `reset()`
+
+Clears all facts from the system. Rules and state are preserved.
+
+### Rule Class
+
+The `Rule` class is exported and can be extended for custom rule implementations.
+
+#### Constructor
+
+```typescript
+new Rule(predicate: (system: RuleSystem) => boolean, salience: number)
+```
+
+#### Properties
+
+- **`predicate: (system: RuleSystem) => boolean`** - The condition function
+- **`salience: number`** - Priority level
+
+#### Methods
+
+##### `evaluate(system)`
+
+Evaluates the rule's predicate.
+
+- **`system: RuleSystem`** - The rule system instance
+- **Returns:** `boolean` - Result of the predicate
+
+##### `execute(system)`
+
+Executes the rule's action. Override this in custom rules.
+
+- **`system: RuleSystem`** - The rule system instance
+
+## Best Practices
+
+1. **Use meaningful fact names**: Choose descriptive names like `"playerNearby"` instead of `"p1"`
+
+2. **Use assert/retract pairs for state facts**: When a fact represents current state (like `"playerFar"` or `"lowHealth"`), always pair `addRuleAssertingFact` with a corresponding `addRuleRetractingFact` that has the opposite condition. This ensures facts accurately reflect reality. See [Understanding Assert/Retract Pairs](#understanding-assertretract-pairs) for details.
+
+3. **Organize salience values**: Use consistent salience ranges (e.g., -100 to 100) to make priority management easier
+
+4. **Keep predicates simple**: Complex logic in predicates can make debugging difficult. Consider breaking complex conditions into multiple facts
+
+5. **Update state before executing**: Always update `state` and facts before calling `execute()` to ensure rules evaluate current conditions
+
+6. **Reset when needed**: Use `reset()` to clear facts when transitioning between game states or scenes
+
+7. **Combine with game loops**: Call `execute()` in your `onUpdate()` or `onFixedUpdate()` handlers to keep AI responsive
+
+## Common Patterns
+
+### Pattern: State Machine
+
+Use facts to represent states and rules to handle transitions:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type stateMachineState = {mutable distanceToPlayer: float}
+
+let stateMachine = RuleSystem.make(k)
+
+// Define states as facts
+stateMachine->RuleSystem.assertFact(Fact("idle"), ~grade=Grade(1.0))
+
+// Transition: idle -> patrolling when player is far
+stateMachine->RuleSystem.addRuleRetractingFact(
+  (rs: RuleSystem.t<stateMachineState>) => {
+    let state = rs.state
+    switch rs->RuleSystem.gradeForFact(Fact("idle")) {
+    | Grade(g) => g > 0.0 && state.distanceToPlayer > 100.0
+    | _ => false
+    }
+  },
+  Fact("idle"),
+  ~grade=Grade(1.0),
+)
+
+stateMachine->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<stateMachineState>) => {
+    let state = rs.state
+    switch rs->RuleSystem.gradeForFact(Fact("idle")) {
+    | Grade(g) => g > 0.0 && state.distanceToPlayer > 100.0
+    | _ => false
+    }
+  },
+  Fact("patrolling"),
+  ~grade=Grade(1.0),
+  ~salient=Salience(1.0),
+)
+```
+
+### Pattern: Fuzzy Logic
+
+Use fact grades to represent fuzzy concepts:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type fuzzyState = {mutable distance: float}
+
+let fuzzyAI = RuleSystem.make(k)
+
+// "Very close" has high grade when distance is small
+fuzzyAI->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<fuzzyState>) => {
+    let state = rs.state
+    state.distance < 20.0
+  },
+  Fact("veryClose"),
+  ~grade=Grade(1.0),
+)
+
+fuzzyAI->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<fuzzyState>) => {
+    let state = rs.state
+    state.distance < 50.0 && state.distance >= 20.0
+  },
+  Fact("veryClose"),
+  ~grade=Grade(0.5),
+  ~salient=Salience(1.0),
+)
+
+// Use the fuzzy fact in decisions
+fuzzyAI->RuleSystem.addRuleExecutingAction(
+  (rs: RuleSystem.t<fuzzyState>) => {
+    switch rs->RuleSystem.gradeForFact(Fact("veryClose")) {
+    | Grade(g) => g > 0.7
+    | _ => false
+    }
+  },
+  (rs: RuleSystem.t<fuzzyState>) => {
+    Console.log("Player is very close!")
+  },
+)
+```
+
+### Pattern: Event-Driven Rules
+
+Combine with KAPLAY events to create reactive AI:
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type reactiveState = {mutable defending: bool}
+
+let reactiveAI = RuleSystem.make(k)
+
+// When player takes damage, assert "underAttack"
+k->Context.onCollide("enemy", "player", () => {
+  reactiveAI->RuleSystem.assertFact(Fact("underAttack"), ~grade=Grade(1.0))
+})
+
+// Rule responds to the event
+reactiveAI->RuleSystem.addRuleExecutingAction(
+  (rs: RuleSystem.t<reactiveState>) => {
+    switch rs->RuleSystem.gradeForFact(Fact("underAttack")) {
+    | Grade(g) => g > 0.0
+    | _ => false
+    }
+  },
+  (rs: RuleSystem.t<reactiveState>) => {
+    let state = rs.state
+    Console.log("Enemy under attack, defending!")
+    state.defending = true
+    rs->RuleSystem.retractFact(Fact("underAttack"), ~grade=Grade(1.0))
+  },
+)
+```
+
+## Tips and Tricks
+
+- **Debugging**: Log fact grades and state values to understand rule execution flow
+- **Performance**: Keep the number of rules reasonable. For complex systems, consider using multiple RuleSystem instances
+- **Testing**: Test rules in isolation by manually setting facts and state before calling `execute()`
+- **Modularity**: Create separate RuleSystem instances for different AI agents or systems
+
+## See Also
+
+- `DecisionTree` - For tree-based decision making
+- `StateMachine` - For finite state machine patterns

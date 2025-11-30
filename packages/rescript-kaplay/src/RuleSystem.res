@@ -5,48 +5,50 @@ type fact = Fact(string)
 type grade = Grade(float)
 
 @unboxed
-type salience = Salience(bool)
-
-type predicate = fact => bool
-type action = fact => unit
+type salience = Salience(float)
 
 type rec t<'state> = {
   //
-  agenda: array<rule>,
-  state: 'state,
+  agenda: array<rule<'state>>,
+  mutable state: 'state,
   facts: Map.t<fact, grade>,
 }
-and rule = {
-  predicate: predicate,
+and rule<'state> = {
+  predicate: predicate<'state>,
   salience: salience,
 }
+and predicate<'state> = t<'state> => bool
+and action<'state> = t<'state> => unit
 
-@new
-external make: t<'state> = "make"
+let make: Context.t => t<'state> = %raw(`function (k) { return new k.RuleSystem(); }`)
 
 module Rule = {
   @send
-  external evaluate: (rule, t<'state>) => bool = "evaluate"
+  external evaluate: (rule<'state>, t<'state>) => bool = "evaluate"
 
   @send
-  external execute: (rule, t<'state>) => unit = "execute"
+  external execute: (rule<'state>, t<'state>) => unit = "execute"
 }
 
 /** Adds a rule which runs an action if its predicate evaluates to true. */
 @send
-external addRuleExecutingAction: (t<'state>, predicate, action, ~salient: salience=?) => unit =
-  "addRuleExecutingAction"
+external addRuleExecutingAction: (
+  t<'state>,
+  predicate<'state>,
+  action<'state>,
+  ~salient: salience=?,
+) => unit = "addRuleExecutingAction"
 
 /** Add a rule which asserts a fact if its predicate evaluates to true. */
 @send
-external addRuleAssertingFact: (t<'state>, predicate, fact, ~grade: grade=?) => unit =
+external addRuleAssertingFact: (t<'state>, predicate<'state>, fact, ~grade: grade=?) => unit =
   "addRuleAssertingFact"
 
 /** Add a rule which retracts a fact if its predicate evaluates to true. */
 @send
 external addRuleRetractingFact: (
   t<'state>,
-  predicate,
+  predicate<'state>,
   fact,
   ~grade: grade=?,
   ~salient: salience=?,
@@ -54,7 +56,7 @@ external addRuleRetractingFact: (
 
 /** Add a custom rule. */
 @send
-external addRule: (t<'state>, rule) => unit = "addRule"
+external addRule: (t<'state>, rule<'state>) => unit = "addRule"
 
 /** Removes all rules. */
 @send
@@ -77,11 +79,11 @@ external retractFact: (t<'state>, fact, ~grade: grade=?) => unit = "retractFact"
 external gradeForFact: (t<'state>, fact) => grade = "gradeForFact"
 
 /** Returns the minimum grade for the specified facts. */
-@send
+@send @variadic
 external minimumGradeForFacts: (t<'state>, array<fact>) => grade = "minimumGradeForFacts"
 
 /** Returns the maximum grade for the specified facts. */
-@send
+@send @variadic
 external maximumGradeForFacts: (t<'state>, array<fact>) => grade = "maximumGradeForFacts"
 
 /** Resets the facts */
