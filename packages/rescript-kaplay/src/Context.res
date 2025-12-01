@@ -722,9 +722,13 @@ external getCursor: t => cursor = "getCursor"
 @send
 external setCursor: (t, cursor) => unit = "setCursor"
 
-type includeOp = And | Or
+type includeOp = | @as("and") And | @as("or") Or
 type distanceOp = Near | Far
-type hierarchy = Children | Siblings | Ancestors | Descendants
+type hierarchy =
+  | @as("children") Children
+  | @as("siblings") Siblings
+  | @as("ancestors") Ancestors
+  | @as("descendants") Descendants
 
 type queryOptions = {
   @as("include") include_?: array<string>,

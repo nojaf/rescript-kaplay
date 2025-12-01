@@ -10,6 +10,7 @@ include Move.Comp({type t = t})
 include Anchor.Comp({type t = t})
 include Z.Comp({type t = t})
 include Area.Comp({type t = t})
+include Attack.Comp({type t = t})
 
 let spriteName = "flame"
 
@@ -26,7 +27,14 @@ let cast = (pokemon: Pokemon.t) => {
       addZ(k, -1),
       addArea(k),
       pokemon.direction.y < 0. ? addAnchorBottom(k) : addAnchorTop(k),
+      pokemon.team == Pokemon.Player ? Team.playerTagComponent : Team.opponentTagComponent,
     ])
+
+  flame->use(
+    addAttack(() => {
+      Math.Rect.makeWorld(k, flame->worldPos, flame->getWidth, flame->getHeight)
+    }),
+  )
 
   flame->onCollide(Pokemon.tag, (other: Pokemon.t, _collision) => {
     if other.pokemonId != pokemon.pokemonId {

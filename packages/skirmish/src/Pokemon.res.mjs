@@ -7,6 +7,7 @@ import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res
 import * as Health$Kaplay from "@nojaf/rescript-kaplay/src/Components/Health.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
+import * as Team$Skirmish from "./Team.res.mjs";
 import * as Animate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Animate.res.mjs";
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
@@ -75,7 +76,8 @@ function make(k, pokemonId, level, team) {
           team: team
         },
         k.pos(k.center().x, k.height() * 0.8),
-        k.sprite(backSpriteName(pokemonId))
+        k.sprite(backSpriteName(pokemonId)),
+        Team$Skirmish.playerTagComponent
       ] : [
         {
           direction: k.Vec2.DOWN,
@@ -87,7 +89,8 @@ function make(k, pokemonId, level, team) {
           team: team
         },
         k.pos(k.center().x, k.height() * 0.2),
-        k.sprite(frontSpriteName(pokemonId))
+        k.sprite(frontSpriteName(pokemonId)),
+        Team$Skirmish.opponentTagComponent
       ],
     [
       k.area(),

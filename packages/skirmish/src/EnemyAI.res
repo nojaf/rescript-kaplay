@@ -52,6 +52,17 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Poke
 
   enemy->Pokemon.onUpdate(() => {
     rs->RuleSystem.reset
+
+    let playerAttacks = k->Context.query({
+      include_: [Attack.tag, Team.player],
+      hierarchy: Descendants,
+    })
+    if playerAttacks->Array.length > 0 {
+      playerAttacks->Array.forEach((attack: Attack.customType<_>) => {
+        Console.log2("Player attack", attack.getWorldRect())
+      })
+    }
+
     rs->RuleSystem.execute
 
     // check for facts...
@@ -68,12 +79,12 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Poke
     }
   })
 
-  k->Context.onKeyPress(key => {
-    switch key {
-    | Space => Console.table(rs.facts->Map.entries->Iterator.toArray)
-    | _ => ()
-    }
-  })
+  // k->Context.onKeyPress(key => {
+  //   switch key {
+  //   | Space => Console.table(rs.facts->Map.entries->Iterator.toArray)
+  //   | _ => ()
+  //   }
+  // })
 
   enemy
 }

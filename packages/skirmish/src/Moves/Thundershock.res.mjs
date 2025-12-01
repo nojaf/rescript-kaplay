@@ -6,6 +6,8 @@ import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
+import * as Team$Skirmish from "../Team.res.mjs";
+import * as Attack$Skirmish from "./Attack.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "../GameContext.res.mjs";
 import GlowFragraw from "../../shaders/glow.frag?raw";
@@ -21,6 +23,10 @@ GameObjRaw$Kaplay.Comp({});
 Z$Kaplay.Comp({});
 
 Shader$Kaplay.Comp({});
+
+let include = Attack$Skirmish.Comp({});
+
+let addAttack = include.addAttack;
 
 let glowSource = GlowFragraw;
 
@@ -53,6 +59,20 @@ let up = GameContext$Skirmish.k.Vec2.UP.scale(20);
 
 let down = GameContext$Skirmish.k.Vec2.DOWN.scale(20);
 
+function expandRectWithPoint(currentRect, newPoint) {
+  let currentMinX = currentRect.pos.x;
+  let currentMaxX = currentRect.pos.x + currentRect.width;
+  let currentMinY = currentRect.pos.y;
+  let currentMaxY = currentRect.pos.y + currentRect.height;
+  let newMinX = Math.min(currentMinX, newPoint.x);
+  let newMaxX = Math.max(currentMaxX, newPoint.x);
+  let newMinY = Math.min(currentMinY, newPoint.y);
+  let newMaxY = Math.max(currentMaxY, newPoint.y);
+  let newWidth = newMaxX - newMinX;
+  let newHeight = newMaxY - newMinY;
+  return Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, GameContext$Skirmish.k.vec2(newMinX, newMinY), newWidth, newHeight);
+}
+
 function destroy(pokemon, thundershock) {
   thundershock.timerRef.cancel();
   GameContext$Skirmish.k.wait(5 * 0.050, () => {
@@ -73,11 +93,14 @@ function cast(pokemon) {
   let thundershock = pokemon.add([
     GameContext$Skirmish.k.pos(0, 0),
     GameContext$Skirmish.k.z(-1),
+    pokemon.team === true ? Team$Skirmish.playerTagComponent : Team$Skirmish.opponentTagComponent,
+    Attack$Skirmish.tagComponent,
     {
       id: "thundershock",
       draw: draw
     }
   ]);
+  thundershock.use(addAttack(() => thundershock.worldRect));
   thundershock.use({
     points: [pokemon.worldPos()],
     timerRef: GameContext$Skirmish.k.loop(0.050, extra => {
@@ -86,11 +109,11 @@ function cast(pokemon) {
       let lastPoint = point !== undefined ? point : pkmnWorldPos;
       let deviationX = GameContext$Skirmish.k.rand(-1 * 7, 7);
       let candidate = GameContext$Skirmish.k.vec2(pkmnWorldPos.x + deviationX, lastPoint.y + direction.y);
-      if (worldRect.contains(candidate)) {
-        thundershock.points.push(candidate);
-      } else {
-        let cap = GameContext$Skirmish.k.vec2(GameContext$Skirmish.k.clamp(candidate.x, 0, GameContext$Skirmish.k.width()), GameContext$Skirmish.k.clamp(candidate.y, 0, GameContext$Skirmish.k.height()));
-        thundershock.points.push(cap);
+      let validCandidate = worldRect.contains(candidate);
+      let safeCandidate = validCandidate ? candidate : GameContext$Skirmish.k.vec2(GameContext$Skirmish.k.clamp(candidate.x, 0, GameContext$Skirmish.k.width()), GameContext$Skirmish.k.clamp(candidate.y, 0, GameContext$Skirmish.k.height()));
+      thundershock.points.push(safeCandidate);
+      thundershock.worldRect = expandRectWithPoint(thundershock.worldRect, safeCandidate);
+      if (!validCandidate) {
         destroy(pokemon, thundershock);
       }
       otherPokemon.forEach(otherPokemon => {
@@ -99,7 +122,8 @@ function cast(pokemon) {
           return destroy(pokemon, thundershock);
         }
       });
-    })
+    }),
+    worldRect: Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, pokemon.worldPos(), 0, 0)
   });
   pokemon.use(GameContext$Skirmish.k.shader("glow", () => ({
     u_time: GameContext$Skirmish.k.time(),

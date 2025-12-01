@@ -74,6 +74,7 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: team): t => {
             }),
             k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.8),
             k->addSprite(backSpriteName(pokemonId)),
+            Team.playerTagComponent,
           ]
         : [
             internalState({
@@ -87,6 +88,7 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: team): t => {
             }),
             k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.2),
             k->addSprite(frontSpriteName(pokemonId)),
+            Team.opponentTagComponent,
           ],
       k->addArea,
       k->addHealth(20, ~maxHP=20),

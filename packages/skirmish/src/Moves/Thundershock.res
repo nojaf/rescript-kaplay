@@ -1,9 +1,11 @@
 open Kaplay
 open GameContext
+module Math = Kaplay.Math
 
 type t = {
   points: array<Vec2.World.t>,
   timerRef: Kaplay.TimerController.t,
+  mutable worldRect: Types.rect<Vec2.World.t>,
 }
 
 include Pos.Comp({type t = t})
@@ -11,6 +13,7 @@ include Anchor.Comp({type t = t})
 include GameObjRaw.Comp({type t = t})
 include Z.Comp({type t = t})
 include Shader.Comp({type t = t})
+include Attack.Comp({type t = t})
 
 @module("../../shaders/glow.frag?raw")
 external glowSource: string = "default"
@@ -43,7 +46,7 @@ let draw =
   }
 
 // TODO: extract and figure out proper world coordinates rect (keeping status bars in mind)
-let worldRect = Kaplay.Math.Rect.makeWorld(
+let worldRect = Math.Rect.makeWorld(
   k,
   k->Context.vec2ZeroWorld,
   k->Context.width,
@@ -59,6 +62,26 @@ let up: Vec2.World.t = k->Context.vec2Up->Vec2.Unit.asWorld->Vec2.World.scaleWit
 let down: Vec2.World.t = k->Context.vec2Down->Vec2.Unit.asWorld->Vec2.World.scaleWith(distance)
 
 external initialState: t => Types.comp = "%identity"
+
+let expandRectWithPoint = (
+  currentRect: Types.rect<Vec2.World.t>,
+  newPoint: Vec2.World.t,
+): Types.rect<Vec2.World.t> => {
+  let currentMinX = currentRect.pos.x
+  let currentMaxX = currentRect.pos.x + currentRect.width
+  let currentMinY = currentRect.pos.y
+  let currentMaxY = currentRect.pos.y + currentRect.height
+
+  let newMinX = Stdlib_Math.min(currentMinX, newPoint.x)
+  let newMaxX = Stdlib_Math.max(currentMaxX, newPoint.x)
+  let newMinY = Stdlib_Math.min(currentMinY, newPoint.y)
+  let newMaxY = Stdlib_Math.max(currentMaxY, newPoint.y)
+
+  let newWidth = newMaxX - newMinX
+  let newHeight = newMaxY - newMinY
+
+  Math.Rect.makeWorld(k, k->Context.vec2World(newMinX, newMinY), newWidth, newHeight)
+}
 
 let destroy = (pokemon: Pokemon.t, thundershock: t) => {
   thundershock.timerRef->Kaplay.TimerController.cancel
@@ -97,18 +120,21 @@ let nextPartOfBolt = (
     k->Context.vec2World(pkmnWorldPos.x + deviationX, lastPoint.y + direction.y)
   }
 
-  // Check bounds in world coordinates
-  if Kaplay.Math.Rect.containsWorld(worldRect, candidate) {
-    thundershock.points->Array.push(candidate)
-  } else {
-    // Cap the last point to the game bounds edge, then stop
-    let cap: Vec2.World.t =
-      k->Context.vec2World(
-        k->Context.clampFloat(candidate.x, 0., k->Context.width),
-        k->Context.clampFloat(candidate.y, 0., k->Context.height),
-      )
-    thundershock.points->Array.push(cap)
+  let validCandidate = Math.Rect.containsWorld(worldRect, candidate)
+  let safeCandidate = validCandidate
+    ? candidate
+    : {
+        // Cap the last point to the game bounds edge, then stop
+        k->Context.vec2World(
+          k->Context.clampFloat(candidate.x, 0., k->Context.width),
+          k->Context.clampFloat(candidate.y, 0., k->Context.height),
+        )
+      }
 
+  thundershock.points->Array.push(safeCandidate)
+  thundershock.worldRect = expandRectWithPoint(thundershock.worldRect, safeCandidate)
+
+  if !validCandidate {
     // Schedule own destruction
     destroy(pokemon, thundershock)
   }
@@ -142,15 +168,20 @@ let cast = (pokemon: Pokemon.t) => {
   let thundershock: t = pokemon->Pokemon.addChild([
     k->addPos(0., 0.),
     k->addZ(-1),
+    pokemon.team == Pokemon.Player ? Team.playerTagComponent : Team.opponentTagComponent,
+    Attack.tagComponent,
     CustomComponent.make({
       id: "thundershock",
       draw,
     }),
   ])
 
+  thundershock->use(addAttack(() => thundershock.worldRect))
+
   thundershock->use(
     initialState({
       points: [pokemon->Pokemon.worldPos],
+      worldRect: Kaplay.Math.Rect.makeWorld(k, pokemon->Pokemon.worldPos, 0., 0.),
       timerRef: k->Context.loopWithController(
         intervalSeconds,
         nextPartOfBolt(pokemon, otherPokemon, direction, thundershock, ...),

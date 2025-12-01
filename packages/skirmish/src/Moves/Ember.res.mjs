@@ -3,9 +3,12 @@
 import * as Z$Kaplay from "@nojaf/rescript-kaplay/src/Components/Z.res.mjs";
 import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs";
+import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Move$Kaplay from "@nojaf/rescript-kaplay/src/Components/Move.res.mjs";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
+import * as Team$Skirmish from "../Team.res.mjs";
+import * as Attack$Skirmish from "./Attack.res.mjs";
 import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "../GameContext.res.mjs";
@@ -24,6 +27,10 @@ Z$Kaplay.Comp({});
 
 Area$Kaplay.Comp({});
 
+let include = Attack$Skirmish.Comp({});
+
+let addAttack = include.addAttack;
+
 let spriteName = "flame";
 
 function load() {
@@ -37,8 +44,10 @@ function cast(pokemon) {
     GameContext$Skirmish.k.move(pokemon.direction, 120),
     GameContext$Skirmish.k.z(-1),
     GameContext$Skirmish.k.area(),
-    pokemon.direction.y < 0 ? GameContext$Skirmish.k.anchor("bot") : GameContext$Skirmish.k.anchor("top")
+    pokemon.direction.y < 0 ? GameContext$Skirmish.k.anchor("bot") : GameContext$Skirmish.k.anchor("top"),
+    pokemon.team === true ? Team$Skirmish.playerTagComponent : Team$Skirmish.opponentTagComponent
   ]);
+  flame.use(addAttack(() => Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, flame.worldPos(), flame.width, flame.height)));
   flame.onCollide(Pokemon$Skirmish.tag, (other, _collision) => {
     if (other.pokemonId !== pokemon.pokemonId) {
       console.log("Ember hit", other.pokemonId);
@@ -50,6 +59,7 @@ function cast(pokemon) {
 }
 
 export {
+  addAttack,
   spriteName,
   load,
   cast,
