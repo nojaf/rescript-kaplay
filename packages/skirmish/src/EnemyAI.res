@@ -93,6 +93,17 @@ let getPlayerAttacks = (k: Context.t): array<Types.rect<Vec2.World.t>> => {
   ->Array.map((attack: Attack.customType<_>) => attack.getWorldRect())
 }
 
+let forOf: (array<'t>, 't => unit, unit => bool) => unit = %raw(`
+function (items, callback, shouldBreak) {
+  for (let i = 0; i < items.length; i++) {
+    if (shouldBreak()) {
+      break;
+    }
+    callback(items[i])
+  }
+}
+`)
+
 /**
  Verifies the attacks coming from the player.
  First boolean is an attack on the left of the enemy.
@@ -101,21 +112,22 @@ let getPlayerAttacks = (k: Context.t): array<Types.rect<Vec2.World.t>> => {
 let verifyAttacks = (rs: RuleSystem.t<ruleSystemState>): (bool, bool) => {
   let attackOnTheLeft = ref(false)
   let attackOnTheRight = ref(false)
-  let idx = ref(0)
-  let length = Array.length(rs.state.playerAttacks)
   let enemyX = rs.state.enemy->Pokemon.getPosX
   // We use a while loop to be able to have an early exit if we find an attack on the left and right.
   // In that case, we don't need to iterate over all the attacks.
-  while !attackOnTheLeft.contents && !attackOnTheRight.contents && idx.contents < length {
-    let attack = Array.getUnsafe(rs.state.playerAttacks, idx.contents)
-    idx.contents = idx.contents + 1
-    let attackX = attack.pos.x
-    if attackX < enemyX {
-      attackOnTheLeft.contents = true
-    } else if attackX > enemyX {
-      attackOnTheRight.contents = true
-    }
-  }
+  forOf(
+    rs.state.playerAttacks,
+    attack => {
+      let attackX = attack.pos.x
+      if attackX < enemyX {
+        attackOnTheLeft.contents = true
+      } else if attackX > enemyX {
+        attackOnTheRight.contents = true
+      }
+    },
+    () => attackOnTheLeft.contents && attackOnTheRight.contents,
+  )
+
   (attackOnTheLeft.contents, attackOnTheRight.contents)
 }
 

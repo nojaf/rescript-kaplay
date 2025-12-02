@@ -75,25 +75,44 @@ function getPlayerAttacks(k) {
   }).map(attack => attack.getWorldRect());
 }
 
+let forOf = (function (items, callback, shouldBreak) {
+  for (let i = 0; i < items.length; i++) {
+    if (shouldBreak()) {
+      break;
+    }
+    callback(items[i])
+  }
+});
+
 function verifyAttacks(rs) {
-  let attackOnTheLeft = false;
-  let attackOnTheRight = false;
-  let idx = 0;
-  let length = rs.state.playerAttacks.length;
+  let attackOnTheLeft = {
+    contents: false
+  };
+  let attackOnTheRight = {
+    contents: false
+  };
   let enemyX = rs.state.enemy.pos.x;
-  while (!attackOnTheLeft && !attackOnTheRight && idx < length) {
-    let attack = rs.state.playerAttacks[idx];
-    idx = idx + 1 | 0;
+  forOf(rs.state.playerAttacks, attack => {
     let attackX = attack.pos.x;
     if (attackX < enemyX) {
-      attackOnTheLeft = true;
+      attackOnTheLeft.contents = true;
+      return;
     } else if (attackX > enemyX) {
-      attackOnTheRight = true;
+      attackOnTheRight.contents = true;
+      return;
+    } else {
+      return;
     }
-  };
+  }, () => {
+    if (attackOnTheLeft.contents) {
+      return attackOnTheRight.contents;
+    } else {
+      return false;
+    }
+  });
   return [
-    attackOnTheLeft,
-    attackOnTheRight
+    attackOnTheLeft.contents,
+    attackOnTheRight.contents
   ];
 }
 
@@ -149,6 +168,7 @@ export {
   negate,
   makeRuleSystem,
   getPlayerAttacks,
+  forOf,
   verifyAttacks,
   make,
 }
