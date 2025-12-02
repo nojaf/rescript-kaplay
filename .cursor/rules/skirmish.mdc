@@ -1,0 +1,50 @@
+---
+alwaysApply: false
+---
+
+# Skirmish Game Document
+
+The premise of this game is to shake up the traditional Pokemon gameboy game formula and replace the turn-based gameplay with real-time gameplay.
+The Player controls a pokemon and needs to battle their opponent.
+
+## In-Game rules
+
+- If a pokemon lost all hit points, the game is over.
+- Pokemons can perform one or multiple moves (max 4) as in the original game. 
+  - **Status**: Multiple moves per pokemon needs to be implemented.
+  - **MVP Scope**: Minimum 2 moves per pokemon. May implement generic moves (like Tackle) that can be applied to each pokemon.
+- Each move has:
+  - A type, a water move is twice as effective against a fire pokemon
+    - **Status**: TBD - Type effectiveness system not yet implemented.
+  - A power points limit, you can not endlessly spawn each move
+    - **Status**: TBD - PP system not yet implemented.
+  - A cooldown system, you need to wait x amount of time before the (same of next?) move can be played again.
+    - **Status**: TBD - Currently individual move cooldowns exist, but global cooldown behavior is undecided.
+  - Its own mechanic, some moves are for close combat, others shoot a projectile.
+    - **Move Categories** (TBD): Likely three categories:
+      - Physical (close combat) attacks
+      - Range attacks (projectiles)
+      - Buffs (status effects)
+
+## Reason for creating the game
+
+This is a fun learning experiment, where we hope to gain:
+- Some more insight into structuring game code. How to split code, find the right balance between being pragmatic and ensuring the core is still extensible.
+- Learning how to create a `Rule System` for the enemy AI. Ideally, we create a single Rule System that is dynamic in nature and different pokemon (with different stats) lead to different experiences. The game should be easier if the player pokemon has a higher level than the opponent for example.
+- Focus on getting the core mechanics right, and then being able to scope the game. Choose how many types, moves and pokemon the base game should have. 
+  Leave room for future additions, but the MVP should be achieved.
+- Try and find out how testing can be incorporated. Part of the exploration is that the Rule System can be regression tested with Vitest.
+  - **Testing Approach** (TBD): Considering using spies on the enemy game object to see what was invoked. Fact grade assertion could also be useful for testing.
+
+## TBD / Future Considerations
+
+The following systems are still being designed and may be implemented later:
+
+- **Power Points (PP) System**: How PP limits work, whether PP depletes per use, and if/how PP replenishes.
+- **Type Effectiveness**: Implementation of type-based damage multipliers (0.5x, 1x, 2x) based on move type vs pokemon type.
+- **Level/Stats Scaling**: How pokemon levels affect HP, damage, move availability, movement speed, and other stats.
+- **MVP Scope**: 
+  - Number of pokemon types (TBD)
+  - Number of move types (TBD)
+  - Number of pokemon in base game (TBD - depends on how easily new moves can be added)
+  - Number of moves per pokemon (minimum 2, max 4)
