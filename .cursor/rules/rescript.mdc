@@ -39,7 +39,15 @@ alwaysApply: true
     }
   }
   ```
+- Only use Labeled Arguments in functions when two or more parameters of the same type are included in the signature.
+  If the types are different, the user cannot screw this up, otherwise use labeled arguments.
+```rescript
+// ✅ Preferred
+let replace = (~input:string, ~marker:string, ~replacement:string) => { ... }
 
+// ❌ Avoid
+let padSpaces = (input:string, amount:int) => { ...}
+```
 
 ## Async & Promises
 
