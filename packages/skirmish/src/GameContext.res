@@ -6,8 +6,8 @@ external innerWidth: float = "innerWidth"
 @scope("window")
 external innerHeight: float = "innerHeight"
 
-let gameWidth = 300.
-let gameHeight = 400.
+let gameWidth = 360.
+let gameHeight = 649.
 
 let scale = min(
   // Don't scale larger than 1.5

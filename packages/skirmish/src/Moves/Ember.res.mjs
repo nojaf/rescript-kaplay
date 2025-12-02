@@ -47,7 +47,7 @@ function cast(pokemon) {
     GameContext$Skirmish.k.z(-1),
     GameContext$Skirmish.k.area(),
     pokemon.direction.y < 0 ? GameContext$Skirmish.k.anchor("bot") : GameContext$Skirmish.k.anchor("top"),
-    pokemon.team === true ? Team$Skirmish.playerTagComponent : Team$Skirmish.opponentTagComponent
+    Team$Skirmish.getTagComponent(pokemon.team)
   ]);
   flame.use(addAttack(() => Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, flame.worldPos(), flame.width, flame.height)));
   pokemon.attackStatus = false;

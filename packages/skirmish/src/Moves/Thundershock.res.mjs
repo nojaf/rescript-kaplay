@@ -109,7 +109,7 @@ function cast(pokemon) {
   let thundershock = pokemon.add([
     GameContext$Skirmish.k.pos(0, 0),
     GameContext$Skirmish.k.z(-1),
-    pokemon.team === true ? Team$Skirmish.playerTagComponent : Team$Skirmish.opponentTagComponent,
+    Team$Skirmish.getTagComponent(pokemon.team),
     Attack$Skirmish.tagComponent,
     {
       id: "thundershock",

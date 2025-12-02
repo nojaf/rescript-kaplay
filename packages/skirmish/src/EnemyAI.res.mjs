@@ -116,47 +116,58 @@ function verifyAttacks(rs) {
   ];
 }
 
-function make(k, pokemonId, level, player) {
-  let enemy = Pokemon$Skirmish.make(k, pokemonId, level, false);
-  let rs = makeRuleSystem(k, enemy, player);
-  enemy.onUpdate(() => {
-    rs.reset();
-    rs.state.playerAttacks = getPlayerAttacks(k);
-    rs.execute();
-    let match = verifyAttacks(rs);
-    let attackOnTheRight = match[1];
-    let attackOnTheLeft = match[0];
-    let match$1 = rs.gradeForFact(attackIncoming);
-    let match$2 = rs.gradeForFact(playerCentered);
-    if (match$1 > 0.0) {
-      if (attackOnTheLeft) {
-        enemy.move(k.vec2(40, 0));
-        return;
-      } else if (attackOnTheRight) {
-        enemy.move(k.vec2(-40, 0));
-        return;
-      } else {
-        return;
-      }
-    }
-    if (match$2 >= 1.0) {
-      if (match$2 === 1.0 && enemy.attackStatus === true) {
-        return Ember$Skirmish.cast(enemy);
-      } else {
-        return;
-      }
-    }
-    let deltaX = Math.round(player.pos.x - enemy.pos.x);
-    if (deltaX > 0 && !attackOnTheRight) {
-      enemy.move(k.vec2(120, 0));
+function update(k, rs, param) {
+  rs.reset();
+  rs.state.playerAttacks = getPlayerAttacks(k);
+  rs.execute();
+  let match = verifyAttacks(rs);
+  let attackOnTheRight = match[1];
+  let attackOnTheLeft = match[0];
+  console.log("grades", rs.facts.entries().toArray());
+  let match$1 = rs.gradeForFact(attackIncoming);
+  let match$2 = rs.gradeForFact(playerCentered);
+  if (match$1 > 0.0) {
+    console.log("attackInComingGrade", match$1);
+    if (attackOnTheLeft) {
+      rs.state.enemy.move(k.vec2(40, 0));
       return;
-    } else if (deltaX < 0 && !attackOnTheLeft) {
-      enemy.move(k.vec2(-120, 0));
+    }
+    if (attackOnTheRight) {
+      rs.state.enemy.move(k.vec2(-40, 0));
       return;
+    }
+    let distanceLeft = rs.state.enemy.pos.x;
+    let distanceRight = k.width() - rs.state.enemy.pos.x;
+    if (distanceLeft > distanceRight) {
+      rs.state.enemy.move(k.vec2(-40, 0));
+    } else {
+      rs.state.enemy.move(k.vec2(40, 0));
+    }
+    return;
+  }
+  if (match$2 >= 1.0) {
+    if (match$2 === 1.0 && rs.state.enemy.attackStatus === true) {
+      return Ember$Skirmish.cast(rs.state.enemy);
     } else {
       return;
     }
-  });
+  }
+  let deltaX = Math.round(rs.state.player.pos.x - rs.state.enemy.pos.x);
+  if (deltaX > 0 && !attackOnTheRight) {
+    rs.state.enemy.move(k.vec2(120, 0));
+    return;
+  } else if (deltaX < 0 && !attackOnTheLeft) {
+    rs.state.enemy.move(k.vec2(-120, 0));
+    return;
+  } else {
+    return;
+  }
+}
+
+function make(k, pokemonId, level, player) {
+  let enemy = Pokemon$Skirmish.make(k, pokemonId, level, false);
+  let rs = makeRuleSystem(k, enemy, player);
+  enemy.onUpdate(extra => update(k, rs, extra));
   return enemy;
 }
 
@@ -170,6 +181,7 @@ export {
   getPlayerAttacks,
   forOf,
   verifyAttacks,
+  update,
   make,
 }
 /* Ember-Skirmish Not a pure module */

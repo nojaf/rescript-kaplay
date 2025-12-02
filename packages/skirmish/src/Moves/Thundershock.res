@@ -181,7 +181,7 @@ let cast = (pokemon: Pokemon.t) => {
   let thundershock: t = pokemon->Pokemon.addChild([
     k->addPos(0., 0.),
     k->addZ(-1),
-    pokemon.team == Pokemon.Player ? Team.playerTagComponent : Team.opponentTagComponent,
+    Team.getTagComponent(pokemon.team),
     Attack.tagComponent,
     CustomComponent.make({
       id: "thundershock",

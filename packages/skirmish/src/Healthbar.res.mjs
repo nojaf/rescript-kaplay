@@ -122,7 +122,7 @@ function make(pokemon) {
       id: "healthbar",
       draw: draw
     },
-    pokemon.team === false ? GameContext$Skirmish.k.pos(10, 10) : GameContext$Skirmish.k.pos(GameContext$Skirmish.k.width() - 160, GameContext$Skirmish.k.height() - 50)
+    pokemon.team === false ? GameContext$Skirmish.k.pos(10, 10) : GameContext$Skirmish.k.pos(GameContext$Skirmish.k.width() / 2 - 10, GameContext$Skirmish.k.height() - 50)
   ]);
   pokemon.onHurt(_deltaHP => {
     let newHealthPercent = Pokemon$Skirmish.getHealthPercentage(pokemon);

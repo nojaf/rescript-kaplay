@@ -1,9 +1,6 @@
 open Kaplay
 
 @unboxed
-type team = | @as(true) Player | @as(false) Opponent
-
-@unboxed
 type facing = | @as(true) FacingUp | @as(false) FacingDown
 
 @unboxed
@@ -19,7 +16,7 @@ type t = {
   mutable attackStatus: attackStatus,
   level: int,
   pokemonId: int,
-  team: team,
+  team: Team.t,
 }
 
 include GameObjRaw.Comp({type t = t})
@@ -58,7 +55,7 @@ let getHealthPercentage = (pokemon: t): float => {
   currentHp / maxHp * 100.
 }
 
-let make = (k: Context.t, ~pokemonId: int, ~level: int, team: team): t => {
+let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
   let gameObj: t = k->Context.add(
     [
       // initialState

@@ -6,7 +6,7 @@ type t = {
   mutable tweenControllerRef?: TweenController.t,
   name: string,
   level: int,
-  team: Pokemon.team,
+  team: Team.t,
 }
 
 external initialState: t => Types.comp = "%identity"
@@ -72,7 +72,7 @@ let draw =
   (healthbar: t) => {
     // Lines
     let lines =
-      healthbar.team == Pokemon.Opponent
+      healthbar.team == Team.Opponent
         ? [
             k->Context.vec2ZeroLocal,
             k->Context.vec2Local(0., 40.),
@@ -144,6 +144,8 @@ let draw =
     })
   }
 
+// TODO: maybe change the anchor based on player or opponent
+
 let make = (pokemon: Pokemon.t) => {
   let healthbar: t = k->Context.add([
     initialState({
@@ -153,9 +155,9 @@ let make = (pokemon: Pokemon.t) => {
       team: pokemon.team,
     }),
     CustomComponent.make({id: "healthbar", draw}),
-    pokemon.team == Pokemon.Opponent
+    pokemon.team == Team.Opponent
       ? addPos(k, 10., 10.)
-      : addPos(k, k->Context.width - 160., k->Context.height - 50.),
+      : addPos(k, k->Context.width / 2. - 10., k->Context.height - 50.),
   ])
 
   pokemon

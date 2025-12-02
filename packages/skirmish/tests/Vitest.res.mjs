@@ -3,7 +3,13 @@
 
 let Expect = {};
 
+let Spy = {};
+
+let Vi = {};
+
 export {
   Expect,
+  Spy,
+  Vi,
 }
 /* No side effect */

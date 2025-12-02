@@ -5,6 +5,14 @@ let player = "player";
 
 let opponent = "opponent";
 
+function getTagComponent(team) {
+  if (team === true) {
+    return player;
+  } else {
+    return opponent;
+  }
+}
+
 let playerTagComponent = player;
 
 let opponentTagComponent = opponent;
@@ -14,5 +22,6 @@ export {
   opponent,
   playerTagComponent,
   opponentTagComponent,
+  getTagComponent,
 }
 /* No side effect */

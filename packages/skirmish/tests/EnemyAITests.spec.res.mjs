@@ -5,31 +5,52 @@ import * as Vitest from "vitest";
 import * as Ember$Skirmish from "../src/Moves/Ember.res.mjs";
 import * as EnemyAI$Skirmish from "../src/EnemyAI.res.mjs";
 import * as Pokemon$Skirmish from "../src/Pokemon.res.mjs";
+import * as GenericMove$Skirmish from "./GenericMove.res.mjs";
+import * as Thundershock$Skirmish from "../src/Moves/Thundershock.res.mjs";
 
-Vitest.test("create kaplay context", () => {
+function withKaplayContext(testFn) {
   let k = Kaplay({
-    width: 300,
-    height: 400,
+    width: 160,
+    height: 160,
     global: false,
     background: "#000000",
     scale: 1,
     crisp: true
   });
-  Vitest.expect(k).toBeDefined();
   Pokemon$Skirmish.load(k, 4);
-  Pokemon$Skirmish.load(k, 1);
+  Pokemon$Skirmish.load(k, 25);
+  Thundershock$Skirmish.load();
   Ember$Skirmish.load();
   return new Promise((resolve, reject) => {
-    k.onError(error => reject(error));
-    k.onLoad(() => {
-      let charmander = Pokemon$Skirmish.make(k, 4, 5, false);
-      let bulbasaur = Pokemon$Skirmish.make(k, 1, 5, true);
-      Vitest.expect(charmander).toBeDefined();
-      EnemyAI$Skirmish.make(k, 4, 5, bulbasaur);
+    k.onError(error => {
       k.quit();
-      resolve();
+      reject(error);
     });
+    k.onLoad(() => {
+      testFn(k).then(resolve).catch(reject).finally(() => {
+        k.quit();
+      });
+    });
+  });
+}
+
+Vitest.test("setup the playing field", () => {
+  let halfTile = 32 / 2;
+  return withKaplayContext(async k => {
+    let center = 2 * 32 + halfTile;
+    let enemy = Pokemon$Skirmish.make(k, 4, 5, false);
+    enemy.pos = k.vec2(center, halfTile);
+    GenericMove$Skirmish.make(k, center, 2 * 32 + halfTile, 32, true);
+    let player = Pokemon$Skirmish.make(k, 25, 12, true);
+    player.pos = k.vec2(center, 32 * 4 + halfTile);
+    let rs = EnemyAI$Skirmish.makeRuleSystem(k, enemy, player);
+    let enemyMoveSpy = Vitest.vi.spyOn(rs.state.enemy, "move");
+    EnemyAI$Skirmish.update(k, rs, undefined);
+    Vitest.expect(enemyMoveSpy).toHaveBeenCalled();
   });
 });
 
+export {
+  withKaplayContext,
+}
 /*  Not a pure module */
