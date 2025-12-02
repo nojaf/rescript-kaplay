@@ -25,7 +25,7 @@ let tagComponent = Context.tag(tag)
 
 type customType<'t> = {
   ...CustomComponent.t<'t>,
-  getWorldRect: unit => Types.rect<Kaplay.Vec2.World.t>,
+  getWorldRect: unit => Types.rect<Vec2.World.t>,
 }
 
 external asAttack: customType<'t> => Types.comp = "%identity"

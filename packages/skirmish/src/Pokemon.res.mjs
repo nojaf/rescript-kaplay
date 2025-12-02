@@ -3,6 +3,7 @@
 import * as Belt_Array from "@rescript/runtime/lib/es6/Belt_Array.js";
 import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs";
+import * as Body$Kaplay from "@nojaf/rescript-kaplay/src/Components/Body.res.mjs";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Health$Kaplay from "@nojaf/rescript-kaplay/src/Components/Health.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
@@ -29,6 +30,8 @@ Shader$Kaplay.Comp({});
 Opacity$Kaplay.Comp({});
 
 Animate$Kaplay.Comp({});
+
+Body$Kaplay.Comp({});
 
 let tag = "pokemon";
 
@@ -75,7 +78,7 @@ function make(k, pokemonId, level, team) {
           pokemonId: pokemonId,
           team: team
         },
-        k.pos(k.center().x, k.height() * 0.8),
+        k.pos(k.center().x, k.height() * 0.75),
         k.sprite(backSpriteName(pokemonId)),
         Team$Skirmish.playerTagComponent
       ] : [
@@ -88,12 +91,13 @@ function make(k, pokemonId, level, team) {
           pokemonId: pokemonId,
           team: team
         },
-        k.pos(k.center().x, k.height() * 0.2),
+        k.pos(k.center().x, k.height() * 0.25),
         k.sprite(frontSpriteName(pokemonId)),
         Team$Skirmish.opponentTagComponent
       ],
     [
       k.area(),
+      k.body(),
       k.health(20, 20),
       k.anchor("center"),
       k.opacity(1),

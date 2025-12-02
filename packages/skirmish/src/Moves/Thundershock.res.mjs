@@ -7,6 +7,7 @@ import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
 import * as Team$Skirmish from "../Team.res.mjs";
+import * as Wall$Skirmish from "../Wall.res.mjs";
 import * as Attack$Skirmish from "./Attack.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "../GameContext.res.mjs";
@@ -53,11 +54,24 @@ function draw() {
   });
 }
 
-let worldRect = Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, GameContext$Skirmish.k.Vec2.ZERO, GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height());
+function drawInspect() {
+  let t = this ;
+  let rectInLocal = t.fromWorld(t.worldRect.pos);
+  GameContext$Skirmish.k.drawRect({
+    pos: rectInLocal,
+    outline: {
+      width: 2,
+      color: GameContext$Skirmish.k.BLUE
+    },
+    width: t.worldRect.width,
+    height: t.worldRect.height,
+    fill: false
+  });
+}
 
-let up = GameContext$Skirmish.k.Vec2.UP.scale(20);
+let up = GameContext$Skirmish.k.Vec2.UP.scale(40);
 
-let down = GameContext$Skirmish.k.Vec2.DOWN.scale(20);
+let down = GameContext$Skirmish.k.Vec2.DOWN.scale(40);
 
 function expandRectWithPoint(currentRect, newPoint) {
   let currentMinX = currentRect.pos.x;
@@ -78,8 +92,10 @@ function destroy(pokemon, thundershock) {
   GameContext$Skirmish.k.wait(5 * 0.050, () => {
     pokemon.unuse("shader");
     pokemon.mobility = true;
-    pokemon.attackStatus = true;
     thundershock.destroy();
+  });
+  GameContext$Skirmish.k.wait(1, () => {
+    pokemon.attackStatus = true;
   });
 }
 
@@ -97,7 +113,8 @@ function cast(pokemon) {
     Attack$Skirmish.tagComponent,
     {
       id: "thundershock",
-      draw: draw
+      draw: draw,
+      drawInspect: drawInspect
     }
   ]);
   thundershock.use(addAttack(() => thundershock.worldRect));
@@ -109,7 +126,7 @@ function cast(pokemon) {
       let lastPoint = point !== undefined ? point : pkmnWorldPos;
       let deviationX = GameContext$Skirmish.k.rand(-1 * 7, 7);
       let candidate = GameContext$Skirmish.k.vec2(pkmnWorldPos.x + deviationX, lastPoint.y + direction.y);
-      let validCandidate = worldRect.contains(candidate);
+      let validCandidate = Wall$Skirmish.worldRect.contains(candidate);
       let safeCandidate = validCandidate ? candidate : GameContext$Skirmish.k.vec2(GameContext$Skirmish.k.clamp(candidate.x, 0, GameContext$Skirmish.k.width()), GameContext$Skirmish.k.clamp(candidate.y, 0, GameContext$Skirmish.k.height()));
       thundershock.points.push(safeCandidate);
       thundershock.worldRect = expandRectWithPoint(thundershock.worldRect, safeCandidate);
@@ -118,7 +135,7 @@ function cast(pokemon) {
       }
       otherPokemon.forEach(otherPokemon => {
         if (thundershock.points.some(point => otherPokemon.hasPoint(point))) {
-          otherPokemon.hp = otherPokemon.hp - 1 | 0;
+          otherPokemon.hp = otherPokemon.hp - 5 | 0;
           return destroy(pokemon, thundershock);
         }
       });

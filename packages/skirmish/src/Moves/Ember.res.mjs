@@ -8,6 +8,7 @@ import * as Move$Kaplay from "@nojaf/rescript-kaplay/src/Components/Move.res.mjs
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as Team$Skirmish from "../Team.res.mjs";
+import * as Wall$Skirmish from "../Wall.res.mjs";
 import * as Attack$Skirmish from "./Attack.res.mjs";
 import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
@@ -38,9 +39,10 @@ function load() {
 }
 
 function cast(pokemon) {
-  let flame = pokemon.add([
+  let pokemonWorldPos = pokemon.worldPos();
+  let flame = GameContext$Skirmish.k.add([
     GameContext$Skirmish.k.sprite(spriteName),
-    GameContext$Skirmish.k.pos(0, 0),
+    GameContext$Skirmish.k.pos(pokemonWorldPos),
     GameContext$Skirmish.k.move(pokemon.direction, 120),
     GameContext$Skirmish.k.z(-1),
     GameContext$Skirmish.k.area(),
@@ -48,20 +50,30 @@ function cast(pokemon) {
     pokemon.team === true ? Team$Skirmish.playerTagComponent : Team$Skirmish.opponentTagComponent
   ]);
   flame.use(addAttack(() => Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, flame.worldPos(), flame.width, flame.height)));
+  pokemon.attackStatus = false;
   flame.onCollide(Pokemon$Skirmish.tag, (other, _collision) => {
     if (other.pokemonId !== pokemon.pokemonId) {
       console.log("Ember hit", other.pokemonId);
-      other.hp = other.hp - 1 | 0;
+      other.hp = other.hp - 5 | 0;
       flame.destroy();
       return;
     }
   });
+  flame.onCollide(Wall$Skirmish.tag, (param, _collision) => {
+    flame.destroy();
+  });
+  GameContext$Skirmish.k.wait(1, () => {
+    pokemon.attackStatus = true;
+  });
 }
+
+let coolDown = 1;
 
 export {
   addAttack,
   spriteName,
   load,
+  coolDown,
   cast,
 }
 /*  Not a pure module */

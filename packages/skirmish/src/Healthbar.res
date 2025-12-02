@@ -17,21 +17,26 @@ let good = k->Color.fromHex("#00bc7d") // green
 let middle = k->Color.fromHex("#ffdf20") // yellow
 let bad = k->Color.fromHex("#e7000b") // red
 
+let middleUpperLimit = 60.
+let middleLowerLimit = 20.
+
 let getHealthColor = (healthPercent: float): Color.t => {
   switch healthPercent {
-  | hp if hp >= 70. => {
+  | hp if hp >= middleUpperLimit => {
       // Interpolate between good (100%) and middle (70%)
       // At 100%: t=0 (pure good), at 70%: t=1 (pure middle)
-      let t = (100. -. hp) /. 30.
+      // Range: 100 - 70 = 30 percentage points
+      let t = (100. -. hp) /. (100. -. middleUpperLimit)
       good->Color.lerp(middle, t)
     }
-  | hp if hp >= 40. => {
-      // Interpolate between middle (70%) and bad (40%)
-      // At 70%: t=0 (pure middle), at 40%: t=1 (pure bad)
-      let t = (70. -. hp) /. 30.
+  | hp if hp >= middleLowerLimit => {
+      // Interpolate between middle (70%) and bad (20%)
+      // At 70%: t=0 (pure middle), at 20%: t=1 (pure bad)
+      // Range: 70 - 20 = 50 percentage points
+      let t = (middleUpperLimit -. hp) /. (middleUpperLimit -. middleLowerLimit)
       middle->Color.lerp(bad, t)
     }
-  | _ => // Below 40%, use bad color
+  | _ => // Below 20%, use bad color
     bad
   }
 }

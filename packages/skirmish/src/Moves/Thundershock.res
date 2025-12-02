@@ -45,18 +45,27 @@ let draw =
     })
   }
 
-// TODO: extract and figure out proper world coordinates rect (keeping status bars in mind)
-let worldRect = Math.Rect.makeWorld(
-  k,
-  k->Context.vec2ZeroWorld,
-  k->Context.width,
-  k->Context.height,
-)
+let drawInspect =
+  @this
+  (t: t) => {
+    let rectInLocal = t->fromWorld(t.worldRect.pos)
+    k->Context.drawRect({
+      pos: rectInLocal,
+      width: t.worldRect.width,
+      height: t.worldRect.height,
+      fill: false,
+      outline: {
+        width: 2.,
+        color: k->Color.blue,
+      },
+    })
+  }
 
 // Add a new point at a fixed interval using a timer loop
 let intervalSeconds = 0.050
+let coolDown = 1.
 let deviationOffset = 7.
-let distance = 20.
+let distance = 40.
 // Scale unit direction vectors to create world coordinate offsets
 let up: Vec2.World.t = k->Context.vec2Up->Vec2.Unit.asWorld->Vec2.World.scaleWith(distance)
 let down: Vec2.World.t = k->Context.vec2Down->Vec2.Unit.asWorld->Vec2.World.scaleWith(distance)
@@ -92,9 +101,13 @@ let destroy = (pokemon: Pokemon.t, thundershock: t) => {
 
     // Allow the Pokemon to move again
     pokemon.mobility = CanMove
-    pokemon.attackStatus = CanAttack
     // Destroy the Thundershock game object
     thundershock->destroy
+  })
+
+  k->Context.wait(coolDown, () => {
+    // Allow the Pokemon to attack again
+    pokemon.attackStatus = CanAttack
   })
 }
 
@@ -120,7 +133,7 @@ let nextPartOfBolt = (
     k->Context.vec2World(pkmnWorldPos.x + deviationX, lastPoint.y + direction.y)
   }
 
-  let validCandidate = Math.Rect.containsWorld(worldRect, candidate)
+  let validCandidate = Math.Rect.containsWorld(Wall.worldRect, candidate)
   let safeCandidate = validCandidate
     ? candidate
     : {
@@ -143,7 +156,7 @@ let nextPartOfBolt = (
   otherPokemon->Array.forEach(otherPokemon => {
     // All points should be check here, not just the last one
     if thundershock.points->Array.some(point => otherPokemon->Pokemon.hasPoint(point)) {
-      otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 1)
+      otherPokemon->Pokemon.setHp(otherPokemon->Pokemon.getHp - 5)
       destroy(pokemon, thundershock)
     }
   })
@@ -173,6 +186,7 @@ let cast = (pokemon: Pokemon.t) => {
     CustomComponent.make({
       id: "thundershock",
       draw,
+      drawInspect,
     }),
   ])
 

@@ -26,3 +26,5 @@ let k = Context.kaplay(
     height: Float.toInt(gameHeight),
   },
 )
+
+// k.debug.inspect = true

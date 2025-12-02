@@ -15,14 +15,14 @@ let middle = GameContext$Skirmish.k.Color.fromHex("#ffdf20");
 let bad = GameContext$Skirmish.k.Color.fromHex("#e7000b");
 
 function getHealthColor(healthPercent) {
-  if (healthPercent >= 70) {
-    let t = (100 - healthPercent) / 30;
+  if (healthPercent >= 60) {
+    let t = (100 - healthPercent) / (100 - 60);
     return good.lerp(middle, t);
   }
-  if (healthPercent < 40) {
+  if (healthPercent < 20) {
     return bad;
   }
-  let t$1 = (70 - healthPercent) / 30;
+  let t$1 = (60 - healthPercent) / (60 - 20);
   return middle.lerp(bad, t$1);
 }
 
@@ -131,10 +131,16 @@ function make(pokemon) {
   return healthbar;
 }
 
+let middleUpperLimit = 60;
+
+let middleLowerLimit = 20;
+
 export {
   good,
   middle,
   bad,
+  middleUpperLimit,
+  middleLowerLimit,
   getHealthColor,
   setHealth,
   draw,

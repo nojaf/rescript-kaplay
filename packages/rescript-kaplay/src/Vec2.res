@@ -46,6 +46,9 @@ This is the same as `vec2.y` but more convenient to use when piping.
 
   @send
   external dot: (T.t, T.t) => float = "dot"
+
+  @send
+  external clone: T.t => T.t = "clone"
 }
 
 /**

@@ -31,6 +31,7 @@ include Anchor.Comp({type t = t})
 include Shader.Comp({type t = t})
 include Opacity.Comp({type t = t})
 include Animate.Comp({type t = t})
+include Body.Comp({type t = t})
 
 let tag = "pokemon"
 
@@ -72,7 +73,7 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: team): t => {
               mobility: CanMove,
               attackStatus: CanAttack,
             }),
-            k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.8),
+            k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.75),
             k->addSprite(backSpriteName(pokemonId)),
             Team.playerTagComponent,
           ]
@@ -86,11 +87,12 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: team): t => {
               mobility: CanMove,
               attackStatus: CanAttack,
             }),
-            k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.2),
+            k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.25),
             k->addSprite(frontSpriteName(pokemonId)),
             Team.opponentTagComponent,
           ],
       k->addArea,
+      k->addBody,
       k->addHealth(20, ~maxHP=20),
       k->addAnchorCenter,
       k->addOpacity(1.),
