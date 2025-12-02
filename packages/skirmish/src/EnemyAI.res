@@ -1,9 +1,9 @@
 open Kaplay
 
 type ruleSystemState = {
-  self: Pokemon.t,
-  opponent: Pokemon.t,
-  mutable opponentAttacks: array<Types.rect<Vec2.World.t>>,
+  enemy: Pokemon.t,
+  player: Pokemon.t,
+  mutable playerAttacks: array<Types.rect<Vec2.World.t>>,
   lastAttackAt: float,
 }
 
@@ -13,7 +13,7 @@ module Facts = {
   let playerBelow = Fact("playerBelow")
 
   /**
-   The is a game object with tag attack in front of the enemy.
+   There is a game object with tag attack in front of the enemy.
    */
   let attackIncoming = Fact("attackIncoming")
 }
@@ -21,23 +21,23 @@ module Facts = {
 let isPlayerCentered = (rs: RuleSystem.t<ruleSystemState>): bool => {
   let distance =
     Stdlib_Math.abs(
-      rs.state.self->Pokemon.getPosX - rs.state.opponent->Pokemon.getPosX,
+      rs.state.enemy->Pokemon.getPosX - rs.state.player->Pokemon.getPosX,
     )->Stdlib_Math.round
   distance == 0.
 }
 
 let isPlayerBelow = (rs: RuleSystem.t<ruleSystemState>): bool => {
-  rs.state.self->Pokemon.getPosY < rs.state.opponent->Pokemon.getPosY
+  rs.state.enemy->Pokemon.getPosY < rs.state.player->Pokemon.getPosY
 }
 
 let isAttackIncoming = (rs: RuleSystem.t<ruleSystemState>): bool => {
-  let selfX = rs.state.self->Pokemon.getPosX
-  let halfWidth = rs.state.self->Pokemon.getWidth / 2.
+  let selfX = rs.state.enemy->Pokemon.getPosX
+  let halfWidth = rs.state.enemy->Pokemon.getWidth / 2.
   let safetyMargin = Stdlib_Math.random() * 10.
   let selfStartX = selfX - halfWidth - safetyMargin
   let selfEndX = selfX + halfWidth + safetyMargin
 
-  rs.state.opponentAttacks->Array.some(attack => {
+  rs.state.playerAttacks->Array.some(attack => {
     let attackStartX = attack.pos.x
     let attackEndX = attack.pos.x + attack.width
     // Simple overlap check: two ranges overlap if there's no gap between them!
@@ -53,14 +53,14 @@ let negate = (predicate: RuleSystem.predicate<ruleSystemState>): RuleSystem.pred
   rs => !predicate(rs)
 }
 
-let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Pokemon.t => {
-  let enemy: Pokemon.t = Pokemon.make(k, ~pokemonId, ~level, Opponent)
-
+let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): RuleSystem.t<
+  ruleSystemState,
+> => {
   let rs = RuleSystem.make(k)
   rs.state = {
-    self: enemy,
-    opponent: player,
-    opponentAttacks: [],
+    enemy,
+    player,
+    playerAttacks: [],
     lastAttackAt: 0.,
   }
 
@@ -81,48 +81,71 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Poke
     ~grade=Grade(1.),
   )
 
+  rs
+}
+
+let getPlayerAttacks = (k: Context.t): array<Types.rect<Vec2.World.t>> => {
+  k
+  ->Context.query({
+    include_: [Attack.tag, Team.player],
+    hierarchy: Descendants,
+  })
+  ->Array.map((attack: Attack.customType<_>) => attack.getWorldRect())
+}
+
+/**
+ Verifies the attacks coming from the player.
+ First boolean is an attack on the left of the enemy.
+ Second boolean is an attack on the right of the enemy.
+ */
+let verifyAttacks = (rs: RuleSystem.t<ruleSystemState>): (bool, bool) => {
+  let attackOnTheLeft = ref(false)
+  let attackOnTheRight = ref(false)
+  let idx = ref(0)
+  let length = Array.length(rs.state.playerAttacks)
+  let enemyX = rs.state.enemy->Pokemon.getPosX
+  // We use a while loop to be able to have an early exit if we find an attack on the left and right.
+  // In that case, we don't need to iterate over all the attacks.
+  while !attackOnTheLeft.contents && !attackOnTheRight.contents && idx.contents < length {
+    let attack = Array.getUnsafe(rs.state.playerAttacks, idx.contents)
+    idx.contents = idx.contents + 1
+    let attackX = attack.pos.x
+    if attackX < enemyX {
+      attackOnTheLeft.contents = true
+    } else if attackX > enemyX {
+      attackOnTheRight.contents = true
+    }
+  }
+  (attackOnTheLeft.contents, attackOnTheRight.contents)
+}
+
+let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Pokemon.t => {
+  let enemy: Pokemon.t = Pokemon.make(k, ~pokemonId, ~level, Opponent)
+  let rs = makeRuleSystem(k, ~enemy, ~player)
+
   enemy->Pokemon.onUpdate(() => {
     rs->RuleSystem.reset
-
-    let playerAttacks =
-      k
-      ->Context.query({
-        include_: [Attack.tag, Team.player],
-        hierarchy: Descendants,
-      })
-      ->Array.map((attack: Attack.customType<_>) => attack.getWorldRect())
-    rs.state.opponentAttacks = playerAttacks
-
+    rs.state.playerAttacks = getPlayerAttacks(k)
     rs->RuleSystem.execute
 
-    let (attackOnTheLeft, attackOnTheRight) = {
-      let attackOnTheLeft = ref(false)
-      let attackOnTheRight = ref(false)
-      playerAttacks->Array.forEach(attack => {
-        if attack.pos.x < enemy->Pokemon.getPosX {
-          attackOnTheLeft.contents = true
-        } else if attack.pos.x > enemy->Pokemon.getPosX {
-          attackOnTheRight.contents = true
-        }
-      })
-      (attackOnTheLeft.contents, attackOnTheRight.contents)
-    }
+    let (attackOnTheLeft, attackOnTheRight) = verifyAttacks(rs)
 
     // check for facts...
     switch (
       RuleSystem.gradeForFact(rs, Facts.attackIncoming),
       RuleSystem.gradeForFact(rs, Facts.playerCentered),
     ) {
-    | (Grade(attackInComingGrade), _) if attackInComingGrade > 0.0 => {
-        // Move away from the attack
-        if attackOnTheLeft {
-          enemy->Pokemon.move(k->Context.vec2World(40., 0.))
-        } else if attackOnTheRight {
-          enemy->Pokemon.move(k->Context.vec2World(-40., 0.))
-        }
+    | (Grade(attackInComingGrade), _) if attackInComingGrade > 0.0 =>
+      // Move away from the attack
+      if attackOnTheLeft {
+        // Move to the right of the attack
+        enemy->Pokemon.move(k->Context.vec2World(40., 0.))
+      } else if attackOnTheRight {
+        // Move to the left of the attack
+        enemy->Pokemon.move(k->Context.vec2World(-40., 0.))
       }
     | (_, Grade(g)) if g < 1.0 => {
-      // Move in front of the player
+        // Move in front of the player
         let deltaX = Stdlib_Math.round(player->Pokemon.getPosX - enemy->Pokemon.getPosX)
         if deltaX > 0. && !attackOnTheRight {
           enemy->Pokemon.move(k->Context.vec2World(120., 0.))
@@ -130,7 +153,7 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Poke
           enemy->Pokemon.move(k->Context.vec2World(-120., 0.))
         }
       }
-    | (_, Grade(g)) if g == 1.0 && enemy.attackStatus == CanAttack => 
+    | (_, Grade(g)) if g == 1.0 && enemy.attackStatus == CanAttack =>
       // Attack the player
       Ember.cast(enemy)
     | _ => ()

@@ -19,21 +19,21 @@ let Facts = {
 };
 
 function isPlayerCentered(rs) {
-  let distance = Math.round(Math.abs(rs.state.self.pos.x - rs.state.opponent.pos.x));
+  let distance = Math.round(Math.abs(rs.state.enemy.pos.x - rs.state.player.pos.x));
   return distance === 0;
 }
 
 function isPlayerBelow(rs) {
-  return rs.state.self.pos.y < rs.state.opponent.pos.y;
+  return rs.state.enemy.pos.y < rs.state.player.pos.y;
 }
 
 function isAttackIncoming(rs) {
-  let selfX = rs.state.self.pos.x;
-  let halfWidth = rs.state.self.width / 2;
+  let selfX = rs.state.enemy.pos.x;
+  let halfWidth = rs.state.enemy.width / 2;
   let safetyMargin = Math.random() * 10;
   let selfStartX = selfX - halfWidth - safetyMargin;
   let selfEndX = selfX + halfWidth + safetyMargin;
-  return rs.state.opponentAttacks.some(attack => {
+  return rs.state.playerAttacks.some(attack => {
     let attackStartX = attack.pos.x;
     let attackEndX = attack.pos.x + attack.width;
     if (selfStartX <= attackEndX) {
@@ -48,13 +48,12 @@ function negate(predicate) {
   return rs => !predicate(rs);
 }
 
-function make(k, pokemonId, level, player) {
-  let enemy = Pokemon$Skirmish.make(k, pokemonId, level, false);
+function makeRuleSystem(k, enemy, player) {
   let rs = RuleSystem$Kaplay.make(k);
   rs.state = {
-    self: enemy,
-    opponent: player,
-    opponentAttacks: [],
+    enemy: enemy,
+    player: player,
+    playerAttacks: [],
     lastAttackAt: 0
   };
   rs.addRuleAssertingFact(isPlayerCentered, playerCentered, 1);
@@ -63,61 +62,76 @@ function make(k, pokemonId, level, player) {
   rs.addRuleRetractingFact(rs => !isPlayerBelow(rs), playerBelow, 1);
   rs.addRuleAssertingFact(isAttackIncoming, attackIncoming, 1);
   rs.addRuleRetractingFact(rs => !isAttackIncoming(rs), attackIncoming, 1);
+  return rs;
+}
+
+function getPlayerAttacks(k) {
+  return k.query({
+    include: [
+      Attack$Skirmish.tag,
+      Team$Skirmish.player
+    ],
+    hierarchy: "descendants"
+  }).map(attack => attack.getWorldRect());
+}
+
+function verifyAttacks(rs) {
+  let attackOnTheLeft = false;
+  let attackOnTheRight = false;
+  let idx = 0;
+  let length = rs.state.playerAttacks.length;
+  let enemyX = rs.state.enemy.pos.x;
+  while (!attackOnTheLeft && !attackOnTheRight && idx < length) {
+    let attack = rs.state.playerAttacks[idx];
+    idx = idx + 1 | 0;
+    let attackX = attack.pos.x;
+    if (attackX < enemyX) {
+      attackOnTheLeft = true;
+    } else if (attackX > enemyX) {
+      attackOnTheRight = true;
+    }
+  };
+  return [
+    attackOnTheLeft,
+    attackOnTheRight
+  ];
+}
+
+function make(k, pokemonId, level, player) {
+  let enemy = Pokemon$Skirmish.make(k, pokemonId, level, false);
+  let rs = makeRuleSystem(k, enemy, player);
   enemy.onUpdate(() => {
     rs.reset();
-    let playerAttacks = k.query({
-      include: [
-        Attack$Skirmish.tag,
-        Team$Skirmish.player
-      ],
-      hierarchy: "descendants"
-    }).map(attack => attack.getWorldRect());
-    rs.state.opponentAttacks = playerAttacks;
+    rs.state.playerAttacks = getPlayerAttacks(k);
     rs.execute();
-    let attackOnTheLeft = {
-      contents: false
-    };
-    let attackOnTheRight = {
-      contents: false
-    };
-    playerAttacks.forEach(attack => {
-      if (attack.pos.x < enemy.pos.x) {
-        attackOnTheLeft.contents = true;
-        return;
-      } else if (attack.pos.x > enemy.pos.x) {
-        attackOnTheRight.contents = true;
-        return;
-      } else {
-        return;
-      }
-    });
-    let attackOnTheLeft$1 = attackOnTheLeft.contents;
-    let attackOnTheRight$1 = attackOnTheRight.contents;
-    let match = rs.gradeForFact(attackIncoming);
-    let match$1 = rs.gradeForFact(playerCentered);
-    if (match > 0.0) {
-      if (attackOnTheLeft$1) {
+    let match = verifyAttacks(rs);
+    let attackOnTheRight = match[1];
+    let attackOnTheLeft = match[0];
+    let match$1 = rs.gradeForFact(attackIncoming);
+    let match$2 = rs.gradeForFact(playerCentered);
+    if (match$1 > 0.0) {
+      if (attackOnTheLeft) {
         enemy.move(k.vec2(40, 0));
         return;
-      } else if (attackOnTheRight$1) {
+      } else if (attackOnTheRight) {
         enemy.move(k.vec2(-40, 0));
         return;
       } else {
         return;
       }
     }
-    if (match$1 >= 1.0) {
-      if (match$1 === 1.0 && enemy.attackStatus === true) {
+    if (match$2 >= 1.0) {
+      if (match$2 === 1.0 && enemy.attackStatus === true) {
         return Ember$Skirmish.cast(enemy);
       } else {
         return;
       }
     }
     let deltaX = Math.round(player.pos.x - enemy.pos.x);
-    if (deltaX > 0 && !attackOnTheRight$1) {
+    if (deltaX > 0 && !attackOnTheRight) {
       enemy.move(k.vec2(120, 0));
       return;
-    } else if (deltaX < 0 && !attackOnTheLeft$1) {
+    } else if (deltaX < 0 && !attackOnTheLeft) {
       enemy.move(k.vec2(-120, 0));
       return;
     } else {
@@ -133,6 +147,9 @@ export {
   isPlayerBelow,
   isAttackIncoming,
   negate,
+  makeRuleSystem,
+  getPlayerAttacks,
+  verifyAttacks,
   make,
 }
 /* Ember-Skirmish Not a pure module */
