@@ -77,11 +77,7 @@ ai->RuleSystem.addRuleExecutingAction(
   ~salient=Salience(0.0), // Salience (priority)
 )
 
-// Execute the rules
-ai->RuleSystem.execute() // Nothing happens (health is 50, not < 30)
-
-ai.state.health = 25
-ai->RuleSystem.execute() // "Healing player!" - health is now 45
+// When health < 30, the rule executes and heals the player
 ```
 
 ### Working with Facts
@@ -102,12 +98,6 @@ ai->RuleSystem.assertFact(Fact("hasAmmo"), ~grade=Grade(0.5))        // 50% conf
 // Check fact grades
 switch ai->RuleSystem.gradeForFact(Fact("playerNearby")) {
 | Grade(g) => Console.log(g) // 0.8
-}
-switch ai->RuleSystem.gradeForFact(Fact("lowHealth")) {
-| Grade(g) => Console.log(g) // 1.0
-}
-switch ai->RuleSystem.gradeForFact(Fact("hasAmmo")) {
-| Grade(g) => Console.log(g) // 0.5
 }
 ```
 
@@ -133,17 +123,7 @@ ai->RuleSystem.addRuleAssertingFact(
   ~grade=Grade(1.0),      // Grade to assert with
 )
 
-// Set up initial facts
-ai->RuleSystem.assertFact(Fact("playerNearby"), ~grade=Grade(0.9))
-ai->RuleSystem.assertFact(Fact("lowHealth"), ~grade=Grade(0.9))
-
-// Execute rules
-ai->RuleSystem.execute()
-
-// Check if the new fact was asserted
-switch ai->RuleSystem.gradeForFact(Fact("shouldRetreat")) {
-| Grade(g) => Console.log(g) // 1.0
-}
+// When both facts are true, "shouldRetreat" is asserted
 ```
 
 ### Retracting Facts
@@ -169,15 +149,7 @@ ai->RuleSystem.addRuleRetractingFact(
   ~grade=Grade(0.5),     // Grade to retract by
 )
 
-ai.state = {distanceToPlayer: 0.0}
-ai->RuleSystem.assertFact(Fact("playerNearby"), ~grade=Grade(1.0))
-
-ai.state.distanceToPlayer = 150.0
-ai->RuleSystem.execute()
-
-switch ai->RuleSystem.gradeForFact(Fact("playerNearby")) {
-| Grade(g) => Console.log(g) // 0.5 (reduced by 0.5)
-}
+// When distance > 100, the fact's grade is reduced by 0.5
 ```
 
 > **Important**: See the section on [Understanding Assert/Retract Pairs](#understanding-assertretract-pairs) below for guidance on when you need to pair assert and retract rules together.
@@ -222,17 +194,8 @@ ai->RuleSystem.addRuleRetractingFact(
 )
 
 // Now "playerFar" accurately reflects current state
-ai.state = {playerDistance: 15.0}
-ai->RuleSystem.execute()
-switch ai->RuleSystem.gradeForFact(Fact("playerFar")) {
-| Grade(g) => Console.log(g) // 1.0
-}
-
-ai.state.playerDistance = 5.0
-ai->RuleSystem.execute()
-switch ai->RuleSystem.gradeForFact(Fact("playerFar")) {
-| Grade(g) => Console.log(g) // 0.0
-}
+// When distance > 10: grade = 1.0
+// When distance <= 10: grade = 0.0
 ```
 
 **Why pairs matter here**: Without the retract rule, once `playerFar` is asserted, it would remain true even when the player gets close, leading to incorrect behavior.
@@ -454,8 +417,7 @@ ai->RuleSystem.addRuleExecutingAction(
   ~salient=Salience(10.0), // Higher salience = lower priority
 )
 
-ai.state = {health: 0, alive: true}
-ai->RuleSystem.execute() // "Player died!" executes first, then "Health is low"
+// Rules execute in salience order: -10.0 first, then 10.0
 ```
 
 ### Fact Dependencies and Salience
@@ -478,20 +440,9 @@ module Salience = {
   let decisions = Salience(20.0)
 }
 
-type enemyState = {
-  mutable enemyX: float,
-  mutable attackX: float,
-  mutable screenWidth: float,
-}
-
-let ai = RuleSystem.make(k)
-
 // Tier 1: Base facts (salience 0.0) - computed from game state
 ai->RuleSystem.addRuleAssertingFact(
-  (rs: RuleSystem.t<enemyState>) => {
-    let state = rs.state
-    state.attackX < state.enemyX
-  },
+  rs => rs.state.attackX < rs.state.enemyX,
   Fact("attackFromLeft"),
   ~grade=Grade(1.0),
   ~salient=Salience.baseFacts,
@@ -499,14 +450,10 @@ ai->RuleSystem.addRuleAssertingFact(
 
 // Tier 2: Derived fact (salience 10.0) - can read base facts
 ai->RuleSystem.addRuleAssertingFact(
-  (rs: RuleSystem.t<enemyState>) => {
-    // ✅ This CAN read attackFromLeft because it was asserted at salience 0.0
-    switch (
-      RuleSystem.gradeForFact(rs, Fact("attackFromLeft")),
-      RuleSystem.gradeForFact(rs, Fact("moreSpaceOnRight")),
-    ) {
-    | (Grade(attackL), Grade(spaceR)) => 
-      attackL > 0.0 && spaceR > 0.3  // Attack from left AND enough space on right
+  rs => {
+    // ✅ Can read attackFromLeft because it was asserted at salience 0.0
+    switch RuleSystem.gradeForFact(rs, Fact("attackFromLeft")) {
+    | Grade(g) => g > 0.0
     | _ => false
     }
   },
@@ -586,36 +533,10 @@ Break down the broad fact into smaller, focused facts:
 ### Example: Refactoring with Fact Decomposition
 
 ```rescript
-open Kaplay
-
-let k = Context.kaplay()
-
-type enemyState = {
-  mutable enemyX: float,
-  mutable enemyWidth: float,
-  mutable attackX: float,
-  mutable screenWidth: float,
-}
-
-let ai = RuleSystem.make(k)
-
 // Base facts: Positional information (salience 0.0)
 ai->RuleSystem.addRuleAssertingFact(
-  (rs: RuleSystem.t<enemyState>) => {
-    let state = rs.state
-    state.attackX < state.enemyX
-  },
+  rs => rs.state.attackX < rs.state.enemyX,
   Fact("attackFromLeft"),
-  ~grade=Grade(1.0),
-  ~salient=Salience(0.0),
-)
-
-ai->RuleSystem.addRuleAssertingFact(
-  (rs: RuleSystem.t<enemyState>) => {
-    let state = rs.state
-    state.attackX > state.enemyX
-  },
-  Fact("attackFromRight"),
   ~grade=Grade(1.0),
   ~salient=Salience(0.0),
 )
@@ -624,10 +545,8 @@ ai->RuleSystem.addRuleAssertingFact(
 ai->RuleSystem.addRuleExecutingAction(
   rs => true,
   rs => {
-    let state = rs.state
-    let availableSpaceLeft = state.enemyX
-    let spaceGrade = Stdlib_Math.min(1.0, availableSpaceLeft /. state.enemyWidth)
-    rs->RuleSystem.assertFact(Fact("moreSpaceOnLeft"), ~grade=Grade(spaceGrade))
+    let grade = calculateSpaceGrade(rs.state)
+    rs->RuleSystem.assertFact(Fact("moreSpaceOnLeft"), ~grade=Grade(grade))
   },
   ~salient=Salience(0.0),
 )
@@ -640,8 +559,7 @@ ai->RuleSystem.addRuleAssertingFact(
       RuleSystem.gradeForFact(rs, Fact("attackFromRight")),
       RuleSystem.gradeForFact(rs, Fact("moreSpaceOnLeft")),
     ) {
-    | (Grade(attackR), Grade(spaceL)) => 
-      attackR == 0.0 && spaceL > 0.3  // No attack from right AND enough space
+    | (Grade(attackR), Grade(spaceL)) => attackR == 0.0 && spaceL > 0.3
     | _ => false
     }
   },
@@ -658,10 +576,7 @@ ai->RuleSystem.addRuleExecutingAction(
     | _ => false
     }
   },
-  rs => {
-    // Simple, declarative action
-    moveLeft()
-  },
+  rs => moveLeft(),
   ~salient=Salience(20.0),
 )
 ```
@@ -679,21 +594,11 @@ Facts don't have to be binary (true/false). You can use grades to represent **co
 **Example**: Space availability as a ratio
 
 ```rescript
-// Calculate space grade: availableSpace / requiredSpace
-let calculateSpaceGrade = (availableSpace: float, requiredSpace: float): float => {
-  Stdlib_Math.min(1.0, availableSpace /. requiredSpace)
-}
-
-// If there's 16px space and pokemon is 32px wide:
-// grade = min(1.0, 16 / 32) = 0.5
-
+// Calculate grade from state (e.g., 16px space / 32px pokemon = 0.5 grade)
 ai->RuleSystem.addRuleExecutingAction(
   rs => true,
   rs => {
-    let state = rs.state
-    let availableSpaceLeft = state.enemyX
-    let pokemonWidth = state.enemyWidth
-    let grade = calculateSpaceGrade(availableSpaceLeft, pokemonWidth)
+    let grade = calculateSpaceGrade(rs.state)
     rs->RuleSystem.assertFact(Fact("moreSpaceOnLeft"), ~grade=Grade(grade))
   },
   ~salient=Salience(0.0),
@@ -712,21 +617,73 @@ switch (
   RuleSystem.gradeForFact(rs, Fact("attackFromLeft")),
   RuleSystem.gradeForFact(rs, Fact("moreSpaceOnRight")),
 ) {
-| (Grade(attackL), Grade(spaceR)) when attackL > 0.0 && attackR == 0.0 && spaceR > 0.3 => {
-    // Attack from left, safe on right, enough space -> move right
+| (Grade(attackL), Grade(spaceR)) when attackL > 0.0 && spaceR > 0.3 => {
+    // Attack from left, enough space on right -> move right
     moveRight()
-  }
-| (Grade(attackL), Grade(spaceR)) when attackL > 0.0 && attackR > 0.0 => {
-    // Attacks on both sides - choose side with more space
-    if spaceL > spaceR && spaceL > 0.2 {
-      moveLeft()
-    } else if spaceR > spaceL && spaceR > 0.2 {
-      moveRight()
-    }
   }
 | _ => ()
 }
 ```
+
+### Dynamically Computed Grades: `addRuleExecutingAction` vs `addRuleAssertingFact`
+
+When you need to compute a fact's grade dynamically from the rule system state, you **must use `addRuleExecutingAction`** instead of `addRuleAssertingFact`.
+
+**Why?** `addRuleAssertingFact` takes a fixed `~grade` parameter that's set when the rule is created, not computed from state:
+
+```rescript
+// ❌ This doesn't work for dynamic grades
+rs->RuleSystem.addRuleAssertingFact(
+  rs => rs.state.health < 30,
+  Fact("lowHealth"),
+  ~grade=Grade(???),  // Can't compute from rs.state here!
+)
+```
+
+**The Solution**: Use `addRuleExecutingAction` to compute the grade dynamically and call `assertFact`:
+
+```rescript
+// ✅ Correct: Compute grade dynamically from state
+rs->RuleSystem.addRuleExecutingAction(
+  rs => true,  // Always execute (or add predicate if needed)
+  rs => {
+    // Access state and compute grade
+    let state = rs.state
+    let grade = calculateProximityGrade(state.enemyPos, state.attackPos)
+    rs->RuleSystem.assertFact(Fact("attackNearby"), ~grade=Grade(grade))
+  },
+  ~salient=Salience(0.0),
+)
+```
+
+**When to Use Each**:
+
+| Use Case | Method | Example |
+|----------|--------|---------|
+| **Fixed grade** (binary or constant) | `addRuleAssertingFact` | `~grade=Grade(1.0)` for boolean facts |
+| **Grade computed from state** | `addRuleExecutingAction` + `assertFact` | Distance calculations, ratios, proximity |
+| **Grade depends on calculations** | `addRuleExecutingAction` + `assertFact` | Space availability, threat levels |
+
+**Example**: Proximity-based threat detection
+
+```rescript
+// Compute threat grade based on distance calculations
+ai->RuleSystem.addRuleExecutingAction(
+  rs => true,
+  rs => {
+    // Calculate grade from state (e.g., distance, proximity, ratios)
+    let grade = calculateThreatGrade(rs.state)
+    rs->RuleSystem.assertFact(Fact("threatNearby"), ~grade=Grade(grade))
+  },
+  ~salient=Salience(0.0),
+)
+```
+
+**Key Points**:
+- `addRuleAssertingFact` is for **fixed grades** (binary or constant values)
+- `addRuleExecutingAction` + `assertFact` is for **dynamic grades** computed from state
+- Always assert the fact (even with grade 0.0) so retract rules can clear it if needed
+- Use appropriate salience to ensure facts are computed in the correct order
 
 ## Advanced Features
 
@@ -827,38 +784,12 @@ ai->RuleSystem.addRuleExecutingAction(
 
 ## Practical Example: Enemy AI
 
-Here's a complete example of an enemy AI using the RuleSystem:
+Here's an example of an enemy AI using the RuleSystem:
 
 ```rescript
-open Kaplay
-
-let k = Context.kaplay()
-
-type enemyState = {
-  mutable health: int,
-  mutable distanceToPlayer: float,
-  mutable ammo: int,
-  mutable hasLineOfSight: bool,
-  mutable movingAway: bool,
-}
-
-let enemyAI = RuleSystem.make(k)
-
-// Initialize enemy state
-enemyAI.state = {
-  health: 100,
-  distanceToPlayer: 50.0,
-  ammo: 10,
-  hasLineOfSight: true,
-  movingAway: false,
-}
-
 // Rule 1: If health is critically low, retreat
 enemyAI->RuleSystem.addRuleAssertingFact(
-  (rs: RuleSystem.t<enemyState>) => {
-    let state = rs.state
-    state.health < 20
-  },
+  rs => rs.state.health < 20,
   Fact("shouldRetreat"),
   ~grade=Grade(1.0),
   ~salient=Salience(-10.0), // High priority
@@ -866,72 +797,38 @@ enemyAI->RuleSystem.addRuleAssertingFact(
 
 // Rule 2: If player is very close, assert "playerTooClose"
 enemyAI->RuleSystem.addRuleAssertingFact(
-  (rs: RuleSystem.t<enemyState>) => {
-    let state = rs.state
-    state.distanceToPlayer < 30.0
-  },
+  rs => rs.state.distanceToPlayer < 30.0,
   Fact("playerTooClose"),
   ~grade=Grade(1.0),
 )
 
 // Rule 3: If we should retreat, move away
 enemyAI->RuleSystem.addRuleExecutingAction(
-  (rs: RuleSystem.t<enemyState>) => {
+  rs => {
     switch rs->RuleSystem.gradeForFact(Fact("shouldRetreat")) {
     | Grade(g) => g > 0.5
     | _ => false
     }
   },
-  (rs: RuleSystem.t<enemyState>) => {
-    let state = rs.state
-    Console.log("Enemy retreating!")
-    state.movingAway = true
+  rs => {
+    rs.state.movingAway = true
   },
 )
 
 // Rule 4: If player is too close and we have ammo, attack
 enemyAI->RuleSystem.addRuleExecutingAction(
-  (rs: RuleSystem.t<enemyState>) => {
+  rs => {
     let state = rs.state
     switch rs->RuleSystem.gradeForFact(Fact("playerTooClose")) {
-    | Grade(g) => g > 0.5 && state.ammo > 0 && state.hasLineOfSight
+    | Grade(g) => g > 0.5 && state.ammo > 0
     | _ => false
     }
   },
-  (rs: RuleSystem.t<enemyState>) => {
-    let state = rs.state
-    Console.log("Enemy attacking!")
-    state.ammo = state.ammo - 1
+  rs => {
+    rs.state.ammo = rs.state.ammo - 1
   },
   ~salient=Salience(5.0),
 )
-
-// Rule 5: If out of ammo, retract "shouldRetreat" (can't fight anyway)
-enemyAI->RuleSystem.addRuleRetractingFact(
-  (rs: RuleSystem.t<enemyState>) => {
-    let state = rs.state
-    state.ammo == 0
-  },
-  Fact("shouldRetreat"),
-  ~grade=Grade(0.3),
-  ~salient=Salience(10.0),
-)
-
-// Game loop
-k->Context.onUpdate(() => {
-  // Update state based on game conditions
-  enemyAI.state.distanceToPlayer = calculateDistance()
-  enemyAI.state.hasLineOfSight = checkLineOfSight()
-  
-  // Execute AI rules
-  enemyAI->RuleSystem.execute()
-  
-  // Act on the results
-  if enemyAI.state.movingAway {
-    moveEnemyAway()
-    enemyAI.state.movingAway = false
-  }
-})
 ```
 
 ## API Reference
@@ -1086,20 +983,12 @@ Executes the rule's action. Override this in custom rules.
 Use facts to represent states and rules to handle transitions:
 
 ```rescript
-open Kaplay
-
-let k = Context.kaplay()
-
-type stateMachineState = {mutable distanceToPlayer: float}
-
-let stateMachine = RuleSystem.make(k)
-
 // Define states as facts
 stateMachine->RuleSystem.assertFact(Fact("idle"), ~grade=Grade(1.0))
 
 // Transition: idle -> patrolling when player is far
 stateMachine->RuleSystem.addRuleRetractingFact(
-  (rs: RuleSystem.t<stateMachineState>) => {
+  rs => {
     let state = rs.state
     switch rs->RuleSystem.gradeForFact(Fact("idle")) {
     | Grade(g) => g > 0.0 && state.distanceToPlayer > 100.0
@@ -1111,7 +1000,7 @@ stateMachine->RuleSystem.addRuleRetractingFact(
 )
 
 stateMachine->RuleSystem.addRuleAssertingFact(
-  (rs: RuleSystem.t<stateMachineState>) => {
+  rs => {
     let state = rs.state
     switch rs->RuleSystem.gradeForFact(Fact("idle")) {
     | Grade(g) => g > 0.0 && state.distanceToPlayer > 100.0
@@ -1129,26 +1018,15 @@ stateMachine->RuleSystem.addRuleAssertingFact(
 Use fact grades to represent fuzzy concepts:
 
 ```rescript
-open Kaplay
-
-let k = Context.kaplay()
-
-type fuzzyState = {mutable distance: float}
-
-let fuzzyAI = RuleSystem.make(k)
-
 // "Very close" has high grade when distance is small
 fuzzyAI->RuleSystem.addRuleAssertingFact(
-  (rs: RuleSystem.t<fuzzyState>) => {
-    let state = rs.state
-    state.distance < 20.0
-  },
+  rs => rs.state.distance < 20.0,
   Fact("veryClose"),
   ~grade=Grade(1.0),
 )
 
 fuzzyAI->RuleSystem.addRuleAssertingFact(
-  (rs: RuleSystem.t<fuzzyState>) => {
+  rs => {
     let state = rs.state
     state.distance < 50.0 && state.distance >= 20.0
   },
@@ -1159,15 +1037,13 @@ fuzzyAI->RuleSystem.addRuleAssertingFact(
 
 // Use the fuzzy fact in decisions
 fuzzyAI->RuleSystem.addRuleExecutingAction(
-  (rs: RuleSystem.t<fuzzyState>) => {
+  rs => {
     switch rs->RuleSystem.gradeForFact(Fact("veryClose")) {
     | Grade(g) => g > 0.7
     | _ => false
     }
   },
-  (rs: RuleSystem.t<fuzzyState>) => {
-    Console.log("Player is very close!")
-  },
+  rs => Console.log("Player is very close!"),
 )
 ```
 
@@ -1176,14 +1052,6 @@ fuzzyAI->RuleSystem.addRuleExecutingAction(
 Combine with KAPLAY events to create reactive AI:
 
 ```rescript
-open Kaplay
-
-let k = Context.kaplay()
-
-type reactiveState = {mutable defending: bool}
-
-let reactiveAI = RuleSystem.make(k)
-
 // When player takes damage, assert "underAttack"
 k->Context.onCollide("enemy", "player", () => {
   reactiveAI->RuleSystem.assertFact(Fact("underAttack"), ~grade=Grade(1.0))
@@ -1191,16 +1059,14 @@ k->Context.onCollide("enemy", "player", () => {
 
 // Rule responds to the event
 reactiveAI->RuleSystem.addRuleExecutingAction(
-  (rs: RuleSystem.t<reactiveState>) => {
+  rs => {
     switch rs->RuleSystem.gradeForFact(Fact("underAttack")) {
     | Grade(g) => g > 0.0
     | _ => false
     }
   },
-  (rs: RuleSystem.t<reactiveState>) => {
-    let state = rs.state
-    Console.log("Enemy under attack, defending!")
-    state.defending = true
+  rs => {
+    rs.state.defending = true
     rs->RuleSystem.retractFact(Fact("underAttack"), ~grade=Grade(1.0))
   },
 )

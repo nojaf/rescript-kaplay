@@ -126,26 +126,88 @@ external removeAllRules: t<'state> => unit = "removeAllRules"
 @send
 external execute: t<'state> => unit = "execute"
 
-/** Asserts a fact. */
+/**
+ * Asserts a fact by **adding** to its current grade.
+ * 
+ * **Important**: This **adds** to the existing grade, it does not replace it.
+ * The grade is clamped to a maximum of 1.0.
+ * 
+ * Formula: `newGrade = min(1.0, currentGrade + grade)`
+ * 
+ * If the fact doesn't exist, `currentGrade` is treated as 0.0.
+ * 
+ * @param fact - The fact to assert
+ * @param grade - The grade to add (default: 1.0)
+ */
 @send
 external assertFact: (t<'state>, fact, ~grade: grade=?) => unit = "assertFact"
 
-/** Retracts a fact. */
+/**
+ * Retracts a fact by **subtracting** from its current grade.
+ * 
+ * **Important**: This **subtracts** from the existing grade, it does not replace it.
+ * The grade is clamped to a minimum of 0.0.
+ * 
+ * Formula: `newGrade = max(0.0, currentGrade - grade)`
+ * 
+ * If the fact doesn't exist, `currentGrade` is treated as 0.0.
+ * 
+ * @param fact - The fact to retract
+ * @param grade - The grade to subtract (default: 1.0)
+ */
 @send
 external retractFact: (t<'state>, fact, ~grade: grade=?) => unit = "retractFact"
 
-/** Returns the grade for the specified fact. */
+/**
+ * Returns the grade for the specified fact.
+ * 
+ * **Important**: If the fact doesn't exist in the facts map, returns `Grade(0.0)`.
+ * This means non-existent facts are treated as having grade 0.0.
+ * 
+ * @param fact - The fact to query
+ * @returns The grade of the fact, or `Grade(0.0)` if the fact doesn't exist
+ */
 @send
 external gradeForFact: (t<'state>, fact) => grade = "gradeForFact"
 
-/** Returns the minimum grade for the specified facts. */
+/**
+ * Returns the minimum grade among the specified facts.
+ * 
+ * **Important**: If any of the facts don't exist, they are treated as having grade 0.0.
+ * This means if you pass facts that don't exist, the minimum will be 0.0.
+ * 
+ * Example: If `fact1` has grade 0.8 and `fact2` doesn't exist (grade 0.0),
+ * the minimum will be 0.0, not 0.8.
+ * 
+ * @param facts - Array of facts to check
+ * @returns The minimum grade among the facts
+ */
 @send @variadic
 external minimumGradeForFacts: (t<'state>, array<fact>) => grade = "minimumGradeForFacts"
 
-/** Returns the maximum grade for the specified facts. */
+/**
+ * Returns the maximum grade among the specified facts.
+ * 
+ * **Important**: If any of the facts don't exist, they are treated as having grade 0.0.
+ * This means if all facts don't exist, the maximum will be 0.0.
+ * 
+ * Example: If `fact1` has grade 0.8 and `fact2` doesn't exist (grade 0.0),
+ * the maximum will be 0.8.
+ * 
+ * @param facts - Array of facts to check
+ * @returns The maximum grade among the facts
+ */
 @send @variadic
 external maximumGradeForFacts: (t<'state>, array<fact>) => grade = "maximumGradeForFacts"
 
-/** Resets the facts */
+/**
+ * Clears all facts from the system.
+ * 
+ * **Important**: This completely clears the facts map. Rules and state are preserved.
+ * 
+ * If you call `reset()` every frame before `execute()`, you typically don't need
+ * retract rules because facts are cleared automatically. You can just assert facts
+ * when conditions are true, and they'll be cleared on the next frame if not re-asserted.
+ */
 @send
 external reset: t<'state> => unit = "reset"
