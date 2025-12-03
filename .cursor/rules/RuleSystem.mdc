@@ -401,11 +401,23 @@ ai->RuleSystem.addRuleRetractingFact(
 
 **Rule of thumb**: If the fact should **automatically become false** when conditions change, use a pair. If the fact represents **something that happened** or **knowledge gained**, you typically don't need a retract rule.
 
-## Advanced Features
+## Salience and Rule Execution Order
 
-### Salience (Rule Priority)
+Salience controls the order in which rules execute. This is fundamental to how the rule system works, not just an advanced feature. Understanding salience is crucial for building systems where facts depend on other facts.
 
-Rules with lower salience values execute first. This is useful when you want certain rules to run before others:
+### How Salience Works
+
+Rules are sorted by salience in **ascending order** (lower values execute first). When `execute()` is called:
+
+1. All rules are sorted by salience (ascending)
+2. Each rule's predicate is evaluated
+3. Rules with true predicates execute their actions
+
+**Key Point**: Facts asserted by rules at lower salience values are **immediately available** to rules at higher salience values in the same execution cycle.
+
+### Basic Priority Control
+
+You can use salience to control execution order:
 
 ```rescript
 open Kaplay
@@ -445,6 +457,278 @@ ai->RuleSystem.addRuleExecutingAction(
 ai.state = {health: 0, alive: true}
 ai->RuleSystem.execute() // "Player died!" executes first, then "Health is low"
 ```
+
+### Fact Dependencies and Salience
+
+The most powerful use of salience is creating **fact dependencies**: rules that compute facts from other facts. Facts asserted at lower salience are available to rules at higher salience.
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+module Salience = {
+  // Tier 1: Base facts computed from game state (no dependencies)
+  let baseFacts = Salience(0.0)
+  
+  // Tier 2: Derived facts that depend on base facts
+  let derivedFacts = Salience(10.0)
+  
+  // Tier 3: Decision/action rules that depend on all facts
+  let decisions = Salience(20.0)
+}
+
+type enemyState = {
+  mutable enemyX: float,
+  mutable attackX: float,
+  mutable screenWidth: float,
+}
+
+let ai = RuleSystem.make(k)
+
+// Tier 1: Base facts (salience 0.0) - computed from game state
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<enemyState>) => {
+    let state = rs.state
+    state.attackX < state.enemyX
+  },
+  Fact("attackFromLeft"),
+  ~grade=Grade(1.0),
+  ~salient=Salience.baseFacts,
+)
+
+// Tier 2: Derived fact (salience 10.0) - can read base facts
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<enemyState>) => {
+    // ✅ This CAN read attackFromLeft because it was asserted at salience 0.0
+    switch (
+      RuleSystem.gradeForFact(rs, Fact("attackFromLeft")),
+      RuleSystem.gradeForFact(rs, Fact("moreSpaceOnRight")),
+    ) {
+    | (Grade(attackL), Grade(spaceR)) => 
+      attackL > 0.0 && spaceR > 0.3  // Attack from left AND enough space on right
+    | _ => false
+    }
+  },
+  Fact("safeToMoveRight"),
+  ~grade=Grade(1.0),
+  ~salient=Salience.derivedFacts, // Executes AFTER base facts
+)
+```
+
+**Important**: Facts are stored in a mutable map that's updated immediately when rules execute. This means:
+- Rules at salience 0.0 can assert facts
+- Rules at salience 10.0 can read those facts in the same `execute()` call
+- Rules at salience 20.0 can read both base and derived facts
+
+### Recommended Salience Strategy
+
+Use a tiered approach with clear separation:
+
+```rescript
+module Salience = {
+  let baseFacts = Salience(0.0)      // Facts from game state
+  let derivedFacts = Salience(10.0)   // Facts from other facts
+  let decisions = Salience(20.0)      // Actions based on facts
+}
+```
+
+This makes dependencies explicit and ensures facts are computed in the correct order.
+
+## Fact Decomposition
+
+Complex facts that encode too much information can lead to complex branching logic in action handlers. Breaking them down into smaller, focused facts makes the system more declarative and easier to reason about.
+
+### The Problem: Too Broad Facts
+
+Consider a fact like `attackIncoming` that only tells you "there's an attack" but doesn't encode:
+- **Where** the attack is relative to the enemy
+- **Which directions** are safe to move
+- **How much space** is available
+
+This forces action handlers to compute these at runtime, leading to complex if/else chains:
+
+```rescript
+// ❌ PROBLEMATIC: Too much logic in action handler
+switch RuleSystem.gradeForFact(rs, Fact("attackIncoming")) {
+| Grade(g) when g > 0.0 => {
+    // Complex runtime computation
+    let (attackOnLeft, attackOnRight) = verifyAttacks(rs)
+    if attackOnLeft {
+      moveRight()
+    } else if attackOnRight {
+      moveLeft()
+    } else {
+      // More complex space calculations...
+    }
+  }
+| _ => ()
+}
+```
+
+### The Solution: Decompose into Focused Facts
+
+Break down the broad fact into smaller, focused facts:
+
+**Positional Facts** (describe where things are):
+- `attackFromLeft` - Attack exists to the left
+- `attackFromRight` - Attack exists to the right
+- `attackAligned` - Attack is aligned (same X position)
+
+**Space Facts** (describe available space):
+- `moreSpaceOnLeft` - Space available on left (graded 0.0-1.0)
+- `moreSpaceOnRight` - Space available on right (graded 0.0-1.0)
+
+**Derived Facts** (computed from other facts):
+- `safeToMoveLeft` - Safe to move left (derived from attack and space facts)
+- `safeToMoveRight` - Safe to move right (derived from attack and space facts)
+
+### Example: Refactoring with Fact Decomposition
+
+```rescript
+open Kaplay
+
+let k = Context.kaplay()
+
+type enemyState = {
+  mutable enemyX: float,
+  mutable enemyWidth: float,
+  mutable attackX: float,
+  mutable screenWidth: float,
+}
+
+let ai = RuleSystem.make(k)
+
+// Base facts: Positional information (salience 0.0)
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<enemyState>) => {
+    let state = rs.state
+    state.attackX < state.enemyX
+  },
+  Fact("attackFromLeft"),
+  ~grade=Grade(1.0),
+  ~salient=Salience(0.0),
+)
+
+ai->RuleSystem.addRuleAssertingFact(
+  (rs: RuleSystem.t<enemyState>) => {
+    let state = rs.state
+    state.attackX > state.enemyX
+  },
+  Fact("attackFromRight"),
+  ~grade=Grade(1.0),
+  ~salient=Salience(0.0),
+)
+
+// Base facts: Space availability (graded for continuous values)
+ai->RuleSystem.addRuleExecutingAction(
+  rs => true,
+  rs => {
+    let state = rs.state
+    let availableSpaceLeft = state.enemyX
+    let spaceGrade = Stdlib_Math.min(1.0, availableSpaceLeft /. state.enemyWidth)
+    rs->RuleSystem.assertFact(Fact("moreSpaceOnLeft"), ~grade=Grade(spaceGrade))
+  },
+  ~salient=Salience(0.0),
+)
+
+// Derived facts: Safety (salience 10.0 - depends on base facts)
+ai->RuleSystem.addRuleAssertingFact(
+  rs => {
+    // ✅ Can read base facts because they were asserted at salience 0.0
+    switch (
+      RuleSystem.gradeForFact(rs, Fact("attackFromRight")),
+      RuleSystem.gradeForFact(rs, Fact("moreSpaceOnLeft")),
+    ) {
+    | (Grade(attackR), Grade(spaceL)) => 
+      attackR == 0.0 && spaceL > 0.3  // No attack from right AND enough space
+    | _ => false
+    }
+  },
+  Fact("safeToMoveLeft"),
+  ~grade=Grade(1.0),
+  ~salient=Salience(10.0), // Executes AFTER base facts
+)
+
+// Action handler becomes declarative (salience 20.0)
+ai->RuleSystem.addRuleExecutingAction(
+  rs => {
+    switch RuleSystem.gradeForFact(rs, Fact("safeToMoveLeft")) {
+    | Grade(g) => g > 0.0
+    | _ => false
+    }
+  },
+  rs => {
+    // Simple, declarative action
+    moveLeft()
+  },
+  ~salient=Salience(20.0),
+)
+```
+
+**Benefits**:
+1. **Action handler becomes declarative**: Just checks facts and executes simple actions
+2. **Rules encode the logic**: Predicates assert/retract facts based on game state
+3. **Easier to test**: Can verify facts are asserted correctly
+4. **More composable**: Combine facts to make decisions (e.g., `attackFromLeft && safeToMoveRight => moveRight`)
+
+### Graded Facts for Continuous Values
+
+Facts don't have to be binary (true/false). You can use grades to represent **continuous values** or **ratios**. This is especially useful for space availability, distances, or any measurable quantity.
+
+**Example**: Space availability as a ratio
+
+```rescript
+// Calculate space grade: availableSpace / requiredSpace
+let calculateSpaceGrade = (availableSpace: float, requiredSpace: float): float => {
+  Stdlib_Math.min(1.0, availableSpace /. requiredSpace)
+}
+
+// If there's 16px space and pokemon is 32px wide:
+// grade = min(1.0, 16 / 32) = 0.5
+
+ai->RuleSystem.addRuleExecutingAction(
+  rs => true,
+  rs => {
+    let state = rs.state
+    let availableSpaceLeft = state.enemyX
+    let pokemonWidth = state.enemyWidth
+    let grade = calculateSpaceGrade(availableSpaceLeft, pokemonWidth)
+    rs->RuleSystem.assertFact(Fact("moreSpaceOnLeft"), ~grade=Grade(grade))
+  },
+  ~salient=Salience(0.0),
+)
+```
+
+**Benefits of graded space facts**:
+- **Better decision-making**: If `moreSpaceOnRight` is 0.1 (very little space), avoid moving right even if technically safe
+- **Prioritization**: When both sides are safe, choose the side with more space (higher grade)
+- **Threshold-based logic**: Only move if space grade > 0.3, for example
+
+**Example usage in decisions**:
+
+```rescript
+switch (
+  RuleSystem.gradeForFact(rs, Fact("attackFromLeft")),
+  RuleSystem.gradeForFact(rs, Fact("moreSpaceOnRight")),
+) {
+| (Grade(attackL), Grade(spaceR)) when attackL > 0.0 && attackR == 0.0 && spaceR > 0.3 => {
+    // Attack from left, safe on right, enough space -> move right
+    moveRight()
+  }
+| (Grade(attackL), Grade(spaceR)) when attackL > 0.0 && attackR > 0.0 => {
+    // Attacks on both sides - choose side with more space
+    if spaceL > spaceR && spaceL > 0.2 {
+      moveLeft()
+    } else if spaceR > spaceL && spaceR > 0.2 {
+      moveRight()
+    }
+  }
+| _ => ()
+}
+```
+
+## Advanced Features
 
 ### Working with Multiple Facts
 
