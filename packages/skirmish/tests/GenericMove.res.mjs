@@ -7,6 +7,9 @@ import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.m
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Team$Skirmish from "../src/Team.res.mjs";
 import * as Attack$Skirmish from "../src/Moves/Attack.res.mjs";
+import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
+
+GameObjRaw$Kaplay.Comp({});
 
 Pos$Kaplay.Comp({});
 
@@ -21,15 +24,41 @@ Anchor$Kaplay.Comp({});
 Color$Kaplay.Comp({});
 
 function make(k, x, y, size, team) {
-  return k.add([
+  let gameObj = k.add([
     k.pos(x, y),
     k.rect(size, size),
     k.anchor("center"),
     k.color(k.Color.fromHex(team === true ? "#00bcff" : "#ff2056")),
     Attack$Skirmish.tagComponent,
-    Team$Skirmish.getTagComponent(team),
-    addAttack(() => Math$Kaplay.Rect.makeWorld(k, k.vec2(x, y), size, size))
+    Team$Skirmish.getTagComponent(team)
   ]);
+  gameObj.use(addAttack(() => {
+    let halfSize = size / 2;
+    let worldPos = gameObj.worldPos();
+    return Math$Kaplay.Rect.makeWorld(k, k.vec2(worldPos.x - halfSize, worldPos.y - halfSize), size, size);
+  }));
+  k.onKeyDown(key => {
+    if (key !== "f1" && key !== "shift" && key !== "f2" && key !== "down" && key !== "f3" && key !== "up" && key !== "f4" && key !== "right" && key !== "f5" && key !== "left" && key !== "f6" && key !== " " && key !== "f7" && key !== "space" && key !== "f8" && key !== "meta" && key !== "f9" && key !== "alt" && key !== "f10" && key !== "control" && key !== "f11" && key !== "tab" && key !== "f12" && key !== "enter" && key !== "`" && key !== "backspace" && key !== "1" && key !== "escape" && key !== "2" && key !== "/" && key !== "3" && key !== "." && key !== "4" && key !== "," && key !== "5" && key !== "m" && key !== "6" && key !== "n" && key !== "7" && key !== "b" && key !== "8" && key !== "v" && key !== "9" && key !== "c" && key !== "0" && key !== "x" && key !== "-" && key !== "z" && key !== "+" && key !== "'" && key !== "=" && key !== ";" && key !== "q" && key !== "l" && key !== "w" && key !== "k" && key !== "e" && key !== "j" && key !== "r" && key !== "h" && key !== "t" && key !== "g" && key !== "y" && key !== "f" && key !== "u" && key !== "d" && key !== "i" && key !== "s" && key !== "o" && key !== "a" && key !== "p" && key !== "\\" && key !== "[" && key !== "]") {
+      return;
+    }
+    switch (key) {
+      case "left" :
+        gameObj.move(k.vec2(- 100, 0));
+        return;
+      case "right" :
+        gameObj.move(k.vec2(100, 0));
+        return;
+      case "up" :
+        gameObj.move(k.vec2(0, - 100));
+        return;
+      case "down" :
+        gameObj.move(k.vec2(0, 100));
+        return;
+      default:
+        return;
+    }
+  });
+  return gameObj;
 }
 
 export {
