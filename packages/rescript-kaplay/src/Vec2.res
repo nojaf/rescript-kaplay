@@ -63,6 +63,10 @@ This is the same as `vec2.y` but more convenient to use when piping.
   @send
   external dist: (T.t, T.t) => float = "dist"
 
+  /** Get squared distance between another vector */
+  @send
+  external sdist: (T.t, T.t) => float = "sdist"
+
   @send
   external dot: (T.t, T.t) => float = "dot"
 

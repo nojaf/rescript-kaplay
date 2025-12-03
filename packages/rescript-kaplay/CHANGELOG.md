@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `Context.onError`
 - `Context.quit`
 - `RuleSystem`, `Rule`
+- `Vec2.sdist`
 
 ## [0.11.0] - 2025-11-26
 
