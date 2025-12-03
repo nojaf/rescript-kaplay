@@ -15,7 +15,7 @@ let wallColor = k->Color.fromHex("#27272a")
 let wallSize = 2.
 let healthbarHeight = 60.
 
-let worldRect = Math.Rect.makeWorld(
+let worldRect = Kaplay.Math.Rect.makeWorld(
   k,
   k->Context.vec2World(0., healthbarHeight),
   k->Context.width,

@@ -36,7 +36,7 @@ module Comp = (
   },
 ) => {
   @send
-  external getWorldRect: T.t => Types.rect<Kaplay.Vec2.World.t> = "worldRect"
+  external getWorldRect: T.t => Types.rect<Kaplay.Vec2.World.t> = "getWorldRect"
 
   /***
    * Add an Attack component to a game object.
