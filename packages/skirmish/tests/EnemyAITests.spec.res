@@ -109,7 +109,8 @@ let withKaplayContext = (testFn: Context.t => promise<unit>): promise<unit> => {
   Ember.load()
 
   Promise.make((resolve, reject) => {
-    k->Context.onError(error => {
+    // https://v4000.kaplayjs.com/docs/api/ctx/onError/
+    k->Context.onError((error: JsError.t) => {
       k->Context.quit
       reject(error)
     })

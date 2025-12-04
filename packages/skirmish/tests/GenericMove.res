@@ -45,5 +45,11 @@ let make = (k: Context.t, ~x, ~y, ~size, team: Team.t): t => {
     }
   })
 
+  k->Context.onClick(() => {
+    let mousePos = k->Context.mousePos
+    let worldPos = k->Context.toWorld(mousePos)
+    gameObj->setWorldPos(worldPos)
+  })
+
   gameObj
 }

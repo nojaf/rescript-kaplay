@@ -58,6 +58,11 @@ function make(k, x, y, size, team) {
         return;
     }
   });
+  k.onClick(() => {
+    let mousePos = k.mousePos();
+    let worldPos = k.toWorld(mousePos);
+    gameObj.worldPos(worldPos);
+  });
   return gameObj;
 }
 

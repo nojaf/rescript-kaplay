@@ -7,6 +7,7 @@ let sceneLoaded = () => {
   let _pikachuHealthbar = Healthbar.make(pikachu)
   let _charmander = EnemyAI.make(k, ~pokemonId=4, ~level=5, pikachu)
   let _charmanderHealthbar = Healthbar.make(_charmander)
+  let _temp = GenericMove.make(k, ~x=50., ~y=500., ~size=100., Player)
 }
 
 let scene = () => {
