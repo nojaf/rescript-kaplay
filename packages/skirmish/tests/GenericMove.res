@@ -9,16 +9,59 @@ include Attack.Comp({type t = t})
 include Anchor.Comp({type t = t})
 include Color.Comp({type t = t})
 
-let make = (k: Context.t, ~x, ~y, ~size, team: Team.t): t => {
-  let gameObj =
-    k->Context.add([
-      addPos(k, x, y),
-      addRect(k, size, size),
-      addAnchorCenter(k),
-      addColor(k, k->Color.fromHex(team == Player ? "#00bcff" : "#ff2056")),
-      Attack.tagComponent,
-      Team.getTagComponent(team),
-    ])
+let getCorner = (k: Context.t, ~pos: Vec2.World.t, ~size: float) => {
+  let pkmn =
+    k
+    ->Context.query({
+      include_: [Team.opponent],
+    })
+    ->Array.get(0)
+
+  switch pkmn {
+  | None => None
+  | Some(pkmn) => {
+      let pkmnPos = pkmn->worldPos
+      let isLeft = pkmnPos.x < pos.x
+      let isTop = pkmnPos.y < pos.y
+      switch (isLeft, isTop) {
+      | (true, true) => Some(k->Context.vec2Local(-size / 2., -size / 2.))
+      | (true, false) => Some(k->Context.vec2Local(-size / 2., size / 2.))
+      | (false, true) => Some(k->Context.vec2Local(size / 2., -size / 2.))
+      | (false, false) => Some(k->Context.vec2Local(size / 2., size / 2.))
+      }
+    }
+  }
+}
+
+let make = (k: Context.t, ~x, ~y, ~size: float, team: Team.t): t => {
+  let gameObj = k->Context.add([
+    addPos(k, x, y),
+    addAnchorCenter(k),
+    Attack.tagComponent,
+    Team.getTagComponent(team),
+    CustomComponent.make({
+      id: "generic-move",
+      draw: @this
+      gameObj => {
+        let color = team == Player ? k->Color.fromHex("#00bcff") : k->Color.fromHex("#ff2056")
+        Context.drawRect(
+          k,
+          {
+            color,
+            pos: k->Context.vec2Local(-size / 2., -size / 2.),
+            width: size,
+            height: size,
+          },
+        )
+
+        let worldPos = gameObj->worldPos
+        switch getCorner(k, ~pos=worldPos, ~size) {
+        | None => ()
+        | Some(corner) => Context.drawCircle(k, {color: k->Color.yellow, pos: corner, radius: 3.})
+        }
+      },
+    }),
+  ])
 
   gameObj->use(
     addAttack(() => {
@@ -32,18 +75,6 @@ let make = (k: Context.t, ~x, ~y, ~size, team: Team.t): t => {
       )
     }),
   )
-
-  let speed = 100.
-
-  k->Context.onKeyDown(key => {
-    switch key {
-    | Up => gameObj->move(k->Context.vec2World(0., -speed))
-    | Down => gameObj->move(k->Context.vec2World(0., speed))
-    | Left => gameObj->move(k->Context.vec2World(-speed, 0.))
-    | Right => gameObj->move(k->Context.vec2World(speed, 0.))
-    | _ => ()
-    }
-  })
 
   k->Context.onClick(() => {
     let mousePos = k->Context.mousePos
