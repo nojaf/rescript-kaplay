@@ -4,20 +4,78 @@
 let tag = "attack";
 
 function Comp(T) {
-  let addAttack = getWorldRect => ({
-    id: tag,
-    getWorldRect: getWorldRect
-  });
+  let getClosestCorner = (attack, k, pokemonPosition) => {
+    let attackRect = attack.getWorldRect();
+    let isAttackOnTheLeftOfPokemon = attackRect.pos.x < pokemonPosition.x;
+    let isAttackOnTopOfPokemon = attackRect.pos.y < pokemonPosition.y;
+    let leftX = attackRect.pos.x;
+    let rightX = attackRect.pos.x + attackRect.width;
+    let topY = attackRect.pos.y;
+    let bottomY = attackRect.pos.y + attackRect.height;
+    if (isAttackOnTheLeftOfPokemon) {
+      if (isAttackOnTopOfPokemon) {
+        return k.vec2(rightX, bottomY);
+      } else {
+        return k.vec2(rightX, topY);
+      }
+    } else if (isAttackOnTopOfPokemon) {
+      return k.vec2(leftX, bottomY);
+    } else {
+      return k.vec2(leftX, topY);
+    }
+  };
+  let addAttack = getWorldRect => [
+    {
+      id: tag,
+      getWorldRect: getWorldRect
+    },
+    tag
+  ];
   return {
+    getClosestCorner: getClosestCorner,
     addAttack: addAttack
   };
 }
 
-let tagComponent = tag;
+function getClosestCorner(attack, k, pokemonPosition) {
+  let attackRect = attack.getWorldRect();
+  let isAttackOnTheLeftOfPokemon = attackRect.pos.x < pokemonPosition.x;
+  let isAttackOnTopOfPokemon = attackRect.pos.y < pokemonPosition.y;
+  let leftX = attackRect.pos.x;
+  let rightX = attackRect.pos.x + attackRect.width;
+  let topY = attackRect.pos.y;
+  let bottomY = attackRect.pos.y + attackRect.height;
+  if (isAttackOnTheLeftOfPokemon) {
+    if (isAttackOnTopOfPokemon) {
+      return k.vec2(rightX, bottomY);
+    } else {
+      return k.vec2(rightX, topY);
+    }
+  } else if (isAttackOnTopOfPokemon) {
+    return k.vec2(leftX, bottomY);
+  } else {
+    return k.vec2(leftX, topY);
+  }
+}
+
+function addAttack(getWorldRect) {
+  return [
+    {
+      id: tag,
+      getWorldRect: getWorldRect
+    },
+    tag
+  ];
+}
+
+let Unit = {
+  getClosestCorner: getClosestCorner,
+  addAttack: addAttack
+};
 
 export {
   tag,
-  tagComponent,
   Comp,
+  Unit,
 }
 /* No side effect */

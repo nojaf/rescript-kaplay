@@ -26,8 +26,8 @@ let cast = (pokemon: Pokemon.t) => {
   // That is why the pokemon cannot be the parent of the flame.
   let pokemonWorldPos = pokemon->Pokemon.worldPos
 
-  let flame: t =
-    k->Context.add([
+  let flame: t = k->Context.add(
+    [
       addSprite(k, spriteName),
       addPosFromWorldVec2(k, pokemonWorldPos),
       addMove(k, pokemon.direction, 120.),
@@ -35,12 +35,10 @@ let cast = (pokemon: Pokemon.t) => {
       addArea(k),
       pokemon.direction.y < 0. ? addAnchorBottom(k) : addAnchorTop(k),
       Team.getTagComponent(pokemon.team),
-    ])
-
-  flame->use(
-    addAttack(() => {
-      Kaplay.Math.Rect.makeWorld(k, flame->worldPos, flame->getWidth, flame->getHeight)
-    }),
+      ...addAttack(@this (flame: t) => {
+        Kaplay.Math.Rect.makeWorld(k, flame->worldPos, flame->getWidth, flame->getHeight)
+      }),
+    ],
   )
 
   pokemon.attackStatus = Attacking

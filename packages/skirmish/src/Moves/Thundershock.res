@@ -178,19 +178,19 @@ let cast = (pokemon: Pokemon.t) => {
     })
     ->Array.filter(p => p->Pokemon.getId != pokemon->Pokemon.getId)
 
-  let thundershock: t = pokemon->Pokemon.addChild([
-    k->addPos(0., 0.),
-    k->addZ(-1),
-    Team.getTagComponent(pokemon.team),
-    Attack.tagComponent,
-    CustomComponent.make({
-      id: "thundershock",
-      draw,
-      drawInspect,
-    }),
-  ])
-
-  thundershock->use(addAttack(() => thundershock.worldRect))
+  let thundershock: t = pokemon->Pokemon.addChild(
+    [
+      k->addPos(0., 0.),
+      k->addZ(-1),
+      Team.getTagComponent(pokemon.team),
+      CustomComponent.make({
+        id: "thundershock",
+        draw,
+        drawInspect,
+      }),
+      ...addAttack(@this (thundershock: t) => thundershock.worldRect),
+    ],
+  )
 
   thundershock->use(
     initialState({

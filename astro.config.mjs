@@ -29,6 +29,9 @@ export default defineConfig({
           slug: "game-object",
         },
         {
+          slug: "generic-component-access",
+        },
+        {
           slug: "vec2-coordinates",
         },
         {

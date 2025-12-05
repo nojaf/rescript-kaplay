@@ -82,3 +82,8 @@ module Comp = (
   @send
   external unuse: (T.t, string) => unit = "unuse"
 }
+
+module Unit = {
+  type t = unit
+  include Comp({type t = unit})
+}

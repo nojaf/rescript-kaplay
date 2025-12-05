@@ -67,3 +67,8 @@ module Comp = (
   @send
   external addPosFromWorldVec2: (Context.t, Vec2.World.t) => Types.comp = "pos"
 }
+
+module Unit = {
+  type t = unit
+  include Comp({type t = unit})
+}

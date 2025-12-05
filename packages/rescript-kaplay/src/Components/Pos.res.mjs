@@ -5,7 +5,10 @@ function Comp(T) {
   return {};
 }
 
+let Unit = {};
+
 export {
   Comp,
+  Unit,
 }
 /* No side effect */

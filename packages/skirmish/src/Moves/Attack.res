@@ -21,11 +21,10 @@ open Kaplay
  */
 
 let tag = "attack"
-let tagComponent = Context.tag(tag)
 
 type customType<'t> = {
   ...CustomComponent.t<'t>,
-  getWorldRect: unit => Types.rect<Vec2.World.t>,
+  getWorldRect: @this ('t => Types.rect<Vec2.World.t>),
 }
 
 external asAttack: customType<'t> => Types.comp = "%identity"
@@ -38,15 +37,44 @@ module Comp = (
   @send
   external getWorldRect: T.t => Types.rect<Kaplay.Vec2.World.t> = "getWorldRect"
 
+  let getClosestCorner = (
+    attack: T.t,
+    k: Context.t,
+    ~pokemonPosition: Vec2.World.t,
+  ): Vec2.World.t => {
+    let attackRect = attack->getWorldRect
+    let isAttackOnTheLeftOfPokemon = attackRect.pos.x < pokemonPosition.x
+    let isAttackOnTopOfPokemon = attackRect.pos.y < pokemonPosition.y
+    let leftX = attackRect.pos.x
+    let rightX = attackRect.pos.x + attackRect.width
+    let topY = attackRect.pos.y
+    let bottomY = attackRect.pos.y + attackRect.height
+
+    switch (isAttackOnTheLeftOfPokemon, isAttackOnTopOfPokemon) {
+    | (true, true) => k->Context.vec2World(rightX, bottomY)
+    | (true, false) => k->Context.vec2World(rightX, topY)
+    | (false, true) => k->Context.vec2World(leftX, bottomY)
+    | (false, false) => k->Context.vec2World(leftX, topY)
+    }
+  }
+
   /***
    * Add an Attack component to a game object.
    * @param getWorldRect Function that returns the world-space bounding rectangle of the attack.
    *                     This is called when the attack is queried (e.g., by rule systems).
    */
-  let addAttack = (getWorldRect: unit => Types.rect<Kaplay.Vec2.World.t>): Types.comp => {
+  let addAttack = (getWorldRect: @this (T.t => Types.rect<Kaplay.Vec2.World.t>)): array<
+    Types.comp,
+  > => [
     asAttack({
       id: tag,
       getWorldRect,
-    })
-  }
+    }),
+    Context.tag(tag),
+  ]
+}
+
+module Unit = {
+  type t = unit
+  include Comp({type t = unit})
 }
