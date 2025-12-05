@@ -52,6 +52,42 @@ These should reflect the types in [kaplay node_module](../../node_modules/kaplay
     ```
 - Avoid nested game-object modules inside other object modules. Includes leak methods into the nested module's scope, creating methods that type-check but are missing at runtime.
 
+### Generic component access with Unit modules
+
+When working with `Context.query()` or other generic game object queries, you often need to call component methods on objects where you don't know the specific type. The `Unit` module pattern provides type-safe access to component methods on generic objects.
+
+**When to use Unit modules:**
+- You commonly query for objects by tag (not by specific type)
+- You need to call component methods on those generic query results
+- The component provides domain-specific functionality that's useful in generic contexts
+
+**Examples:**
+- `GameObjRaw.Unit` - for generic operations like `has()`, `destroy()`, `onUpdate()` on query results
+- `Attack.Unit` - for domain-specific queries where you need `getWorldRect()` on unknown attack types
+
+**Creating a Unit module:**
+```rescript
+module Unit = {
+  type t = unit
+  include Comp({type t = unit})
+}
+```
+
+**Combining multiple components:**
+If you commonly need multiple components together on generic objects, create a custom combined module:
+```rescript
+module Collidable = {
+  module Unit = {
+    type t = unit
+    include GameObjRaw.Comp({type t = t})
+    include Pos.Comp({type t = t})
+    include Area.Comp({type t = t})
+  }
+}
+```
+
+This pattern keeps the abstraction focused on actual needs rather than theoretical completeness. Only create `Unit` modules for components that are commonly accessed in generic contexts.
+
 ### Child origin
 
 - All child transforms are relative to the parent. When you `addChild(parent, [...])`, components like `pos`, `scale`, `rotate`, `z`, etc. operate in the child’s local space, offset by the parent’s transform.
@@ -213,5 +249,6 @@ ctrlRef := Some(obj->onUpdateWithController(() => {
 
 - See `docs/content/docs/game-context.mdx` for initializing and holding the context.
 - See `docs/content/docs/game-object.mdx` for step-by-step object composition, including includes, `make`, and pitfalls.
+- See `docs/content/docs/generic-component-access.mdx` for working with generic game objects from queries using Unit modules.
 - Browse `packages/samples/src/*.res` for idiomatic usage of events, tweening, camera controls, and vector math with `Kaplay.Vec2`.
 
