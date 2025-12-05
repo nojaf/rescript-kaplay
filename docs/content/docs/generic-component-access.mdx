@@ -6,55 +6,20 @@ slug: generic-component-access
 
 import { Aside } from "@astrojs/starlight/components";
 
-When using [Context.query()](../api-reference/Kaplay.Context#query) or other generic game object queries, you often need to call component methods on objects where you don't know the specific type. The `Unit` module pattern provides a type-safe way to access component methods on generic objects.
+When using [Context.query()](../api-reference/Kaplay.Context#query) to find game objects by tag, you get back generic objects where you don't know the specific type. `Unit` modules provide a type-safe way to access component methods on these generic objects.
 
-## The Problem
+## Using Existing Unit Modules
 
-When you query for game objects by tag, you get back generic objects:
-
-```ReScript
-let objects = k->Context.query({
-  include_: ["movable"],
-  hierarchy: Descendants,
-})
-// objects: array<'gameObj> - but what type?
-```
-
-You need to call component methods like `worldPos()` or `getPos()` on these objects, but you don't know their specific type. You could use `GameObjRaw.Unit.has()` to check for components, but you still need a way to call the component methods.
-
-## The Solution: Unit Modules
-
-A `Unit` module provides a generic type (`unit`) that includes the component's `Comp` module, giving you access to all component methods on generic objects.
-
-### Example: Pos.Unit
-
-```ReScript
-module Pos = {
-  // ... component definition ...
-  
-  module Unit = {
-    type t = unit
-    include Comp({type t = unit})
-  }
-}
-```
-
-Now you can use it with query results:
+Many components in the library provide a `Unit` module that you can use when querying for objects by tag. For example, if you need to access position methods on generic objects:
 
 ```ReScript
 let getMovableObjects = (k: Context.t): array<Pos.Unit.t> => {
-  // Note that using a `Pos.Comp` does not automatically add the `movable` tag to the object.
   k
   ->Context.query({
     include_: ["movable"],
     hierarchy: Descendants,
-  })->Array.filterMap(obj => {
-    if obj->GameObjRaw.Unit.has("pos") {
-      Some(obj)
-    } else {
-      None
-    }
   })
+  ->Array.filterMap(Pos.Unit.fromGameObj)
 }
 
 // Now you can call Pos methods on generic objects:
@@ -64,51 +29,42 @@ let getObjectPosition = (obj: Pos.Unit.t) => {
 }
 ```
 
+The `fromGameObj()` function performs a runtime check to ensure the object has the required component, then safely casts it to the `Unit` type.
+
 <Aside type="note">
 Not every component in the library has a `Unit` module. This was a recent addition to the library and thus not all components have one yet.
 If you find yourself needing a `Unit` module for a component that doesn't have one, pull requests are welcome!
 </Aside>
 
-## When to Create Unit Modules
-
-Create `Unit` modules only when:
-
-1. **You commonly query for objects by tag** (not by specific type)
-2. **You need to call component methods** on those generic query results
-3. **The component provides domain-specific functionality** that's useful in generic contexts
-
-### Good Candidates
-
-- `GameObjRaw.Unit` - Generic operations like `has()`, `destroy()`, `onUpdate()`
-- `Pos.Unit` - When you need to access position methods (`worldPos()`, `getPos()`, etc.) on generic objects
-- Custom components with query-specific methods
-
-### Not Needed
-
-Most components (Sprite, Health, Color, etc.) are typically used on typed objects where you know the concrete type. Adding `Unit` modules for everything would:
-- Add unnecessary maintenance overhead
-- Clutter the API
-- Be rarely used
-
 ## Combining Multiple Components
 
-If you commonly need multiple components together on generic objects, create a custom combined module:
+When you need multiple components together on generic objects, create a custom combined module in your game code:
 
 ```ReScript
 module Collidable = {
   module Unit = {
-    type t = unit
+    type t
     include GameObjRaw.Comp({type t = t})
     include Pos.Comp({type t = t})
     include Area.Comp({type t = t})
+    
+    let fromGameObj = (obj: GameObjRaw.Unit.t): option<t> => {
+      if obj->has("pos") && obj->has("area") {
+        Some(Obj.magic(obj))
+      } else {
+        None
+      }
+    }
   }
 }
 
 // Usage:
 let getCollidables = (k: Context.t): array<Collidable.Unit.t> => {
-  k->Context.query({
+  k
+  ->Context.query({
     include_: ["collidable"],
   })
+  ->Array.filterMap(Collidable.Unit.fromGameObj)
 }
 
 // Now you can use both Pos and Area methods:
@@ -124,11 +80,9 @@ This approach:
 - **Type-safe**: You get all methods from all included components
 - **Flexible**: Easy to add more components later
 
-## Best Practices
-
-1. **Keep it focused**: Only create `Unit` modules for components you actually use in generic contexts
-2. **Domain-specific**: Create combined `Unit` modules in your game code, not in the library
-3. **Type safety**: Always check for component presence with `has()` before using methods if the query might return objects without the component
+<Aside type="caution">
+**Creating Unit modules is uncommon**: Most of the time, you'll use existing `Unit` modules from the library or create custom combined modules for your domain. Creating a `Unit` module for a single component (like `Attack.Unit`) is typically only done when that component is central to your game's architecture and needs to be queried generically across many different object types.
+</Aside>
 
 This pattern enables powerful abstractions for spatial queries, rule systems, and other scenarios where you need to work with objects generically.
 

@@ -75,6 +75,15 @@ module Comp = (
 }
 
 module Unit = {
-  type t = unit
-  include Comp({type t = unit})
+  type t
+  include GameObjRaw.Comp({type t = t})
+  include Comp({type t = t})
+
+  let fromGameObj = (obj: GameObjRaw.Unit.t): option<t> => {
+    if obj->GameObjRaw.Unit.has(tag) {
+      Some(Obj.magic(obj))
+    } else {
+      None
+    }
+  }
 }

@@ -54,39 +54,38 @@ These should reflect the types in [kaplay node_module](../../node_modules/kaplay
 
 ### Generic component access with Unit modules
 
-When working with `Context.query()` or other generic game object queries, you often need to call component methods on objects where you don't know the specific type. The `Unit` module pattern provides type-safe access to component methods on generic objects.
+When working with `Context.query()` or other generic game object queries, you often need to call component methods on objects where you don't know the specific type. `Unit` modules provide type-safe access to component methods on generic objects.
 
-**When to use Unit modules:**
-- You commonly query for objects by tag (not by specific type)
-- You need to call component methods on those generic query results
-- The component provides domain-specific functionality that's useful in generic contexts
-
-**Examples:**
-- `GameObjRaw.Unit` - for generic operations like `has()`, `destroy()`, `onUpdate()` on query results
-- `Attack.Unit` - for domain-specific queries where you need `getWorldRect()` on unknown attack types
-
-**Creating a Unit module:**
+**Using existing Unit modules:**
+Many components provide a `Unit` module (e.g., `Pos.Unit`, `GameObjRaw.Unit`). Use `fromGameObj()` to convert query results:
 ```rescript
-module Unit = {
-  type t = unit
-  include Comp({type t = unit})
-}
+let objects = k->Context.query({include_: ["movable"]})
+  ->Array.filterMap(Pos.Unit.fromGameObj)
+// objects: array<Pos.Unit.t>
 ```
 
 **Combining multiple components:**
-If you commonly need multiple components together on generic objects, create a custom combined module:
+When you need multiple components together, create a custom combined module in your game code:
 ```rescript
 module Collidable = {
   module Unit = {
-    type t = unit
+    type t
     include GameObjRaw.Comp({type t = t})
     include Pos.Comp({type t = t})
     include Area.Comp({type t = t})
+    
+    let fromGameObj = (obj: GameObjRaw.Unit.t): option<t> => {
+      if obj->has("pos") && obj->has("area") {
+        Some(Obj.magic(obj))
+      } else {
+        None
+      }
+    }
   }
 }
 ```
 
-This pattern keeps the abstraction focused on actual needs rather than theoretical completeness. Only create `Unit` modules for components that are commonly accessed in generic contexts.
+**Creating Unit modules is uncommon**: Most of the time, you'll use existing `Unit` modules from the library or create custom combined modules. Creating a `Unit` module for a single component is typically only done when that component is central to your game's architecture (like `Attack.Unit` in the skirmish example).
 
 ### Child origin
 

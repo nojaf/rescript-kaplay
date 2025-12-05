@@ -84,6 +84,6 @@ module Comp = (
 }
 
 module Unit = {
-  type t = unit
-  include Comp({type t = unit})
+  type t
+  include Comp({type t = t})
 }
