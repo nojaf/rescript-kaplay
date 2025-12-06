@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `Context.quit`
 - `RuleSystem`, `Rule`
 - `Vec2.sdist`
+- `Math.Rect.center`
+
+### Fixed
+- `SpriteData.height` as `@get`
+- `SpriteData.width` as `@get`
 
 ## [0.11.0] - 2025-11-26
 

@@ -8,8 +8,9 @@ let tag = "attack";
 function Comp(T) {
   let getClosestCorner = (attack, k, pokemonPosition) => {
     let attackRect = attack.getWorldRect();
-    let isAttackOnTheLeftOfPokemon = attackRect.pos.x < pokemonPosition.x;
-    let isAttackOnTopOfPokemon = attackRect.pos.y < pokemonPosition.y;
+    let attackCenter = attackRect.pos.add(k.vec2(attackRect.width / 2, attackRect.height / 2));
+    let isAttackOnTheLeftOfPokemon = attackCenter.x < pokemonPosition.x;
+    let isAttackOnTopOfPokemon = attackCenter.y < pokemonPosition.y;
     let leftX = attackRect.pos.x;
     let rightX = attackRect.pos.x + attackRect.width;
     let topY = attackRect.pos.y;
@@ -43,8 +44,9 @@ GameObjRaw$Kaplay.Comp({});
 
 function getClosestCorner(attack, k, pokemonPosition) {
   let attackRect = attack.getWorldRect();
-  let isAttackOnTheLeftOfPokemon = attackRect.pos.x < pokemonPosition.x;
-  let isAttackOnTopOfPokemon = attackRect.pos.y < pokemonPosition.y;
+  let attackCenter = attackRect.pos.add(k.vec2(attackRect.width / 2, attackRect.height / 2));
+  let isAttackOnTheLeftOfPokemon = attackCenter.x < pokemonPosition.x;
+  let isAttackOnTopOfPokemon = attackCenter.y < pokemonPosition.y;
   let leftX = attackRect.pos.x;
   let rightX = attackRect.pos.x + attackRect.width;
   let topY = attackRect.pos.y;

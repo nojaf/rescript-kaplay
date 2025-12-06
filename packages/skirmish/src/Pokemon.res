@@ -17,6 +17,12 @@ type t = {
   level: int,
   pokemonId: int,
   team: Team.t,
+  /** Half size of the pokemon in world units */
+  halfSize: float,
+  /** Squared distance between the pokemon and what we consider its personal space
+      This is used to determine how close a potential attack is to the pokemon's personal space.
+   */
+  squaredPersonalSpace: float,
 }
 
 include GameObjRaw.Comp({type t = t})
@@ -55,48 +61,63 @@ let getHealthPercentage = (pokemon: t): float => {
   currentHp / maxHp * 100.
 }
 
+let getHalfSize = (t: t) => t->getWidth / 2.
+
 let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
-  let gameObj: t = k->Context.add(
-    [
-      // initialState
-      ...team == Player
-        ? [
-            internalState({
-              direction: k->Context.vec2Up,
-              level,
-              pokemonId,
-              team,
-              facing: FacingUp,
-              mobility: CanMove,
-              attackStatus: CanAttack,
-            }),
-            k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.75),
-            k->addSprite(backSpriteName(pokemonId)),
-            Team.playerTagComponent,
-          ]
-        : [
-            internalState({
-              direction: k->Context.vec2Down,
-              level,
-              pokemonId,
-              team,
-              facing: FacingDown,
-              mobility: CanMove,
-              attackStatus: CanAttack,
-            }),
-            k->addPos(k->Context.center->Vec2.World.x, k->Context.height * 0.25),
-            k->addSprite(frontSpriteName(pokemonId)),
-            Team.opponentTagComponent,
-          ],
-      k->addArea,
-      k->addBody,
-      k->addHealth(20, ~maxHP=20),
-      k->addAnchorCenter,
-      k->addOpacity(1.),
-      k->addAnimate,
-      Context.tag(tag),
-    ],
-  )
+  let (spriteName, direction, posY) = if team == Player {
+    (backSpriteName(pokemonId), k->Context.vec2Up, k->Context.height * 0.75)
+  } else {
+    (frontSpriteName(pokemonId), k->Context.vec2Down, k->Context.height * 0.25)
+  }
+  let (halfSize, squaredPersonalSpace) = switch Context.getSprite(k, spriteName).data {
+  | Null.Null => (0., 0.)
+  | Null.Value(sprite) => {
+      let halfSize = sprite->SpriteData.width / 2.
+      // Twice the radius of a circle around the sprite.
+      let squaredPersonalSpace = halfSize * halfSize * halfSize
+      (halfSize, squaredPersonalSpace)
+    }
+  }
+
+  let gameObj: t = k->Context.add([
+    // initialState
+    internalState({
+      direction,
+      level,
+      pokemonId,
+      team,
+      facing: FacingUp,
+      mobility: CanMove,
+      attackStatus: CanAttack,
+      halfSize,
+      squaredPersonalSpace,
+    }),
+    k->addPos(k->Context.center->Vec2.World.x, posY),
+    k->addSprite(frontSpriteName(pokemonId)),
+    team == Player ? Team.playerTagComponent : Team.opponentTagComponent,
+    k->addArea,
+    k->addBody,
+    k->addHealth(20, ~maxHP=20),
+    k->addAnchorCenter,
+    k->addOpacity(1.),
+    k->addAnimate,
+    Context.tag(tag),
+    CustomComponent.make({
+      id: "pokemon",
+      drawInspect: @this
+      (gameObj: t) => {
+        let radius = Stdlib_Math.sqrt(gameObj.squaredPersonalSpace)
+        k->Context.drawCircle({
+          radius,
+          opacity: 0.1,
+          outline: {
+            color: k->Color.magenta,
+            width: 2.,
+          },
+        })
+      },
+    }),
+  ])
 
   gameObj->onHurt((deltaHp: int) => {
     Console.log2("I hurt myself today", deltaHp)

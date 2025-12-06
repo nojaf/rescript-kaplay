@@ -43,8 +43,12 @@ module Comp = (
     ~pokemonPosition: Vec2.World.t,
   ): Vec2.World.t => {
     let attackRect = attack->getWorldRect
-    let isAttackOnTheLeftOfPokemon = attackRect.pos.x < pokemonPosition.x
-    let isAttackOnTopOfPokemon = attackRect.pos.y < pokemonPosition.y
+    let attackCenter =
+      attackRect.pos->Vec2.World.add(
+        k->Context.vec2World(attackRect.width / 2., attackRect.height / 2.),
+      )
+    let isAttackOnTheLeftOfPokemon = attackCenter.x < pokemonPosition.x
+    let isAttackOnTopOfPokemon = attackCenter.y < pokemonPosition.y
     let leftX = attackRect.pos.x
     let rightX = attackRect.pos.x + attackRect.width
     let topY = attackRect.pos.y

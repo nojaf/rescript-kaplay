@@ -3,7 +3,7 @@ open Kaplay
 type ruleSystemState = {
   enemy: Pokemon.t,
   player: Pokemon.t,
-  mutable playerAttacks: array<Types.rect<Vec2.World.t>>,
+  mutable playerAttacks: array<Attack.Unit.t>,
   lastAttackAt: float,
 }
 
@@ -12,11 +12,18 @@ module Facts = {
   let playerCentered = Fact("playerCentered")
   let playerBelow = Fact("playerBelow")
 
-  let attackInFrontOfEnemy = Fact("attackInFrontOfEnemy")
+  let attackInCenterOfEnemy = Fact("attackInCenterOfEnemy")
   let attackOnTheLeftOfEnemy = Fact("attackOnTheLeftOfEnemy")
   let attackOnTheRightOfEnemy = Fact("attackOnTheRightOfEnemy")
 
   // let attackIncoming = Fact("attackIncoming")
+}
+
+module Salience = {
+  open RuleSystem
+  let baseFacts = Salience(0.0)
+  let derivedFacts = Salience(10.0)
+  let decisions = Salience(20.0)
 }
 
 let isPlayerCentered = (rs: RuleSystem.t<ruleSystemState>): bool => {
@@ -54,6 +61,10 @@ let negate = (predicate: RuleSystem.predicate<ruleSystemState>): RuleSystem.pred
   rs => !predicate(rs)
 }
 
+let overlapX = ((ax1, ax2), (bx1, bx2)) => {
+  Stdlib_Math.max(ax1, bx1) <= Stdlib_Math.min(ax2, bx2)
+}
+
 let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): RuleSystem.t<
   ruleSystemState,
 > => {
@@ -84,61 +95,92 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
   rs->RuleSystem.addRuleExecutingAction(
     rs => rs.state.playerAttacks->Array.length > 0,
     rs => {
-      let grade = ref(RuleSystem.Grade(0.))
-      rs.state.playerAttacks->Array.forEach(attack => {
-        // Check if attack is on the left
-        if attack.pos.x + attack.width < rs.state.enemy->Pokemon.getPosX {
-          // is the attack in front of the enemy?
-          let attackCoord: Vec2.World.t = {
-            if attack.pos.y + attack.height >= rs.state.enemy->Pokemon.getPosY {
-              // We care about the right upper corner of the attack
-              k->Context.vec2World(attack.pos.x + attack.width, attack.pos.y)
-            } else {
-              // We care about the right lower corner of the attack
-              k->Context.vec2World(attack.pos.x + attack.width, attack.pos.y + attack.height)
-            }
-          }
+      // Track maximum grades for each fact type
+      let leftGrade = ref(RuleSystem.Grade(0.))
+      let rightGrade = ref(RuleSystem.Grade(0.))
+      let centerGrade = ref(RuleSystem.Grade(0.))
 
-          // calculate grade based on the distance between the attack and the enemy
-          let squaredDistance = attackCoord->Vec2.World.sdist(rs.state.enemy->Pokemon.worldPos)
-          // We multiply the enemy width by 3 to make it more sensitive to the attack.
-          let enemyWidth = Stdlib_Math.pow(3. * rs.state.enemy->Pokemon.getWidth, ~exp=2.)
+      let enemyWorldPos = rs.state.enemy->Pokemon.worldPos
+      let enemyStartX = enemyWorldPos.x - rs.state.enemy.halfSize
+      let enemyEndX = enemyWorldPos.x + rs.state.enemy.halfSize
+
+      rs.state.playerAttacks->Array.forEach(attack => {
+        let attackWorldRect = attack->Attack.Unit.getWorldRect
+        let closestCorner = attack->Attack.Unit.getClosestCorner(k, ~pokemonPosition=enemyWorldPos)
+
+        // Check is attack is in center of enemy
+        if (
+          overlapX(
+            (enemyStartX, enemyEndX),
+            (attackWorldRect.pos.x, attackWorldRect.pos.x + attackWorldRect.width),
+          )
+        ) {
+          let squaredDistance = Vec2.World.sdist(
+            enemyWorldPos,
+            attackWorldRect->Kaplay.Math.Rect.centerWorld,
+          )
           let currentGrade =
             squaredDistance == 0.
               ? RuleSystem.Grade(1.)
-              : RuleSystem.Grade(enemyWidth / squaredDistance)
+              : RuleSystem.Grade(rs.state.enemy.squaredPersonalSpace / squaredDistance)
 
           // replace current grade is higher
-          if grade.contents < currentGrade {
-            grade.contents = currentGrade
+          if centerGrade.contents < currentGrade {
+            centerGrade.contents = currentGrade
+          }
+        } // Check if attack is on the left
+        else if closestCorner.x < enemyStartX {
+          // calculate grade based on the distance between the attack and the enemy
+          let squaredDistance = closestCorner->Vec2.World.sdist(enemyWorldPos)
+
+          let currentGrade =
+            squaredDistance == 0.
+              ? RuleSystem.Grade(1.)
+              : RuleSystem.Grade(rs.state.enemy.squaredPersonalSpace / squaredDistance)
+
+          // replace current grade is higher
+          if leftGrade.contents < currentGrade {
+            leftGrade.contents = currentGrade
+          }
+        } else if closestCorner.x > enemyEndX {
+          // calculate grade based on the distance between the attack and the enemy
+          let squaredDistance = closestCorner->Vec2.World.sdist(enemyWorldPos)
+
+          let currentGrade =
+            squaredDistance == 0.
+              ? RuleSystem.Grade(1.)
+              : RuleSystem.Grade(rs.state.enemy.squaredPersonalSpace / squaredDistance)
+
+          // replace current grade is higher
+          if rightGrade.contents < currentGrade {
+            rightGrade.contents = currentGrade
           }
         }
       })
 
-      if grade.contents > RuleSystem.Grade(0.) {
-        rs->RuleSystem.assertFact(Facts.attackOnTheLeftOfEnemy, ~grade=grade.contents)
+      if leftGrade.contents > RuleSystem.Grade(0.) {
+        rs->RuleSystem.assertFact(Facts.attackOnTheLeftOfEnemy, ~grade=leftGrade.contents)
+      }
+      if rightGrade.contents > RuleSystem.Grade(0.) {
+        rs->RuleSystem.assertFact(Facts.attackOnTheRightOfEnemy, ~grade=rightGrade.contents)
+      }
+      if centerGrade.contents > RuleSystem.Grade(0.) {
+        rs->RuleSystem.assertFact(Facts.attackInCenterOfEnemy, ~grade=centerGrade.contents)
       }
     },
-    ~salient=Salience(0.),
+    ~salient=Salience.baseFacts,
   )
-
-  // rs->RuleSystem.addRuleAssertingFact(isAttackIncoming, Facts.attackIncoming, ~grade=Grade(1.))
-  // rs->RuleSystem.addRuleRetractingFact(
-  //   negate(isAttackIncoming),
-  //   Facts.attackIncoming,
-  //   ~grade=Grade(1.),
-  // )
 
   rs
 }
 
-let getPlayerAttacks = (k: Context.t): array<Types.rect<Vec2.World.t>> => {
+let getPlayerAttacks = (k: Context.t): array<Attack.Unit.t> => {
   k
   ->Context.query({
     include_: [Attack.tag, Team.player],
     hierarchy: Descendants,
   })
-  ->Array.map((attack: Attack.customType<_>) => attack.getWorldRect())
+  ->Array.filterMap(Attack.Unit.fromGameObj)
 }
 
 let forOf: (array<'t>, 't => unit, unit => bool) => unit = %raw(`
@@ -157,29 +199,29 @@ function (items, callback, shouldBreak) {
  First boolean is an attack on the left of the enemy.
  Second boolean is an attack on the right of the enemy.
  */
-let verifyAttacks = (rs: RuleSystem.t<ruleSystemState>): (bool, bool) => {
-  let attackOnTheLeft = ref(false)
-  let attackOnTheRight = ref(false)
-  let enemyX = rs.state.enemy->Pokemon.getPosX
-  // We use a while loop to be able to have an early exit if we find an attack on the left and right.
-  // In that case, we don't need to iterate over all the attacks.
-  forOf(
-    rs.state.playerAttacks,
-    attack => {
-      let attackX = attack.pos.x
-      if attackX < enemyX {
-        attackOnTheLeft.contents = true
-      } else if attackX > enemyX {
-        attackOnTheRight.contents = true
-      }
-    },
-    () => attackOnTheLeft.contents && attackOnTheRight.contents,
-  )
+let // let verifyAttacks = (rs: RuleSystem.t<ruleSystemState>): (bool, bool) => {
+//   let attackOnTheLeft = ref(false)
+//   let attackOnTheRight = ref(false)
+//   let enemyX = rs.state.enemy->Pokemon.getPosX
+//   // We use a while loop to be able to have an early exit if we find an attack on the left and right.
+//   // In that case, we don't need to iterate over all the attacks.
+//   forOf(
+//     rs.state.playerAttacks,
+//     attack => {
+//       let attackX = attack.pos.x
+//       if attackX < enemyX {
+//         attackOnTheLeft.contents = true
+//       } else if attackX > enemyX {
+//         attackOnTheRight.contents = true
+//       }
+//     },
+//     () => attackOnTheLeft.contents && attackOnTheRight.contents,
+//   )
 
-  (attackOnTheLeft.contents, attackOnTheRight.contents)
-}
+//   (attackOnTheLeft.contents, attackOnTheRight.contents)
+// }
 
-let update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
+update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
   rs->RuleSystem.reset
   rs.state.playerAttacks = getPlayerAttacks(k)
   rs->RuleSystem.execute
