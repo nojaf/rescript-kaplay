@@ -228,4 +228,4 @@ type circle<'vec2> = {
   radius: float,
   center: 'vec2,
 }
-type polygon<'vec2>
+type polygon<'vec2> = {pts: array<'vec2>}

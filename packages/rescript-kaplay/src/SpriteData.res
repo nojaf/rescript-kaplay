@@ -3,8 +3,8 @@ type t = {
   frams: array<Types.quad>,
 }
 
-@send
+@get
 external width: t => float = "width"
 
-@send
+@get
 external height: t => float = "height"

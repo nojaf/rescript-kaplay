@@ -32,6 +32,9 @@ function (k, pos, width, height) {
   external containsWorld: (rect<Vec2.World.t>, Vec2.World.t) => bool = "contains"
 
   external asShape: rect<'vec2> => shape<'vec2> = "%identity"
+
+  @send
+  external centerWorld: rect<Vec2.World.t> => Vec2.World.t = "center"
 }
 
 module Circle = {

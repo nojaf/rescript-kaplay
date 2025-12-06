@@ -37,6 +37,7 @@ These should reflect the types in [kaplay node_module](../../node_modules/kaplay
 - Common components and their creation helpers (all live under `Kaplay.Components` when referenced in source, re-exported by `Kaplay`):
   - `Pos`: `addPos(k, x, y)` or `addPosFromVec2(k, v)`. Accessors: `getPos`, `setPos`, `getPosX`, `getPosY`, `move`, `worldPos`, etc.
   - `Sprite`: `addSprite(k, name, ~options=?)`. Methods: `play`, `getFrame`, `setFrame`, `getAnimSpeed`, `setAnimSpeed`, `getWidth/Height`, `setWidth/Height`, etc.
+  - `Area`: `addArea(k, ~options=?)` for collision detection. Supports `Rect` and `Polygon` shapes. **Important**: Only **convex polygons** are supported for collision detection. Concave polygons (with interior angles > 180°) will not work correctly with collision detection.
   - `GameObjRaw`: utilities for all objects: `onUpdate`, `destroy`, `addChild`, `getChildren`, `trigger`, `has`, etc.
 - Custom object state:
   - Use a record `type t = { ... }` and provide an identity external to inject initial state inside `Context.add`:
@@ -50,6 +51,41 @@ These should reflect the types in [kaplay node_module](../../node_modules/kaplay
     }
     ```
 - Avoid nested game-object modules inside other object modules. Includes leak methods into the nested module's scope, creating methods that type-check but are missing at runtime.
+
+### Generic component access with Unit modules
+
+When working with `Context.query()` or other generic game object queries, you often need to call component methods on objects where you don't know the specific type. `Unit` modules provide type-safe access to component methods on generic objects.
+
+**Using existing Unit modules:**
+Many components provide a `Unit` module (e.g., `Pos.Unit`, `GameObjRaw.Unit`). Use `fromGameObj()` to convert query results:
+```rescript
+let objects = k->Context.query({include_: ["movable"]})
+  ->Array.filterMap(Pos.Unit.fromGameObj)
+// objects: array<Pos.Unit.t>
+```
+
+**Combining multiple components:**
+When you need multiple components together, create a custom combined module in your game code:
+```rescript
+module Collidable = {
+  module Unit = {
+    type t
+    include GameObjRaw.Comp({type t = t})
+    include Pos.Comp({type t = t})
+    include Area.Comp({type t = t})
+    
+    let fromGameObj = (obj: GameObjRaw.Unit.t): option<t> => {
+      if obj->has("pos") && obj->has("area") {
+        Some(Obj.magic(obj))
+      } else {
+        None
+      }
+    }
+  }
+}
+```
+
+**Creating Unit modules is uncommon**: Most of the time, you'll use existing `Unit` modules from the library or create custom combined modules. Creating a `Unit` module for a single component is typically only done when that component is central to your game's architecture (like `Attack.Unit` in the skirmish example).
 
 ### Child origin
 
@@ -198,9 +234,20 @@ ctrlRef := Some(obj->onUpdateWithController(() => {
 - For input enums (`key`, `mouseButton`, etc.), use typed constructors, not strings.
 - Use `k->Context.onLoad` to start game logic dependent on assets; avoid using assets synchronously after `loadSprite` until loaded.
 
+### Polygon Collision Limitations
+
+- **Convex vs Concave Polygons**: Kaplay's `Area` component only supports **convex polygons** for collision detection. A convex polygon has all interior angles < 180° (e.g., rectangles, triangles, regular polygons). A concave polygon has at least one interior angle > 180° (e.g., L-shapes, star shapes, zigzag lines).
+- **Why the limitation**: Physics engines (including Kaplay's) use algorithms optimized for convex shapes. Concave shapes require decomposition into multiple convex polygons or alternative collision strategies.
+- **Workarounds for concave shapes**:
+  - Use a bounding rectangle (`Math.Rect`) that encompasses the entire shape
+  - Decompose the concave shape into multiple convex polygons, each with its own `Area` component
+  - Use point-based collision checking (`hasPoint`) for line segments or complex paths
+  - Create a custom component that provides a `getWorldRect()` function for querying purposes (useful for rule systems or spatial queries)
+
 ## Pointers to Local Docs and Samples
 
 - See `docs/content/docs/game-context.mdx` for initializing and holding the context.
 - See `docs/content/docs/game-object.mdx` for step-by-step object composition, including includes, `make`, and pitfalls.
+- See `docs/content/docs/generic-component-access.mdx` for working with generic game objects from queries using Unit modules.
 - Browse `packages/samples/src/*.res` for idiomatic usage of events, tweening, camera controls, and vector math with `Kaplay.Vec2`.
 
