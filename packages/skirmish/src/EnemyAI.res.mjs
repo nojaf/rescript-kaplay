@@ -13,32 +13,9 @@ let attackOnTheLeftOfEnemy = "attackOnTheLeftOfEnemy";
 
 let attackOnTheRightOfEnemy = "attackOnTheRightOfEnemy";
 
-let Facts = {
-  playerCentered: "playerCentered",
-  playerBelow: "playerBelow",
-  attackInCenterOfEnemy: attackInCenterOfEnemy,
-  attackOnTheLeftOfEnemy: attackOnTheLeftOfEnemy,
-  attackOnTheRightOfEnemy: attackOnTheRightOfEnemy
-};
+let hasSpaceOnTheLeft = "hasSpaceOnTheLeft";
 
-let Salience = {
-  baseFacts: 0.0,
-  derivedFacts: 10.0,
-  decisions: 20.0
-};
-
-function isPlayerCentered(rs) {
-  let distance = Math.round(Math.abs(rs.state.enemy.pos.x - rs.state.player.pos.x));
-  return distance === 0;
-}
-
-function isPlayerBelow(rs) {
-  return rs.state.enemy.pos.y < rs.state.player.pos.y;
-}
-
-function negate(predicate) {
-  return rs => !predicate(rs);
-}
+let hasSpaceOnTheRight = "hasSpaceOnTheRight";
 
 function overlapX(param, param$1) {
   return Math.max(param[0], param$1[0]) <= Math.min(param[1], param$1[1]);
@@ -50,6 +27,7 @@ function makeRuleSystem(k, enemy, player) {
     enemy: enemy,
     player: player,
     playerAttacks: [],
+    dodgeDirection: undefined,
     lastAttackAt: 0
   };
   rs.addRuleExecutingAction(rs => rs.state.playerAttacks.length !== 0, rs => {
@@ -115,6 +93,78 @@ function makeRuleSystem(k, enemy, player) {
       return;
     }
   }, 0.0);
+  rs.addRuleExecutingAction(_rs => true, _rs => {
+    let enemyWorldPos = rs.state.enemy.worldPos();
+    let enemyStartX = enemyWorldPos.x - rs.state.enemy.halfSize;
+    let enemyEndX = enemyWorldPos.x + rs.state.enemy.halfSize;
+    let leftSpace = enemyStartX / k.width();
+    let rightSpace = (k.width() - enemyEndX) / k.width();
+    if (leftSpace > 0) {
+      rs.assertFact(hasSpaceOnTheLeft, leftSpace);
+    }
+    if (rightSpace > 0) {
+      rs.assertFact(hasSpaceOnTheRight, rightSpace);
+      return;
+    }
+  }, 0.0);
+  rs.addRuleExecutingAction(rs => {
+    let c = rs.gradeForFact(attackInCenterOfEnemy);
+    return c > 0.0;
+  }, rs => {
+    let centerAttack = rs.gradeForFact(attackInCenterOfEnemy);
+    let leftAttack = rs.gradeForFact(attackOnTheLeftOfEnemy);
+    let rightAttack = rs.gradeForFact(attackOnTheRightOfEnemy);
+    let leftSpace = rs.gradeForFact(hasSpaceOnTheLeft);
+    let rightSpace = rs.gradeForFact(hasSpaceOnTheRight);
+    let leftThreat = leftAttack + centerAttack;
+    let rightThreat = rightAttack + centerAttack;
+    let match;
+    if (leftThreat > rightThreat) {
+      match = [
+        false,
+        true
+      ];
+    } else if (rightThreat > leftThreat) {
+      match = [
+        true,
+        true
+      ];
+    } else {
+      let currentDirection = rs.state.dodgeDirection;
+      match = currentDirection !== undefined ? [
+          currentDirection,
+          false
+        ] : [
+          leftSpace > rightSpace,
+          true
+        ];
+    }
+    let preferredDodgeDirection = match[0];
+    let finalDirection;
+    if (match[1]) {
+      let hasSpaceInPreferred;
+      hasSpaceInPreferred = preferredDodgeDirection === true ? leftSpace > 0.0 : rightSpace > 0.0;
+      finalDirection = hasSpaceInPreferred ? preferredDodgeDirection : (
+          preferredDodgeDirection === true ? rightSpace <= 0.0 : leftSpace > 0.0
+        );
+    } else {
+      let dir = rs.state.dodgeDirection;
+      finalDirection = dir !== undefined ? dir : preferredDodgeDirection;
+    }
+    let currentDirection$1 = rs.state.dodgeDirection;
+    if (currentDirection$1 !== undefined && currentDirection$1 === finalDirection) {
+      return;
+    } else {
+      rs.state.dodgeDirection = finalDirection;
+      return;
+    }
+  }, 20.0);
+  rs.addRuleExecutingAction(rs => {
+    let c = rs.gradeForFact(attackInCenterOfEnemy);
+    return c === 0.0;
+  }, rs => {
+    rs.state.dodgeDirection = undefined;
+  }, 20.0);
   return rs;
 }
 
@@ -128,40 +178,28 @@ function getPlayerAttacks(k) {
   }), Attack$Skirmish.Unit.fromGameObj);
 }
 
-let forOf = (function (items, callback, shouldBreak) {
-  for (let i = 0; i < items.length; i++) {
-    if (shouldBreak()) {
-      break;
-    }
-    callback(items[i])
-  }
-});
-
-function update(k, rs, param) {
-  rs.reset();
-  rs.state.playerAttacks = getPlayerAttacks(k);
-  rs.execute();
-}
-
 function make(k, pokemonId, level, player) {
   let enemy = Pokemon$Skirmish.make(k, pokemonId, level, false);
   let rs = makeRuleSystem(k, enemy, player);
-  enemy.onUpdate(extra => update(k, rs, extra));
+  enemy.onUpdate(extra => {
+    rs.reset();
+    rs.state.playerAttacks = getPlayerAttacks(k);
+    rs.execute();
+    let match = rs.state.dodgeDirection;
+    if (match === undefined) {
+      return;
+    }
+    if (match === true) {
+      rs.state.enemy.move(k.vec2(-100, 0));
+      return;
+    }
+    rs.state.enemy.move(k.vec2(100, 0));
+  });
   DebugRuleSystem$Skirmish.make(k, rs);
   return enemy;
 }
 
 export {
-  Facts,
-  Salience,
-  isPlayerCentered,
-  isPlayerBelow,
-  negate,
-  overlapX,
-  makeRuleSystem,
-  getPlayerAttacks,
-  forOf,
-  update,
   make,
 }
 /* Attack-Skirmish Not a pure module */

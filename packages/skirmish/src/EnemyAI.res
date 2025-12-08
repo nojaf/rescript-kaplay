@@ -1,9 +1,13 @@
 open Kaplay
 
+@unboxed
+type dodgeDirection = | @as(true) Left | @as(false) Right
+
 type ruleSystemState = {
   enemy: Pokemon.t,
   player: Pokemon.t,
   mutable playerAttacks: array<Attack.Unit.t>,
+  mutable dodgeDirection: option<dodgeDirection>,
   lastAttackAt: float,
 }
 
@@ -15,8 +19,8 @@ module Facts = {
   let attackInCenterOfEnemy = Fact("attackInCenterOfEnemy")
   let attackOnTheLeftOfEnemy = Fact("attackOnTheLeftOfEnemy")
   let attackOnTheRightOfEnemy = Fact("attackOnTheRightOfEnemy")
-
-  // let attackIncoming = Fact("attackIncoming")
+  let hasSpaceOnTheLeft = Fact("hasSpaceOnTheLeft")
+  let hasSpaceOnTheRight = Fact("hasSpaceOnTheRight")
 }
 
 module Salience = {
@@ -24,41 +28,6 @@ module Salience = {
   let baseFacts = Salience(0.0)
   let derivedFacts = Salience(10.0)
   let decisions = Salience(20.0)
-}
-
-let isPlayerCentered = (rs: RuleSystem.t<ruleSystemState>): bool => {
-  let distance =
-    Stdlib_Math.abs(
-      rs.state.enemy->Pokemon.getPosX - rs.state.player->Pokemon.getPosX,
-    )->Stdlib_Math.round
-  distance == 0.
-}
-
-let isPlayerBelow = (rs: RuleSystem.t<ruleSystemState>): bool => {
-  rs.state.enemy->Pokemon.getPosY < rs.state.player->Pokemon.getPosY
-}
-
-// let isAttackIncoming = (rs: RuleSystem.t<ruleSystemState>): bool => {
-//   let selfX = rs.state.enemy->Pokemon.getPosX
-//   let halfWidth = rs.state.enemy->Pokemon.getWidth / 2.
-//   let safetyMargin = Stdlib_Math.random() * 10.
-//   let selfStartX = selfX - halfWidth - safetyMargin
-//   let selfEndX = selfX + halfWidth + safetyMargin
-
-//   rs.state.playerAttacks->Array.some(attack => {
-//     let attackStartX = attack.pos.x
-//     let attackEndX = attack.pos.x + attack.width
-//     // Simple overlap check: two ranges overlap if there's no gap between them!
-//     // They overlap if: enemy doesn't start after attack ends AND attack doesn't start after enemy ends.
-//     // This covers all cases: partial overlaps (left/right), complete containment, and edge touches.
-//     selfStartX <= attackEndX && attackStartX <= selfEndX
-//   })
-// }
-
-let negate = (predicate: RuleSystem.predicate<ruleSystemState>): RuleSystem.predicate<
-  ruleSystemState,
-> => {
-  rs => !predicate(rs)
 }
 
 let overlapX = ((ax1, ax2), (bx1, bx2)) => {
@@ -73,25 +42,10 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
     enemy,
     player,
     playerAttacks: [],
+    dodgeDirection: None,
     lastAttackAt: 0.,
   }
 
-  // rs->RuleSystem.addRuleAssertingFact(isPlayerCentered, Facts.playerCentered, ~grade=Grade(1.))
-  // rs->RuleSystem.addRuleRetractingFact(
-  //   negate(isPlayerCentered),
-  //   Facts.playerCentered,
-  //   ~grade=Grade(1.),
-  // )
-
-  // rs->RuleSystem.addRuleAssertingFact(isPlayerBelow, Facts.playerBelow, ~grade=Grade(1.))
-  // rs->RuleSystem.addRuleRetractingFact(negate(isPlayerBelow), Facts.playerBelow, ~grade=Grade(1.))
-
-  // TODO: add test to assert grades are correct
-  // And consider a debug tool to view the grades in realtime during debug.
-
-  // Check for attacks on the left
-  // TODO: we would have a better assement of the dange of the attack on the left
-  // by taking the speed of the attack and the speed of the enemy into account.
   rs->RuleSystem.addRuleExecutingAction(
     rs => rs.state.playerAttacks->Array.length > 0,
     rs => {
@@ -171,6 +125,115 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
     ~salient=Salience.baseFacts,
   )
 
+  rs->RuleSystem.addRuleExecutingAction(
+    _rs => true,
+    _rs => {
+      let enemyWorldPos = rs.state.enemy->Pokemon.worldPos
+      let enemyStartX = enemyWorldPos.x - rs.state.enemy.halfSize
+      let enemyEndX = enemyWorldPos.x + rs.state.enemy.halfSize
+      let leftSpace = enemyStartX / k->Context.width
+      let rightSpace = (k->Context.width - enemyEndX) / k->Context.width
+      if leftSpace > 0. {
+        rs->RuleSystem.assertFact(Facts.hasSpaceOnTheLeft, ~grade=RuleSystem.Grade(leftSpace))
+      }
+      if rightSpace > 0. {
+        rs->RuleSystem.assertFact(Facts.hasSpaceOnTheRight, ~grade=RuleSystem.Grade(rightSpace))
+      }
+    },
+    ~salient=Salience.baseFacts,
+  )
+
+  rs->RuleSystem.addRuleExecutingAction(
+    rs => {
+      // Only dodge when there's an attack in the center (or center + sides)
+      // Side attacks alone don't require dodging
+      let RuleSystem.Grade(c) = RuleSystem.gradeForFact(rs, Facts.attackInCenterOfEnemy)
+      c > 0.0
+    },
+    rs => {
+      // Get all attack facts and space facts
+      let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(rs, Facts.attackInCenterOfEnemy)
+      let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(rs, Facts.attackOnTheLeftOfEnemy)
+      let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(rs, Facts.attackOnTheRightOfEnemy)
+      let RuleSystem.Grade(leftSpace) = RuleSystem.gradeForFact(rs, Facts.hasSpaceOnTheLeft)
+      let RuleSystem.Grade(rightSpace) = RuleSystem.gradeForFact(rs, Facts.hasSpaceOnTheRight)
+
+      // Calculate threat on each side
+      // Left side threat = attacks on left + center (if center exists)
+      // Right side threat = attacks on right + center (if center exists)
+      let leftThreat = leftAttack + centerAttack
+      let rightThreat = rightAttack + centerAttack
+
+      // Determine preferred direction based on threats
+      let (preferredDodgeDirection, shouldRecalculate) = if leftThreat > rightThreat {
+        // More threat on left → move right
+        (Right, true)
+      } else if rightThreat > leftThreat {
+        // More threat on right → move left
+        (Left, true)
+      } else {
+        // Equal threats (only center attack)
+
+        switch rs.state.dodgeDirection {
+        | None => // No direction yet, pick based on space
+          (leftSpace > rightSpace ? Left : Right, true)
+        | Some(
+            currentDirection,
+          ) => // Already have a direction for equal threats, keep it to avoid oscillation
+          (currentDirection, false)
+        }
+      }
+
+      // Only recalculate final direction if we should (not when keeping existing direction)
+      let finalDirection = if !shouldRecalculate {
+        // Keep current direction (equal threats, already have direction)
+        switch rs.state.dodgeDirection {
+        | Some(dir) => dir
+        | None => preferredDodgeDirection // Shouldn't happen, but fallback
+        }
+      } else {
+        // Check if we have space in the preferred direction
+        let hasSpaceInPreferred = switch preferredDodgeDirection {
+        | Left => leftSpace > 0.0
+        | Right => rightSpace > 0.0
+        }
+
+        // If no space in preferred direction, try the other side
+        hasSpaceInPreferred
+          ? preferredDodgeDirection
+          : switch preferredDodgeDirection {
+            | Left => rightSpace > 0.0 ? Right : Left
+            | Right => leftSpace > 0.0 ? Left : Right
+            }
+      }
+
+      switch rs.state.dodgeDirection {
+      | None =>
+        // Pick initial direction
+        rs.state.dodgeDirection = Some(finalDirection)
+      | Some(currentDirection) =>
+        if currentDirection != finalDirection {
+          rs.state.dodgeDirection = Some(finalDirection)
+        }
+      }
+    },
+    ~salient=Salience.decisions,
+  )
+
+  // Rule: Reset dodge direction when center attack is gone
+  // We stop dodging once we've successfully dodged the center attack,
+  // even if there are still attacks on the sides
+  rs->RuleSystem.addRuleExecutingAction(
+    rs => {
+      let RuleSystem.Grade(c) = RuleSystem.gradeForFact(rs, Facts.attackInCenterOfEnemy)
+      c == 0.0
+    },
+    rs => {
+      rs.state.dodgeDirection = None
+    },
+    ~salient=Salience.decisions,
+  )
+
   rs
 }
 
@@ -183,93 +246,17 @@ let getPlayerAttacks = (k: Context.t): array<Attack.Unit.t> => {
   ->Array.filterMap(Attack.Unit.fromGameObj)
 }
 
-let forOf: (array<'t>, 't => unit, unit => bool) => unit = %raw(`
-function (items, callback, shouldBreak) {
-  for (let i = 0; i < items.length; i++) {
-    if (shouldBreak()) {
-      break;
-    }
-    callback(items[i])
-  }
-}
-`)
-
-/**
- Verifies the attacks coming from the player.
- First boolean is an attack on the left of the enemy.
- Second boolean is an attack on the right of the enemy.
- */
-let // let verifyAttacks = (rs: RuleSystem.t<ruleSystemState>): (bool, bool) => {
-//   let attackOnTheLeft = ref(false)
-//   let attackOnTheRight = ref(false)
-//   let enemyX = rs.state.enemy->Pokemon.getPosX
-//   // We use a while loop to be able to have an early exit if we find an attack on the left and right.
-//   // In that case, we don't need to iterate over all the attacks.
-//   forOf(
-//     rs.state.playerAttacks,
-//     attack => {
-//       let attackX = attack.pos.x
-//       if attackX < enemyX {
-//         attackOnTheLeft.contents = true
-//       } else if attackX > enemyX {
-//         attackOnTheRight.contents = true
-//       }
-//     },
-//     () => attackOnTheLeft.contents && attackOnTheRight.contents,
-//   )
-
-//   (attackOnTheLeft.contents, attackOnTheRight.contents)
-// }
-
-update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
+let update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
   rs->RuleSystem.reset
   rs.state.playerAttacks = getPlayerAttacks(k)
   rs->RuleSystem.execute
 
-  // let (attackOnTheLeft, attackOnTheRight) = verifyAttacks(rs)
-
-  // check for facts...
-  // switch (
-  //   RuleSystem.gradeForFact(rs, Facts.attackOnTheLeftOfEnemy),
-  //   RuleSystem.gradeForFact(rs, Facts.playerCentered),
-  // ) {
-  // | (Grade(attackInComingGrade), _) if attackInComingGrade > 0.0 => {
-  //     // Move away from the attack
-  //     if attackOnTheLeft {
-  //       // Move to the right of the attack
-  //       rs.state.enemy->Pokemon.move(k->Context.vec2World(40., 0.))
-  //     } else if attackOnTheRight {
-  //       // Move to the left of the attack
-  //       rs.state.enemy->Pokemon.move(k->Context.vec2World(-40., 0.))
-  //     } else {
-  //       // The attack is right in front of us.
-  //       // We need to dodge it in either direction.
-  //       // We pick the direction where there is most space.
-  //       let distanceLeft = rs.state.enemy->Pokemon.getPosX
-  //       let distanceRight = k->Context.width - rs.state.enemy->Pokemon.getPosX
-  //       if distanceLeft > distanceRight {
-  //         rs.state.enemy->Pokemon.move(k->Context.vec2World(-40., 0.))
-  //       } else {
-  //         rs.state.enemy->Pokemon.move(k->Context.vec2World(40., 0.))
-  //       }
-  //     }
-  //   }
-  // | (_, Grade(g)) if g < 1.0 => {
-  //     // Move in front of the player
-  //     let deltaX = Stdlib_Math.round(
-  //       rs.state.player->Pokemon.getPosX - rs.state.enemy->Pokemon.getPosX,
-  //     )
-  //     if deltaX > 0. && !attackOnTheRight {
-  //       rs.state.enemy->Pokemon.move(k->Context.vec2World(120., 0.))
-  //     } else if deltaX < 0. && !attackOnTheLeft {
-  //       rs.state.enemy->Pokemon.move(k->Context.vec2World(-120., 0.))
-  //     }
-  //   }
-  // | (_, Grade(g)) if g == 1.0 && rs.state.enemy.attackStatus == CanAttack =>
-  //   // Attack the player
-  //   Ember.cast(rs.state.enemy)
-  // | _ => ()
-  // }
+  // Move in the dodging direction if set
+  switch rs.state.dodgeDirection {
+  | None => ()
+  | Some(Left) => rs.state.enemy->Pokemon.move(k->Context.vec2World(-100., 0.))
+  | Some(Right) => rs.state.enemy->Pokemon.move(k->Context.vec2World(100., 0.))
+  }
 }
 
 let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Pokemon.t => {
@@ -279,13 +266,6 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Poke
   enemy->Pokemon.onUpdate(update(k, rs, ...))
 
   DebugRuleSystem.make(k, rs)
-
-  // k->Context.onKeyPress(key => {
-  //   switch key {
-  //   | Space => Console.table(rs.facts->Map.entries->Iterator.toArray)
-  //   | _ => ()
-  //   }
-  // })
 
   enemy
 }
