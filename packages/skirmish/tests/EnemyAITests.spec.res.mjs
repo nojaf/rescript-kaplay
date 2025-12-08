@@ -26,6 +26,10 @@ function withKaplayContext(playingField, testFn) {
     if (playingField.length === 0) {
       reject(new Error("Playing field is empty"));
     }
+    let xDimension = playingField[0].length;
+    if (!playingField.every(row => row.length === xDimension)) {
+      reject(new Error("All rows must have the same length"));
+    }
     k.onError(error => {
       k.quit();
       reject(error);

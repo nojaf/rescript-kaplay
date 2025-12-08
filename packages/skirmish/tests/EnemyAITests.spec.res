@@ -35,6 +35,12 @@ let withKaplayContext = (
     if Array.length(playingField) == 0 {
       reject(JsError.make("Playing field is empty"))
     }
+    if {
+      let xDimension = Array.getUnsafe(playingField, 0)->String.length
+      !Array.every(playingField, row => String.length(row) == xDimension)
+    } {
+      reject(JsError.make("All rows must have the same length"))
+    }
 
     // https://v4000.kaplayjs.com/docs/api/ctx/onError/
     k->Context.onError((error: JsError.t) => {
