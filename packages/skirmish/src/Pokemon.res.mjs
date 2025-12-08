@@ -65,8 +65,12 @@ function getHealthPercentage(pokemon) {
   return currentHp / maxHp * 100;
 }
 
-function getHalfSize(t) {
-  return t.width / 2;
+function moveLeft(k, pokemon) {
+  pokemon.move(k.vec2(-100, 0));
+}
+
+function moveRight(k, pokemon) {
+  pokemon.move(k.vec2(100, 0));
 }
 
 function make(k, pokemonId, level, team) {
@@ -162,7 +166,8 @@ export {
   load,
   movementSpeed,
   getHealthPercentage,
-  getHalfSize,
+  moveLeft,
+  moveRight,
   make,
 }
 /*  Not a pure module */

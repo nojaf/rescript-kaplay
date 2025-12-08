@@ -5,6 +5,9 @@ module Expect = {
   type t
 
   @send
+  external toBe: (t, 'expected) => unit = "toBe"
+
+  @send
   external toBeDefined: t => unit = "toBeDefined"
 
   @send

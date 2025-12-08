@@ -1,86 +1,6 @@
 open Vitest
 open Kaplay
 
-/*
-test("create kaplay context", () => {
-  let k = Kaplay.Context.kaplay(
-    ~initOptions={
-      width: 300,
-      height: 400,
-      global: false,
-      background: "#000000",
-      scale: 1.,
-      crisp: true,
-    },
-  )
-  expect(k)->Expect.toBeDefined
-
-  Pokemon.load(k, 4)
-  Pokemon.load(k, 1)
-  Ember.load()
-
-  Promise.make((resolve, reject) => {
-    k->Kaplay.Context.onError(
-      error => {
-        reject(error)
-      },
-    )
-    k->Kaplay.Context.onLoad(
-      () => {
-        let charmander = Pokemon.make(k, ~pokemonId=4, ~level=5, Opponent)
-        let bulbasaur = Pokemon.make(k, ~pokemonId=1, ~level=5, Player)
-        expect(charmander)->Expect.toBeDefined
-
-        let enemyAI = EnemyAI.make(k, ~pokemonId=4, ~level=5, bulbasaur)
-
-        k->Kaplay.Context.quit
-
-        resolve()
-      },
-    )
-  })
-})
-
-test("create kaplay context", () => {
-  let k = Kaplay.Context.kaplay(
-    ~initOptions={
-      width: 300,
-      height: 400,
-      global: false,
-      background: "#000000",
-      scale: 1.,
-      crisp: true,
-    },
-  )
-  expect(k)->Expect.toBeDefined
-
-  Pokemon.load(k, 4)
-  Pokemon.load(k, 1)
-  Ember.load()
-
-  Promise.make((resolve, reject) => {
-    k->Kaplay.Context.onError(
-      error => {
-        reject(error)
-      },
-    )
-    k->Kaplay.Context.onLoad(
-      () => {
-        let charmander = Pokemon.make(k, ~pokemonId=4, ~level=5, Opponent)
-        let bulbasaur = Pokemon.make(k, ~pokemonId=1, ~level=5, Player)
-        expect(charmander)->Expect.toBeDefined
-
-        let enemyAI = EnemyAI.make(k, ~pokemonId=4, ~level=5, bulbasaur)
-
-        k->Kaplay.Context.quit
-
-        resolve()
-      },
-    )
-  })
-})
-*/
-
 @send
 external thenResolve: (promise<'data>, 'data => unit) => promise<'data> = "then"
 
@@ -90,7 +10,10 @@ external catchJSError: (promise<'data>, JsError.t => unit) => promise<'data> = "
 @send
 external finally: (promise<'data>, unit => unit) => unit = "finally"
 
-let withKaplayContext = (testFn: Context.t => promise<unit>): promise<unit> => {
+let withKaplayContext = (
+  playingField: array<string>,
+  testFn: (Context.t, RuleSystem.t<EnemyAI.ruleSystemState>) => promise<unit>,
+): promise<unit> => {
   let k = Context.kaplay(
     ~initOptions={
       width: 160,
@@ -109,13 +32,71 @@ let withKaplayContext = (testFn: Context.t => promise<unit>): promise<unit> => {
   Ember.load()
 
   Promise.make((resolve, reject) => {
+    if Array.length(playingField) == 0 {
+      reject(JsError.make("Playing field is empty"))
+    }
+
     // https://v4000.kaplayjs.com/docs/api/ctx/onError/
     k->Context.onError((error: JsError.t) => {
       k->Context.quit
       reject(error)
     })
     k->Context.onLoad(() => {
-      testFn(k)
+      let xDimension = Array.getUnsafe(playingField, 0)->String.length
+      let yDimension = Array.length(playingField)
+      let tileSize = 32.
+      let halfTile = tileSize / 2.
+
+      for y in 0 to yDimension - 1 {
+        for x in 0 to xDimension - 1 {
+          let tile = Array.getUnsafe(playingField, y)->String.charAt(x)
+          let (x, y) = (Int.toFloat(x), Int.toFloat(y))
+
+          switch tile {
+          | "P" => {
+              let x = x * tileSize + halfTile
+              let y = y * tileSize + halfTile
+              let player = Pokemon.make(k, ~pokemonId=25, ~level=12, Player)
+              player->Pokemon.setPos(k->Context.vec2Local(x, y))
+            }
+          | "E" => {
+              let x = x * tileSize + halfTile
+              let y = y * tileSize + halfTile
+              let enemy = Pokemon.make(k, ~pokemonId=4, ~level=5, Opponent)
+              enemy->Pokemon.setPos(k->Context.vec2Local(x, y))
+            }
+          | "A" => {
+              let x = x * tileSize + halfTile
+              let y = y * tileSize + halfTile
+              GenericMove.make(k, ~x, ~y, ~size=tileSize, Player)->ignore
+            }
+          | "." => ()
+          | _ => reject(JsError.make(`Invalid tile: ${tile}, expected P, E, A, .`))
+          }
+        }
+      }
+
+      let enemies = k->Context.query({include_: [Pokemon.tag, Team.opponent]})
+      if enemies->Array.length !== 1 {
+        reject(
+          JsError.make(`Expected exactly 1 enemy, found ${enemies->Array.length->Int.toString}`),
+        )
+      }
+
+      let players = k->Context.query({include_: [Pokemon.tag, Team.player]})
+      if players->Array.length !== 1 {
+        reject(
+          JsError.make(`Expected exactly 1 player, found ${players->Array.length->Int.toString}`),
+        )
+      }
+
+      let rs = EnemyAI.makeRuleSystem(
+        k,
+        ~enemy=enemies->Array.getUnsafe(0),
+        ~player=players->Array.getUnsafe(0),
+      )
+
+      testFn(k, rs)
       ->thenResolve(resolve)
       ->catchJSError(reject)
       ->finally(
@@ -128,27 +109,24 @@ let withKaplayContext = (testFn: Context.t => promise<unit>): promise<unit> => {
   })
 }
 
-test("setup the playing field", () => {
-  let tileSize = 32.
-  let halfTile = tileSize / 2.
+test("player attack right in center of enemy", () => {
+  withKaplayContext(
+    [
+      // game level
+      "..E..",
+      ".....",
+      "..A..",
+      ".....",
+      "..P..",
+    ],
+    async (k, rs) => {
+      // Setup spies
+      let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
 
-  withKaplayContext(async k => {
-    let center = 2. * tileSize + halfTile
-    let enemy = Pokemon.make(k, ~pokemonId=4, ~level=5, Opponent)
-    enemy->Pokemon.setPos(k->Context.vec2Local(center, halfTile))
+      EnemyAI.update(k, rs, ())
 
-    let _ = GenericMove.make(k, ~x=center, ~y=2. * tileSize + halfTile, ~size=tileSize, Player)
-
-    let player = Pokemon.make(k, ~pokemonId=25, ~level=12, Player)
-    player->Pokemon.setPos(k->Context.vec2Local(center, tileSize * 4. + halfTile))
-
-    let rs = EnemyAI.makeRuleSystem(k, ~enemy, ~player)
-
-    // Setup spies
-    let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
-
-    EnemyAI.update(k, rs, ())
-
-    expect(enemyMoveSpy)->Expect.toHaveBeenCalled
-  })
+      expect(rs.state.dodgeDirection)->Expect.toBe(EnemyAI.Right)
+      expect(enemyMoveSpy)->Expect.toHaveBeenCalled
+    },
+  )
 })

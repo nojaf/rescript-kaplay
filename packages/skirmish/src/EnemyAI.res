@@ -13,8 +13,6 @@ type ruleSystemState = {
 
 module Facts = {
   open RuleSystem
-  let playerCentered = Fact("playerCentered")
-  let playerBelow = Fact("playerBelow")
 
   let attackInCenterOfEnemy = Fact("attackInCenterOfEnemy")
   let attackOnTheLeftOfEnemy = Fact("attackOnTheLeftOfEnemy")
@@ -26,7 +24,7 @@ module Facts = {
 module Salience = {
   open RuleSystem
   let baseFacts = Salience(0.0)
-  let derivedFacts = Salience(10.0)
+  // let derivedFacts = Salience(10.0)
   let decisions = Salience(20.0)
 }
 
@@ -254,8 +252,8 @@ let update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
   // Move in the dodging direction if set
   switch rs.state.dodgeDirection {
   | None => ()
-  | Some(Left) => rs.state.enemy->Pokemon.move(k->Context.vec2World(-100., 0.))
-  | Some(Right) => rs.state.enemy->Pokemon.move(k->Context.vec2World(100., 0.))
+  | Some(Left) => Pokemon.moveLeft(k, rs.state.enemy)
+  | Some(Right) => Pokemon.moveRight(k, rs.state.enemy)
   }
 }
 

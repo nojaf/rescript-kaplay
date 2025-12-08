@@ -61,7 +61,13 @@ let getHealthPercentage = (pokemon: t): float => {
   currentHp / maxHp * 100.
 }
 
-let getHalfSize = (t: t) => t->getWidth / 2.
+let moveLeft = (k: Context.t, pokemon: t) => {
+  pokemon->move(k->Context.vec2World(-100., 0.))
+}
+
+let moveRight = (k: Context.t, pokemon: t) => {
+  pokemon->move(k->Context.vec2World(100., 0.))
+}
 
 let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
   let (spriteName, direction, posY) = if team == Player {

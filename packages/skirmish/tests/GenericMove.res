@@ -9,6 +9,8 @@ include Attack.Comp({type t = t})
 include Anchor.Comp({type t = t})
 include Color.Comp({type t = t})
 
+let tag = "generic-move"
+
 let getCorner = (attack: t, k: Context.t) => {
   let pkmn =
     k
@@ -30,6 +32,7 @@ let getCorner = (attack: t, k: Context.t) => {
 let make = (k: Context.t, ~x, ~y, ~size: float, team: Team.t): t => {
   let gameObj = k->Context.add(
     [
+      Context.tag(tag),
       addPos(k, x, y),
       addAnchorCenter(k),
       Team.getTagComponent(team),

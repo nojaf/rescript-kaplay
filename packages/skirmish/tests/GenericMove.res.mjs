@@ -27,6 +27,8 @@ Anchor$Kaplay.Comp({});
 
 Color$Kaplay.Comp({});
 
+let tag = "generic-move";
+
 function getCorner(attack, k) {
   let pkmn = k.query({
       include: [Team$Skirmish.opponent]
@@ -42,6 +44,7 @@ function getCorner(attack, k) {
 function make(k, x, y, size, team) {
   let gameObj = k.add(Belt_Array.concatMany([
     [
+      tag,
       k.pos(x, y),
       k.anchor("center"),
       Team$Skirmish.getTagComponent(team)
@@ -86,6 +89,7 @@ function make(k, x, y, size, team) {
 export {
   getClosestCorner,
   addAttack,
+  tag,
   getCorner,
   make,
 }

@@ -178,28 +178,31 @@ function getPlayerAttacks(k) {
   }), Attack$Skirmish.Unit.fromGameObj);
 }
 
+function update(k, rs, param) {
+  rs.reset();
+  rs.state.playerAttacks = getPlayerAttacks(k);
+  rs.execute();
+  let match = rs.state.dodgeDirection;
+  if (match !== undefined) {
+    if (match === true) {
+      return Pokemon$Skirmish.moveLeft(k, rs.state.enemy);
+    } else {
+      return Pokemon$Skirmish.moveRight(k, rs.state.enemy);
+    }
+  }
+}
+
 function make(k, pokemonId, level, player) {
   let enemy = Pokemon$Skirmish.make(k, pokemonId, level, false);
   let rs = makeRuleSystem(k, enemy, player);
-  enemy.onUpdate(extra => {
-    rs.reset();
-    rs.state.playerAttacks = getPlayerAttacks(k);
-    rs.execute();
-    let match = rs.state.dodgeDirection;
-    if (match === undefined) {
-      return;
-    }
-    if (match === true) {
-      rs.state.enemy.move(k.vec2(-100, 0));
-      return;
-    }
-    rs.state.enemy.move(k.vec2(100, 0));
-  });
+  enemy.onUpdate(extra => update(k, rs, extra));
   DebugRuleSystem$Skirmish.make(k, rs);
   return enemy;
 }
 
 export {
   make,
+  makeRuleSystem,
+  update,
 }
 /* Attack-Skirmish Not a pure module */

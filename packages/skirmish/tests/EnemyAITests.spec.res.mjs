@@ -2,13 +2,14 @@
 
 import Kaplay from "kaplay";
 import * as Vitest from "vitest";
+import * as Team$Skirmish from "../src/Team.res.mjs";
 import * as Ember$Skirmish from "../src/Moves/Ember.res.mjs";
 import * as EnemyAI$Skirmish from "../src/EnemyAI.res.mjs";
 import * as Pokemon$Skirmish from "../src/Pokemon.res.mjs";
 import * as GenericMove$Skirmish from "./GenericMove.res.mjs";
 import * as Thundershock$Skirmish from "../src/Moves/Thundershock.res.mjs";
 
-function withKaplayContext(testFn) {
+function withKaplayContext(playingField, testFn) {
   let k = Kaplay({
     width: 160,
     height: 160,
@@ -22,33 +23,83 @@ function withKaplayContext(testFn) {
   Thundershock$Skirmish.load();
   Ember$Skirmish.load();
   return new Promise((resolve, reject) => {
+    if (playingField.length === 0) {
+      reject(new Error("Playing field is empty"));
+    }
     k.onError(error => {
       k.quit();
       reject(error);
     });
     k.onLoad(() => {
-      testFn(k).then(resolve).catch(reject).finally(() => {
+      let xDimension = playingField[0].length;
+      let yDimension = playingField.length;
+      let halfTile = 32 / 2;
+      for (let y = 0; y < yDimension; ++y) {
+        for (let x = 0; x < xDimension; ++x) {
+          let tile = playingField[y].charAt(x);
+          switch (tile) {
+            case "." :
+              break;
+            case "A" :
+              let x$1 = x * 32 + halfTile;
+              let y$1 = y * 32 + halfTile;
+              GenericMove$Skirmish.make(k, x$1, y$1, 32, true);
+              break;
+            case "E" :
+              let x$2 = x * 32 + halfTile;
+              let y$2 = y * 32 + halfTile;
+              let enemy = Pokemon$Skirmish.make(k, 4, 5, false);
+              enemy.pos = k.vec2(x$2, y$2);
+              break;
+            case "P" :
+              let x$3 = x * 32 + halfTile;
+              let y$3 = y * 32 + halfTile;
+              let player = Pokemon$Skirmish.make(k, 25, 12, true);
+              player.pos = k.vec2(x$3, y$3);
+              break;
+            default:
+              reject(new Error(`Invalid tile: ` + tile + `, expected P, E, A, .`));
+          }
+        }
+      }
+      let enemies = k.query({
+        include: [
+          Pokemon$Skirmish.tag,
+          Team$Skirmish.opponent
+        ]
+      });
+      if (enemies.length !== 1) {
+        reject(new Error(`Expected exactly 1 enemy, found ` + enemies.length.toString()));
+      }
+      let players = k.query({
+        include: [
+          Pokemon$Skirmish.tag,
+          Team$Skirmish.player
+        ]
+      });
+      if (players.length !== 1) {
+        reject(new Error(`Expected exactly 1 player, found ` + players.length.toString()));
+      }
+      let rs = EnemyAI$Skirmish.makeRuleSystem(k, enemies[0], players[0]);
+      testFn(k, rs).then(resolve).catch(reject).finally(() => {
         k.quit();
       });
     });
   });
 }
 
-Vitest.test("setup the playing field", () => {
-  let halfTile = 32 / 2;
-  return withKaplayContext(async k => {
-    let center = 2 * 32 + halfTile;
-    let enemy = Pokemon$Skirmish.make(k, 4, 5, false);
-    enemy.pos = k.vec2(center, halfTile);
-    GenericMove$Skirmish.make(k, center, 2 * 32 + halfTile, 32, true);
-    let player = Pokemon$Skirmish.make(k, 25, 12, true);
-    player.pos = k.vec2(center, 32 * 4 + halfTile);
-    let rs = EnemyAI$Skirmish.makeRuleSystem(k, enemy, player);
-    let enemyMoveSpy = Vitest.vi.spyOn(rs.state.enemy, "move");
-    EnemyAI$Skirmish.update(k, rs, undefined);
-    Vitest.expect(enemyMoveSpy).toHaveBeenCalled();
-  });
-});
+Vitest.test("player attack right in center of enemy", () => withKaplayContext([
+  "..E..",
+  ".....",
+  "..A..",
+  ".....",
+  "..P.."
+], async (k, rs) => {
+  let enemyMoveSpy = Vitest.vi.spyOn(rs.state.enemy, "move");
+  EnemyAI$Skirmish.update(k, rs, undefined);
+  Vitest.expect(rs.state.dodgeDirection).toBe(false);
+  Vitest.expect(enemyMoveSpy).toHaveBeenCalled();
+}));
 
 export {
   withKaplayContext,
