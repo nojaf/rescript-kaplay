@@ -11,6 +11,12 @@ module Expect = {
   external toBeDefined: t => unit = "toBeDefined"
 
   @send
+  external toBeUndefined: t => unit = "toBeUndefined"
+
+  @send
+  external toBeTruthy: t => unit = "toBeTruthy"
+
+  @send
   external toHaveLength: (t, int) => unit = "toHaveLength"
 
   @send

@@ -17,6 +17,14 @@ let hasSpaceOnTheLeft = "hasSpaceOnTheLeft";
 
 let hasSpaceOnTheRight = "hasSpaceOnTheRight";
 
+let Facts = {
+  attackInCenterOfEnemy: attackInCenterOfEnemy,
+  attackOnTheLeftOfEnemy: attackOnTheLeftOfEnemy,
+  attackOnTheRightOfEnemy: attackOnTheRightOfEnemy,
+  hasSpaceOnTheLeft: hasSpaceOnTheLeft,
+  hasSpaceOnTheRight: hasSpaceOnTheRight
+};
+
 function overlapX(param, param$1) {
   return Math.max(param[0], param$1[0]) <= Math.min(param[1], param$1[1]);
 }
@@ -201,6 +209,7 @@ function make(k, pokemonId, level, player) {
 }
 
 export {
+  Facts,
   make,
   makeRuleSystem,
   update,

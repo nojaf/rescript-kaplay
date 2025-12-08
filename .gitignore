@@ -35,3 +35,6 @@ rescript.lock
 
 # ReScript LLM
 rescript.db
+
+# Istanbul coverage
+coverage/

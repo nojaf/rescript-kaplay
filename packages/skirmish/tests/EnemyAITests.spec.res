@@ -136,3 +136,41 @@ test("player attack right in center of enemy", () => {
     },
   )
 })
+
+test("player attack on the right of enemy", () => {
+  withKaplayContext(
+    [
+      // game level
+      "..E..",
+      ".....",
+      "....A",
+      ".....",
+      "..P..",
+    ],
+    async (k, rs) => {
+      EnemyAI.update(k, rs, ())
+
+      expect(rs.state.dodgeDirection)->Expect.toBeUndefined
+      expect(rs.facts->Map.has(EnemyAI.Facts.attackOnTheRightOfEnemy))->Expect.toBeTruthy
+    },
+  )
+})
+
+test("player attack on the left of enemy", () => {
+  withKaplayContext(
+    [
+      // game level
+      "..E..",
+      ".....",
+      "A....",
+      ".....",
+      "..P..",
+    ],
+    async (k, rs) => {
+      EnemyAI.update(k, rs, ())
+
+      expect(rs.state.dodgeDirection)->Expect.toBeUndefined
+      expect(rs.facts->Map.has(EnemyAI.Facts.attackOnTheLeftOfEnemy))->Expect.toBeTruthy
+    },
+  )
+})

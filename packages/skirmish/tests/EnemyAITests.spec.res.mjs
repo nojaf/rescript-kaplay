@@ -105,6 +105,30 @@ Vitest.test("player attack right in center of enemy", () => withKaplayContext([
   Vitest.expect(enemyMoveSpy).toHaveBeenCalled();
 }));
 
+Vitest.test("player attack on the right of enemy", () => withKaplayContext([
+  "..E..",
+  ".....",
+  "....A",
+  ".....",
+  "..P.."
+], async (k, rs) => {
+  EnemyAI$Skirmish.update(k, rs, undefined);
+  Vitest.expect(rs.state.dodgeDirection).toBeUndefined();
+  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.Facts.attackOnTheRightOfEnemy)).toBeTruthy();
+}));
+
+Vitest.test("player attack on the left of enemy", () => withKaplayContext([
+  "..E..",
+  ".....",
+  "A....",
+  ".....",
+  "..P.."
+], async (k, rs) => {
+  EnemyAI$Skirmish.update(k, rs, undefined);
+  Vitest.expect(rs.state.dodgeDirection).toBeUndefined();
+  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.Facts.attackOnTheLeftOfEnemy)).toBeTruthy();
+}));
+
 export {
   withKaplayContext,
 }

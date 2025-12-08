@@ -11,6 +11,16 @@ type ruleSystemState = {
   lastAttackAt: float,
 }
 
+module Facts: {
+  open RuleSystem
+
+  let attackInCenterOfEnemy: fact
+  let attackOnTheLeftOfEnemy: fact
+  let attackOnTheRightOfEnemy: fact
+  let hasSpaceOnTheLeft: fact
+  let hasSpaceOnTheRight: fact
+}
+
 let make: (Context.t, ~pokemonId: int, ~level: int, Pokemon.t) => Pokemon.t
 let makeRuleSystem: (
   Context.t,
