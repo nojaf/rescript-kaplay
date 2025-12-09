@@ -210,3 +210,23 @@ test("enemy should move to the left to be in front of player", () => {
     },
   )
 })
+
+test("enemy should not move when in front of player", () => {
+  withKaplayContext(
+    [
+      // game
+      ".E.",
+      ".P.",
+    ],
+    async (k, rs) => {
+      let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
+      EnemyAI.update(k, rs, ())
+
+      expect(rs.state.horizontalMovement)->Expect.toBeUndefined
+      expect(enemyMoveSpy)->Expect.not->Expect.toHaveBeenCalled
+      // When aligned, player position facts should not be asserted
+      expect(rs.facts->Map.has(EnemyAI.Facts.isPlayerLeft))->Expect.toBeFalsy
+      expect(rs.facts->Map.has(EnemyAI.Facts.isPlayerRight))->Expect.toBeFalsy
+    },
+  )
+})

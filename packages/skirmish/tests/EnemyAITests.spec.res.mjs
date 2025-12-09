@@ -151,6 +151,18 @@ Vitest.test("enemy should move to the left to be in front of player", () => with
   Vitest.expect(enemyMoveSpy).toHaveBeenCalled();
 }));
 
+Vitest.test("enemy should not move when in front of player", () => withKaplayContext([
+  ".E.",
+  ".P."
+], async (k, rs) => {
+  let enemyMoveSpy = Vitest.vi.spyOn(rs.state.enemy, "move");
+  EnemyAI$Skirmish.update(k, rs, undefined);
+  Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
+  Vitest.expect(enemyMoveSpy).not.toHaveBeenCalled();
+  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.Facts.isPlayerLeft)).toBeFalsy();
+  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.Facts.isPlayerRight)).toBeFalsy();
+}));
+
 export {
   withKaplayContext,
 }

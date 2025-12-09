@@ -912,6 +912,8 @@ Returns the current grade of a fact.
 - **`fact: string`** - Name of the fact
 - **Returns:** `number` - The grade (0 if fact doesn't exist)
 
+**Note**: You don't need to assert facts with grade 0.0. If a fact doesn't exist in the facts map, `gradeForFact` will return 0.0 automatically. You can also check if a fact key is missing in the map using `rs.facts->Map.has(factName)` if you need to distinguish between "not asserted" and "explicitly set to 0.0".
+
 ##### `minimumGradeForFacts(...facts)`
 
 Returns the minimum grade among the specified facts.

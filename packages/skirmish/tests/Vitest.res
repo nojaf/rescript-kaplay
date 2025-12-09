@@ -4,6 +4,9 @@ external test: (string, unit => promise<unit>) => unit = "test"
 module Expect = {
   type t
 
+  @get
+  external not: t => t = "not"
+
   @send
   external toBe: (t, 'expected) => unit = "toBe"
 
@@ -15,6 +18,9 @@ module Expect = {
 
   @send
   external toBeTruthy: t => unit = "toBeTruthy"
+
+  @send
+  external toBeFalsy: t => unit = "toBeFalsy"
 
   @send
   external toHaveLength: (t, int) => unit = "toHaveLength"
