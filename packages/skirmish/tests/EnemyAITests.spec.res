@@ -131,7 +131,7 @@ test("player attack right in center of enemy", () => {
 
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.dodgeDirection)->Expect.toBe(EnemyAI.Right)
+      expect(rs.state.horizontalMovement)->Expect.toBe(EnemyAI.Right)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
@@ -150,7 +150,7 @@ test("player attack on the right of enemy", () => {
     async (k, rs) => {
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.dodgeDirection)->Expect.toBeUndefined
+      expect(rs.state.horizontalMovement)->Expect.toBeUndefined
       expect(rs.facts->Map.has(EnemyAI.Facts.attackOnTheRightOfEnemy))->Expect.toBeTruthy
     },
   )
@@ -169,8 +169,44 @@ test("player attack on the left of enemy", () => {
     async (k, rs) => {
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.dodgeDirection)->Expect.toBeUndefined
+      expect(rs.state.horizontalMovement)->Expect.toBeUndefined
       expect(rs.facts->Map.has(EnemyAI.Facts.attackOnTheLeftOfEnemy))->Expect.toBeTruthy
+    },
+  )
+})
+
+test("enemy should move to the right to be in front of player", () => {
+  withKaplayContext(
+    [
+      // game
+      ".E...",
+      ".....",
+      "....P",
+    ],
+    async (k, rs) => {
+      let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
+      EnemyAI.update(k, rs, ())
+
+      expect(rs.state.horizontalMovement)->Expect.toBe(EnemyAI.Right)
+      expect(enemyMoveSpy)->Expect.toHaveBeenCalled
+    },
+  )
+})
+
+test("enemy should move to the left to be in front of player", () => {
+  withKaplayContext(
+    [
+      // game
+      "....E",
+      ".....",
+      "P....",
+    ],
+    async (k, rs) => {
+      let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
+      EnemyAI.update(k, rs, ())
+
+      expect(rs.state.horizontalMovement)->Expect.toBe(EnemyAI.Left)
+      expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
 })

@@ -17,6 +17,10 @@ let hasSpaceOnTheLeft = "hasSpaceOnTheLeft";
 
 let hasSpaceOnTheRight = "hasSpaceOnTheRight";
 
+let isPlayerLeft = "isPlayerLeft";
+
+let isPlayerRight = "isPlayerRight";
+
 let leftThreat = "leftThreat";
 
 let rightThreat = "rightThreat";
@@ -31,6 +35,8 @@ let Facts = {
   attackOnTheRightOfEnemy: attackOnTheRightOfEnemy,
   hasSpaceOnTheLeft: hasSpaceOnTheLeft,
   hasSpaceOnTheRight: hasSpaceOnTheRight,
+  isPlayerLeft: isPlayerLeft,
+  isPlayerRight: isPlayerRight,
   leftThreat: leftThreat,
   rightThreat: rightThreat,
   preferredDodgeLeft: preferredDodgeLeft,
@@ -47,7 +53,7 @@ function makeRuleSystem(k, enemy, player) {
     enemy: enemy,
     player: player,
     playerAttacks: [],
-    dodgeDirection: undefined,
+    horizontalMovement: undefined,
     lastAttackAt: 0
   };
   rs.addRuleExecutingAction(rs => rs.state.playerAttacks.length !== 0, rs => {
@@ -127,6 +133,21 @@ function makeRuleSystem(k, enemy, player) {
       return;
     }
   }, 0.0);
+  rs.addRuleExecutingAction(_rs => true, rs => {
+    let enemyWorldPos = rs.state.enemy.worldPos();
+    let playerWorldPos = rs.state.player.worldPos();
+    let horizontalDistance = playerWorldPos.x - enemyWorldPos.x;
+    if (Math.abs(horizontalDistance) < 1.0) {
+      return;
+    } else {
+      if (horizontalDistance < 0.0) {
+        rs.assertFact(isPlayerLeft, 1.0);
+      } else {
+        rs.assertFact(isPlayerRight, 1.0);
+      }
+      return;
+    }
+  }, 0.0);
   rs.addRuleExecutingAction(rs => {
     let centerAttack = rs.gradeForFact(attackInCenterOfEnemy);
     let leftAttack = rs.gradeForFact(attackOnTheLeftOfEnemy);
@@ -192,11 +213,11 @@ function makeRuleSystem(k, enemy, player) {
     let leftThreat$1 = rs.gradeForFact(leftThreat);
     let rightThreat$1 = rs.gradeForFact(rightThreat);
     let threatsAreEqual = leftThreat$1 === rightThreat$1 && leftThreat$1 > 0.0;
-    let currentDirection = rs.state.dodgeDirection;
+    let currentDirection = rs.state.horizontalMovement;
     if (currentDirection !== undefined && (threatsAreEqual || currentDirection === finalDirection)) {
       return;
     } else {
-      rs.state.dodgeDirection = finalDirection;
+      rs.state.horizontalMovement = finalDirection;
       return;
     }
   }, 20.0);
@@ -204,7 +225,20 @@ function makeRuleSystem(k, enemy, player) {
     let c = rs.gradeForFact(attackInCenterOfEnemy);
     return c === 0.0;
   }, rs => {
-    rs.state.dodgeDirection = undefined;
+    rs.state.horizontalMovement = undefined;
+  }, 20.0);
+  rs.addRuleExecutingAction(rs => rs.state.playerAttacks.length === 0, rs => {
+    let playerLeft = rs.gradeForFact(isPlayerLeft);
+    let playerRight = rs.gradeForFact(isPlayerRight);
+    let leftSpace = rs.gradeForFact(hasSpaceOnTheLeft);
+    let rightSpace = rs.gradeForFact(hasSpaceOnTheRight);
+    if (playerLeft > 0.0) {
+      rs.state.horizontalMovement = leftSpace > 0.0 ? true : undefined;
+    } else if (playerRight > 0.0) {
+      rs.state.horizontalMovement = rightSpace > 0.0 ? false : undefined;
+    } else {
+      rs.state.horizontalMovement = undefined;
+    }
   }, 20.0);
   return rs;
 }
@@ -223,7 +257,7 @@ function update(k, rs, param) {
   rs.reset();
   rs.state.playerAttacks = getPlayerAttacks(k);
   rs.execute();
-  let match = rs.state.dodgeDirection;
+  let match = rs.state.horizontalMovement;
   if (match !== undefined) {
     if (match === true) {
       return Pokemon$Skirmish.moveLeft(k, rs.state.enemy);

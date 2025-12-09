@@ -1,13 +1,13 @@
 open Kaplay
 
 @unboxed
-type dodgeDirection = | @as(true) Left | @as(false) Right
+type horizontalMovement = | @as(true) Left | @as(false) Right
 
 type ruleSystemState = {
   enemy: Pokemon.t,
   player: Pokemon.t,
   mutable playerAttacks: array<Attack.Unit.t>,
-  mutable dodgeDirection: option<dodgeDirection>,
+  mutable horizontalMovement: option<horizontalMovement>,
   lastAttackAt: float,
 }
 

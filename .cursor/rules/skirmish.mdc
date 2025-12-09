@@ -34,7 +34,70 @@ This is a fun learning experiment, where we hope to gain:
 - Focus on getting the core mechanics right, and then being able to scope the game. Choose how many types, moves and pokemon the base game should have. 
   Leave room for future additions, but the MVP should be achieved.
 - Try and find out how testing can be incorporated. Part of the exploration is that the Rule System can be regression tested with Vitest.
-  - **Testing Approach** (TBD): Considering using spies on the enemy game object to see what was invoked. Fact grade assertion could also be useful for testing.
+  - **Testing Approach**: Using spies on the enemy game object to verify movement behavior, and checking fact assertions and state changes. See `packages/skirmish/tests/EnemyAITests.spec.res` for examples. Run tests with `bun run test`.
+
+## Enemy AI Rule System Implementation
+
+The enemy AI uses a rule-based system built on top of Kaplay's `RuleSystem` component. The implementation is located in `packages/skirmish/src/EnemyAI.res` and follows a fact decomposition pattern.
+
+### Architecture Overview
+
+The rule system is **reset on every update** (see `update` function). This means:
+- All facts are cleared before each execution cycle
+- Facts are computed fresh each frame based on current game state
+- **Do NOT use `assertFact`/`retractFact` pairs** for state management
+- Instead, use `addRuleAssertingFact` or `addRuleExecutingAction` with `assertFact` to compute facts from game state
+
+### Salience Tiers
+
+Rules are organized into three salience tiers to ensure proper execution order:
+
+1. **Base Facts** (salience 0.0): Facts computed directly from game state
+   - Attack positions (`attackInCenterOfEnemy`, `attackOnTheLeftOfEnemy`, `attackOnTheRightOfEnemy`)
+   - Space availability (`hasSpaceOnTheLeft`, `hasSpaceOnTheRight`)
+   - Player position (`isPlayerLeft`, `isPlayerRight`)
+
+2. **Derived Facts** (salience 10.0): Facts computed from other facts
+   - Threat levels (`leftThreat`, `rightThreat`) - combines attack positions
+   - Preferred dodge direction (`preferredDodgeLeft`, `preferredDodgeRight`) - computed from threats and space
+
+3. **Decisions** (salience 20.0): Action rules that set movement direction
+   - Dodging behavior when under center attack
+   - Positioning behavior when no attacks are present
+
+### Fact Decomposition Pattern
+
+The implementation follows a fact decomposition pattern where complex logic is broken down into smaller, focused facts:
+
+- **Positional Facts**: Describe where things are (`attackOnTheLeftOfEnemy`, `isPlayerRight`)
+- **Space Facts**: Describe available space (graded 0.0-1.0 for continuous values)
+- **Threat Facts**: Combine multiple attack facts into threat levels
+- **Direction Facts**: Preferred movement direction based on threats and space
+
+This makes rules declarative ("when X fact is true, do Y") rather than imperative ("calculate X, then if X > Y, compute Z...").
+
+### Key Implementation Details
+
+1. **Attack Detection**: Uses `overlapX` to detect if attacks overlap with enemy's horizontal bounds. Grades are computed based on squared distance from enemy's personal space.
+
+2. **Oscillation Prevention**: 
+   - For equal threats: Keeps current direction to avoid oscillation
+   - For positioning: Uses 1-pixel threshold to prevent jitter when aligned
+
+3. **State Management**: Movement direction is stored in `ruleSystemState.horizontalMovement` (persists between frames, unlike facts which reset)
+
+4. **Priority System**: Dodging (when center attack exists) takes priority over positioning (when no attacks). Both run at salience 20.0, but dodging rule is checked first.
+
+### Testing
+
+Tests are located in `packages/skirmish/tests/EnemyAITests.spec.res` and can be run with `bun run test`. The test suite includes:
+
+- Attack detection tests (center, left, right attacks)
+- Positioning tests (moving toward player when no attacks)
+- Movement verification using spies on the enemy's `move` method
+- Fact assertion verification
+
+The `withKaplayContext` helper creates a test environment with a playing field represented as a 2D array of characters (`P` = player, `E` = enemy, `A` = attack, `.` = empty).
 
 ## TBD / Future Considerations
 

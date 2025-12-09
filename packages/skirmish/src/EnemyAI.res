@@ -1,13 +1,13 @@
 open Kaplay
 
 @unboxed
-type dodgeDirection = | @as(true) Left | @as(false) Right
+type horizontalMovement = | @as(true) Left | @as(false) Right
 
 type ruleSystemState = {
   enemy: Pokemon.t,
   player: Pokemon.t,
   mutable playerAttacks: array<Attack.Unit.t>,
-  mutable dodgeDirection: option<dodgeDirection>,
+  mutable horizontalMovement: option<horizontalMovement>,
   lastAttackAt: float,
 }
 
@@ -22,6 +22,10 @@ module Facts = {
   // Base facts: Space availability
   let hasSpaceOnTheLeft = Fact("hasSpaceOnTheLeft")
   let hasSpaceOnTheRight = Fact("hasSpaceOnTheRight")
+
+  // Base facts: Player position relative to enemy
+  let isPlayerLeft = Fact("isPlayerLeft")
+  let isPlayerRight = Fact("isPlayerRight")
 
   // Derived facts: Threat levels (computed from attack facts)
   let leftThreat = Fact("leftThreat")
@@ -59,7 +63,7 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
     enemy,
     player,
     playerAttacks: [],
-    dodgeDirection: None,
+    horizontalMovement: None,
     lastAttackAt: 0.,
   }
 
@@ -156,6 +160,29 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
       }
       if rightSpace > 0. {
         rs->RuleSystem.assertFact(Facts.hasSpaceOnTheRight, ~grade=RuleSystem.Grade(rightSpace))
+      }
+    },
+    ~salient=Salience.baseFacts,
+  )
+
+  // Base fact: Player position relative to enemy
+  rs->RuleSystem.addRuleExecutingAction(
+    _rs => true,
+    rs => {
+      let enemyWorldPos = rs.state.enemy->Pokemon.worldPos
+      let playerWorldPos = rs.state.player->Pokemon.worldPos
+      let horizontalDistance = playerWorldPos.x - enemyWorldPos.x
+
+      // Use small threshold to prevent oscillation when very close to aligned
+      if Stdlib_Math.abs(horizontalDistance) < 1.0 {
+        // Within 1 pixel - considered aligned, don't assert left/right facts
+        ()
+      } else if horizontalDistance < 0.0 {
+        // Player is to the left
+        rs->RuleSystem.assertFact(Facts.isPlayerLeft, ~grade=RuleSystem.Grade(1.0))
+      } else {
+        // Player is to the right
+        rs->RuleSystem.assertFact(Facts.isPlayerRight, ~grade=RuleSystem.Grade(1.0))
       }
     },
     ~salient=Salience.baseFacts,
@@ -270,17 +297,17 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
       let RuleSystem.Grade(rightThreat) = RuleSystem.gradeForFact(rs, Facts.rightThreat)
       let threatsAreEqual = leftThreat == rightThreat && leftThreat > 0.0
 
-      switch rs.state.dodgeDirection {
+      switch rs.state.horizontalMovement {
       | None =>
         // Pick initial direction
-        rs.state.dodgeDirection = Some(finalDirection)
+        rs.state.horizontalMovement = Some(finalDirection)
       | Some(currentDirection) =>
         if threatsAreEqual {
           // Keep current direction to avoid oscillation when threats are equal
           ()
         } else if currentDirection != finalDirection {
           // Update direction when threats are different
-          rs.state.dodgeDirection = Some(finalDirection)
+          rs.state.horizontalMovement = Some(finalDirection)
         } else {
           // Direction unchanged
           ()
@@ -290,7 +317,7 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
     ~salient=Salience.decisions,
   )
 
-  // Rule: Reset dodge direction when center attack is gone
+  // Rule: Reset horizontal movement when center attack is gone
   // We stop dodging once we've successfully dodged the center attack,
   // even if there are still attacks on the sides
   rs->RuleSystem.addRuleExecutingAction(
@@ -299,7 +326,34 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
       c == 0.0
     },
     rs => {
-      rs.state.dodgeDirection = None
+      rs.state.horizontalMovement = None
+    },
+    ~salient=Salience.decisions,
+  )
+
+  // Decision: Position in front of player when there are no attacks
+  rs->RuleSystem.addRuleExecutingAction(
+    rs => {
+      // Only position when there are no player attacks
+      rs.state.playerAttacks->Array.length == 0
+    },
+    rs => {
+      // Read player position facts (computed at salience 0.0)
+      let RuleSystem.Grade(playerLeft) = RuleSystem.gradeForFact(rs, Facts.isPlayerLeft)
+      let RuleSystem.Grade(playerRight) = RuleSystem.gradeForFact(rs, Facts.isPlayerRight)
+      let RuleSystem.Grade(leftSpace) = RuleSystem.gradeForFact(rs, Facts.hasSpaceOnTheLeft)
+      let RuleSystem.Grade(rightSpace) = RuleSystem.gradeForFact(rs, Facts.hasSpaceOnTheRight)
+
+      if playerLeft > 0.0 {
+        // Player is left, move left if we have space
+        rs.state.horizontalMovement = leftSpace > 0.0 ? Some(Left) : None
+      } else if playerRight > 0.0 {
+        // Player is right, move right if we have space
+        rs.state.horizontalMovement = rightSpace > 0.0 ? Some(Right) : None
+      } else {
+        // Neither fact is true - we're aligned (horizontalDistance == 0.0), stop moving
+        rs.state.horizontalMovement = None
+      }
     },
     ~salient=Salience.decisions,
   )
@@ -321,8 +375,8 @@ let update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
   rs.state.playerAttacks = getPlayerAttacks(k)
   rs->RuleSystem.execute
 
-  // Move in the dodging direction if set
-  switch rs.state.dodgeDirection {
+  // Move in the horizontal movement direction if set
+  switch rs.state.horizontalMovement {
   | None => ()
   | Some(Left) => Pokemon.moveLeft(k, rs.state.enemy)
   | Some(Right) => Pokemon.moveRight(k, rs.state.enemy)

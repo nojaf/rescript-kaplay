@@ -11,7 +11,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "fmt": "rescript format -all",
-    "test": "vitest"
+    "test": "vitest run --coverage"
   },
   "dependencies": {
     "kaplay": "catalog:",
