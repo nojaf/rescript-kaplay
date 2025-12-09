@@ -5,9 +5,9 @@ import * as Ember$Skirmish from "./Moves/Ember.res.mjs";
 import * as Player$Skirmish from "./Player.res.mjs";
 import * as EnemyAI$Skirmish from "./EnemyAI.res.mjs";
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
+import * as PkmnFont$Skirmish from "./PkmnFont.res.mjs";
 import * as Healthbar$Skirmish from "./Healthbar.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
-import * as GenericMove$Skirmish from "../tests/GenericMove.res.mjs";
 import * as Thundershock$Skirmish from "./Moves/Thundershock.res.mjs";
 
 function sceneLoaded() {
@@ -16,10 +16,10 @@ function sceneLoaded() {
   Healthbar$Skirmish.make(pikachu);
   let _charmander = EnemyAI$Skirmish.make(GameContext$Skirmish.k, 4, 5, pikachu);
   Healthbar$Skirmish.make(_charmander);
-  GenericMove$Skirmish.make(GameContext$Skirmish.k, 50, 500, 100, true);
 }
 
 function scene() {
+  PkmnFont$Skirmish.load(GameContext$Skirmish.k);
   Pokemon$Skirmish.load(GameContext$Skirmish.k, 4);
   Pokemon$Skirmish.load(GameContext$Skirmish.k, 25);
   Thundershock$Skirmish.load();

@@ -136,8 +136,7 @@ function make(k, pokemonId, level, team) {
       }
     }
   ]);
-  gameObj.onHurt(deltaHp => {
-    console.log("I hurt myself today", deltaHp);
+  gameObj.onHurt(_deltaHp => {
     gameObj.unanimate("opacity");
     let animation = gameObj.animation;
     animation.seek(0);

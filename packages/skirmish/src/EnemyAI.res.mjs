@@ -204,7 +204,9 @@ function make(k, pokemonId, level, player) {
   let enemy = Pokemon$Skirmish.make(k, pokemonId, level, false);
   let rs = makeRuleSystem(k, enemy, player);
   enemy.onUpdate(extra => update(k, rs, extra));
-  DebugRuleSystem$Skirmish.make(k, rs);
+  if (k.debug.inspect) {
+    DebugRuleSystem$Skirmish.make(k, rs);
+  }
   return enemy;
 }
 

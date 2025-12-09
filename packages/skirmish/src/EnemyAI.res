@@ -263,7 +263,9 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Poke
 
   enemy->Pokemon.onUpdate(update(k, rs, ...))
 
-  DebugRuleSystem.make(k, rs)
+  if k.debug.inspect {
+    DebugRuleSystem.make(k, rs)
+  }
 
   enemy
 }

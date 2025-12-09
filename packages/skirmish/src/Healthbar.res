@@ -90,38 +90,41 @@ let draw =
       width: 2.,
     })
 
+    let font = Context.makeDrawTextFontInfoFromString(PkmnFont.name)
+
     // Pokemon name
     k->Context.drawText({
       pos: k->Context.vec2Local(5., 0.),
       text: healthbar.name->String.toUpperCase,
       letterSpacing: 0.5,
-      size: 15.,
+      size: 10.,
       color: k->Color.black,
-      font: Context.makeDrawTextFontInfoFromString("system-ui"),
+      font,
     })
 
     // Pokemon level
     k->Context.drawText({
-      pos: k->Context.vec2Local(80., 15.),
+      pos: k->Context.vec2Local(70., 12.),
       text: ":L" ++ Int.toString(healthbar.level),
       size: 10.,
       color: k->Color.black,
-      font: Context.makeDrawTextFontInfoFromString("system-ui"),
+      font,
     })
 
     // HP:
     k->Context.drawText({
-      pos: k->Context.vec2Local(5., 26.),
+      pos: k->Context.vec2Local(5., 25.),
       text: "HP:",
-      size: 7.,
+      size: 6.,
       color: k->Color.black,
+      font,
     })
 
     //Healthbar background
     k->Context.drawRect({
-      pos: k->Context.vec2Local(20., 26.),
+      pos: k->Context.vec2Local(25., 25.),
       width: 100.,
-      height: 6.,
+      height: 5.,
       radius: [3., 3., 3., 3.],
       color: k->Color.fromHex("#e5e7eb"),
       outline: {
@@ -136,7 +139,7 @@ let draw =
     let healthbarWidth = healthbar.healthPercentage
 
     k->Context.drawRect({
-      pos: k->Context.vec2Local(20., 26.),
+      pos: k->Context.vec2Local(25., 25.),
       width: healthbarWidth,
       height: 5.,
       radius: [3., 0., 0., 3.],

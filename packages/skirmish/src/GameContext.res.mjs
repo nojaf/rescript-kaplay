@@ -14,8 +14,6 @@ let k = Kaplay({
   crisp: true
 });
 
-k.debug.inspect = true;
-
 let gameWidth = 360;
 
 let gameHeight = 649;

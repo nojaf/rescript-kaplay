@@ -27,4 +27,4 @@ let k = Context.kaplay(
   },
 )
 
-k.debug.inspect = true
+// k.debug.inspect = true

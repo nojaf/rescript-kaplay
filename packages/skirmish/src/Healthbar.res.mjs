@@ -3,7 +3,9 @@
 import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Stdlib_Option from "@rescript/runtime/lib/es6/Stdlib_Option.js";
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
+import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
 import * as MetaData$Skirmish from "./MetaData.res.mjs";
+import * as PkmnFont$Skirmish from "./PkmnFont.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
 
 Pos$Kaplay.Comp({});
@@ -60,32 +62,33 @@ function draw() {
     pos: GameContext$Skirmish.k.vec2(5, 0),
     color: GameContext$Skirmish.k.BLACK,
     text: healthbar.name.toUpperCase(),
-    font: "system-ui",
-    size: 15,
+    font: Primitive_option.some(PkmnFont$Skirmish.name),
+    size: 10,
     letterSpacing: 0.5
   });
   GameContext$Skirmish.k.drawText({
-    pos: GameContext$Skirmish.k.vec2(80, 15),
+    pos: GameContext$Skirmish.k.vec2(70, 12),
     color: GameContext$Skirmish.k.BLACK,
     text: ":L" + healthbar.level.toString(),
-    font: "system-ui",
+    font: Primitive_option.some(PkmnFont$Skirmish.name),
     size: 10
   });
   GameContext$Skirmish.k.drawText({
-    pos: GameContext$Skirmish.k.vec2(5, 26),
+    pos: GameContext$Skirmish.k.vec2(5, 25),
     color: GameContext$Skirmish.k.BLACK,
     text: "HP:",
-    size: 7
+    font: Primitive_option.some(PkmnFont$Skirmish.name),
+    size: 6
   });
   GameContext$Skirmish.k.drawRect({
-    pos: GameContext$Skirmish.k.vec2(20, 26),
+    pos: GameContext$Skirmish.k.vec2(25, 25),
     color: GameContext$Skirmish.k.Color.fromHex("#e5e7eb"),
     outline: {
       width: 1,
       color: GameContext$Skirmish.k.BLACK
     },
     width: 100,
-    height: 6,
+    height: 5,
     radius: [
       3,
       3,
@@ -97,7 +100,7 @@ function draw() {
   let healthColor = getHealthColor(animatedPercent);
   let healthbarWidth = healthbar.healthPercentage;
   GameContext$Skirmish.k.drawRect({
-    pos: GameContext$Skirmish.k.vec2(20, 26),
+    pos: GameContext$Skirmish.k.vec2(25, 25),
     color: healthColor,
     width: healthbarWidth,
     height: 5,

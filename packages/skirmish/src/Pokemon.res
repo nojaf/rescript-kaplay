@@ -125,9 +125,7 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
     }),
   ])
 
-  gameObj->onHurt((deltaHp: int) => {
-    Console.log2("I hurt myself today", deltaHp)
-
+  gameObj->onHurt((_deltaHp: int) => {
     // Stop any existing opacity animation and reset the internal clock
     gameObj->unanimate("opacity")
     gameObj->getAnimation->(animation => animation.seek(0.))
