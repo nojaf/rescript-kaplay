@@ -17,12 +17,24 @@ let hasSpaceOnTheLeft = "hasSpaceOnTheLeft";
 
 let hasSpaceOnTheRight = "hasSpaceOnTheRight";
 
+let leftThreat = "leftThreat";
+
+let rightThreat = "rightThreat";
+
+let preferredDodgeLeft = "preferredDodgeLeft";
+
+let preferredDodgeRight = "preferredDodgeRight";
+
 let Facts = {
   attackInCenterOfEnemy: attackInCenterOfEnemy,
   attackOnTheLeftOfEnemy: attackOnTheLeftOfEnemy,
   attackOnTheRightOfEnemy: attackOnTheRightOfEnemy,
   hasSpaceOnTheLeft: hasSpaceOnTheLeft,
-  hasSpaceOnTheRight: hasSpaceOnTheRight
+  hasSpaceOnTheRight: hasSpaceOnTheRight,
+  leftThreat: leftThreat,
+  rightThreat: rightThreat,
+  preferredDodgeLeft: preferredDodgeLeft,
+  preferredDodgeRight: preferredDodgeRight
 };
 
 function overlapX(param, param$1) {
@@ -101,7 +113,7 @@ function makeRuleSystem(k, enemy, player) {
       return;
     }
   }, 0.0);
-  rs.addRuleExecutingAction(_rs => true, _rs => {
+  rs.addRuleExecutingAction(_rs => true, rs => {
     let enemyWorldPos = rs.state.enemy.worldPos();
     let enemyStartX = enemyWorldPos.x - rs.state.enemy.halfSize;
     let enemyEndX = enemyWorldPos.x + rs.state.enemy.halfSize;
@@ -116,51 +128,72 @@ function makeRuleSystem(k, enemy, player) {
     }
   }, 0.0);
   rs.addRuleExecutingAction(rs => {
-    let c = rs.gradeForFact(attackInCenterOfEnemy);
-    return c > 0.0;
+    let centerAttack = rs.gradeForFact(attackInCenterOfEnemy);
+    let leftAttack = rs.gradeForFact(attackOnTheLeftOfEnemy);
+    let rightAttack = rs.gradeForFact(attackOnTheRightOfEnemy);
+    if (centerAttack > 0.0 || leftAttack > 0.0) {
+      return true;
+    } else {
+      return rightAttack > 0.0;
+    }
   }, rs => {
     let centerAttack = rs.gradeForFact(attackInCenterOfEnemy);
     let leftAttack = rs.gradeForFact(attackOnTheLeftOfEnemy);
     let rightAttack = rs.gradeForFact(attackOnTheRightOfEnemy);
+    let leftThreatGrade = leftAttack + centerAttack;
+    let rightThreatGrade = rightAttack + centerAttack;
+    if (leftThreatGrade > 0.0) {
+      rs.assertFact(leftThreat, leftThreatGrade);
+    }
+    if (rightThreatGrade > 0.0) {
+      rs.assertFact(rightThreat, rightThreatGrade);
+      return;
+    }
+  }, 10.0);
+  rs.addRuleExecutingAction(rs => {
+    let leftThreat$1 = rs.gradeForFact(leftThreat);
+    let rightThreat$1 = rs.gradeForFact(rightThreat);
+    if (leftThreat$1 > 0.0) {
+      return true;
+    } else {
+      return rightThreat$1 > 0.0;
+    }
+  }, rs => {
+    let leftThreat$1 = rs.gradeForFact(leftThreat);
+    let rightThreat$1 = rs.gradeForFact(rightThreat);
     let leftSpace = rs.gradeForFact(hasSpaceOnTheLeft);
     let rightSpace = rs.gradeForFact(hasSpaceOnTheRight);
-    let leftThreat = leftAttack + centerAttack;
-    let rightThreat = rightAttack + centerAttack;
-    let match;
-    if (leftThreat > rightThreat) {
-      match = [
-        false,
-        true
-      ];
-    } else if (rightThreat > leftThreat) {
-      match = [
-        true,
-        true
-      ];
+    if (leftThreat$1 > rightThreat$1) {
+      rs.assertFact(preferredDodgeRight, 1.0);
+    } else if (rightThreat$1 > leftThreat$1) {
+      rs.assertFact(preferredDodgeLeft, 1.0);
+    } else if (leftSpace > rightSpace) {
+      rs.assertFact(preferredDodgeLeft, 1.0);
     } else {
-      let currentDirection = rs.state.dodgeDirection;
-      match = currentDirection !== undefined ? [
-          currentDirection,
-          false
-        ] : [
-          leftSpace > rightSpace,
-          true
-        ];
+      rs.assertFact(preferredDodgeRight, 1.0);
     }
-    let preferredDodgeDirection = match[0];
-    let finalDirection;
-    if (match[1]) {
-      let hasSpaceInPreferred;
-      hasSpaceInPreferred = preferredDodgeDirection === true ? leftSpace > 0.0 : rightSpace > 0.0;
-      finalDirection = hasSpaceInPreferred ? preferredDodgeDirection : (
-          preferredDodgeDirection === true ? rightSpace <= 0.0 : leftSpace > 0.0
-        );
-    } else {
-      let dir = rs.state.dodgeDirection;
-      finalDirection = dir !== undefined ? dir : preferredDodgeDirection;
-    }
-    let currentDirection$1 = rs.state.dodgeDirection;
-    if (currentDirection$1 !== undefined && currentDirection$1 === finalDirection) {
+  }, 10.0);
+  rs.addRuleExecutingAction(rs => {
+    let c = rs.gradeForFact(attackInCenterOfEnemy);
+    return c > 0.0;
+  }, rs => {
+    let preferLeft = rs.gradeForFact(preferredDodgeLeft);
+    let preferRight = rs.gradeForFact(preferredDodgeRight);
+    let leftSpace = rs.gradeForFact(hasSpaceOnTheLeft);
+    let rightSpace = rs.gradeForFact(hasSpaceOnTheRight);
+    let preferredDirection = preferLeft > 0.0 ? true : (
+        preferRight > 0.0 ? false : leftSpace > rightSpace
+      );
+    let hasSpaceInPreferred;
+    hasSpaceInPreferred = preferredDirection === true ? leftSpace > 0.0 : rightSpace > 0.0;
+    let finalDirection = hasSpaceInPreferred ? preferredDirection : (
+        preferredDirection === true ? rightSpace <= 0.0 : leftSpace > 0.0
+      );
+    let leftThreat$1 = rs.gradeForFact(leftThreat);
+    let rightThreat$1 = rs.gradeForFact(rightThreat);
+    let threatsAreEqual = leftThreat$1 === rightThreat$1 && leftThreat$1 > 0.0;
+    let currentDirection = rs.state.dodgeDirection;
+    if (currentDirection !== undefined && (threatsAreEqual || currentDirection === finalDirection)) {
       return;
     } else {
       rs.state.dodgeDirection = finalDirection;

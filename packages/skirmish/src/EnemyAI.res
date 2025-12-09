@@ -14,17 +14,28 @@ type ruleSystemState = {
 module Facts = {
   open RuleSystem
 
+  // Base facts: Attack positions
   let attackInCenterOfEnemy = Fact("attackInCenterOfEnemy")
   let attackOnTheLeftOfEnemy = Fact("attackOnTheLeftOfEnemy")
   let attackOnTheRightOfEnemy = Fact("attackOnTheRightOfEnemy")
+
+  // Base facts: Space availability
   let hasSpaceOnTheLeft = Fact("hasSpaceOnTheLeft")
   let hasSpaceOnTheRight = Fact("hasSpaceOnTheRight")
+
+  // Derived facts: Threat levels (computed from attack facts)
+  let leftThreat = Fact("leftThreat")
+  let rightThreat = Fact("rightThreat")
+
+  // Derived facts: Preferred dodge direction
+  let preferredDodgeLeft = Fact("preferredDodgeLeft")
+  let preferredDodgeRight = Fact("preferredDodgeRight")
 }
 
 module Salience = {
   open RuleSystem
   let baseFacts = Salience(0.0)
-  // let derivedFacts = Salience(10.0)
+  let derivedFacts = Salience(10.0)
   let decisions = Salience(20.0)
 }
 
@@ -32,6 +43,14 @@ let overlapX = ((ax1, ax2), (bx1, bx2)) => {
   Stdlib_Math.max(ax1, bx1) <= Stdlib_Math.min(ax2, bx2)
 }
 
+/** Creates a rule system for enemy AI behavior.
+  *
+  * **Important**: The rule system is reset on every update (see `update` function).
+  * This means all facts are cleared before each execution cycle. As a result, you
+  * typically should NOT use `assertFact`/`retractFact` pairs for state management.
+  * Instead, use `addRuleAssertingFact` or `addRuleExecutingAction` with `assertFact`
+  * to compute facts fresh each frame based on current game state.
+  */
 let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): RuleSystem.t<
   ruleSystemState,
 > => {
@@ -123,9 +142,10 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
     ~salient=Salience.baseFacts,
   )
 
+  // Base fact: Space availability
   rs->RuleSystem.addRuleExecutingAction(
     _rs => true,
-    _rs => {
+    rs => {
       let enemyWorldPos = rs.state.enemy->Pokemon.worldPos
       let enemyStartX = enemyWorldPos.x - rs.state.enemy.halfSize
       let enemyEndX = enemyWorldPos.x + rs.state.enemy.halfSize
@@ -141,6 +161,66 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
     ~salient=Salience.baseFacts,
   )
 
+  // Derived fact: Threat levels (depends on attack facts)
+  rs->RuleSystem.addRuleExecutingAction(
+    rs => {
+      // Compute threats when we have attack information
+      let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(rs, Facts.attackInCenterOfEnemy)
+      let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(rs, Facts.attackOnTheLeftOfEnemy)
+      let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(rs, Facts.attackOnTheRightOfEnemy)
+      centerAttack > 0.0 || leftAttack > 0.0 || rightAttack > 0.0
+    },
+    rs => {
+      let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(rs, Facts.attackInCenterOfEnemy)
+      let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(rs, Facts.attackOnTheLeftOfEnemy)
+      let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(rs, Facts.attackOnTheRightOfEnemy)
+
+      // Left side threat = attacks on left + center (if center exists)
+      let leftThreatGrade = leftAttack + centerAttack
+      // Right side threat = attacks on right + center (if center exists)
+      let rightThreatGrade = rightAttack + centerAttack
+
+      if leftThreatGrade > 0.0 {
+        rs->RuleSystem.assertFact(Facts.leftThreat, ~grade=RuleSystem.Grade(leftThreatGrade))
+      }
+      if rightThreatGrade > 0.0 {
+        rs->RuleSystem.assertFact(Facts.rightThreat, ~grade=RuleSystem.Grade(rightThreatGrade))
+      }
+    },
+    ~salient=Salience.derivedFacts,
+  )
+
+  // Derived fact: Preferred dodge direction based on threats
+  rs->RuleSystem.addRuleExecutingAction(
+    rs => {
+      // Only compute preferred direction when we have threat information
+      let RuleSystem.Grade(leftThreat) = RuleSystem.gradeForFact(rs, Facts.leftThreat)
+      let RuleSystem.Grade(rightThreat) = RuleSystem.gradeForFact(rs, Facts.rightThreat)
+      leftThreat > 0.0 || rightThreat > 0.0
+    },
+    rs => {
+      let RuleSystem.Grade(leftThreat) = RuleSystem.gradeForFact(rs, Facts.leftThreat)
+      let RuleSystem.Grade(rightThreat) = RuleSystem.gradeForFact(rs, Facts.rightThreat)
+      let RuleSystem.Grade(leftSpace) = RuleSystem.gradeForFact(rs, Facts.hasSpaceOnTheLeft)
+      let RuleSystem.Grade(rightSpace) = RuleSystem.gradeForFact(rs, Facts.hasSpaceOnTheRight)
+
+      if leftThreat > rightThreat {
+        // More threat on left → prefer moving right
+        rs->RuleSystem.assertFact(Facts.preferredDodgeRight, ~grade=RuleSystem.Grade(1.0))
+      } else if rightThreat > leftThreat {
+        // More threat on right → prefer moving left
+        rs->RuleSystem.assertFact(Facts.preferredDodgeLeft, ~grade=RuleSystem.Grade(1.0))
+      } // Equal threats (only center attack) - pick based on space
+      else if leftSpace > rightSpace {
+        rs->RuleSystem.assertFact(Facts.preferredDodgeLeft, ~grade=RuleSystem.Grade(1.0))
+      } else {
+        rs->RuleSystem.assertFact(Facts.preferredDodgeRight, ~grade=RuleSystem.Grade(1.0))
+      }
+    },
+    ~salient=Salience.derivedFacts,
+  )
+
+  // Decision: Dodge when there's a center attack
   rs->RuleSystem.addRuleExecutingAction(
     rs => {
       // Only dodge when there's an attack in the center (or center + sides)
@@ -149,69 +229,61 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
       c > 0.0
     },
     rs => {
-      // Get all attack facts and space facts
-      let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(rs, Facts.attackInCenterOfEnemy)
-      let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(rs, Facts.attackOnTheLeftOfEnemy)
-      let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(rs, Facts.attackOnTheRightOfEnemy)
+      // Read derived facts (computed at salience 10.0)
+      let RuleSystem.Grade(preferLeft) = RuleSystem.gradeForFact(rs, Facts.preferredDodgeLeft)
+      let RuleSystem.Grade(preferRight) = RuleSystem.gradeForFact(rs, Facts.preferredDodgeRight)
       let RuleSystem.Grade(leftSpace) = RuleSystem.gradeForFact(rs, Facts.hasSpaceOnTheLeft)
       let RuleSystem.Grade(rightSpace) = RuleSystem.gradeForFact(rs, Facts.hasSpaceOnTheRight)
 
-      // Calculate threat on each side
-      // Left side threat = attacks on left + center (if center exists)
-      // Right side threat = attacks on right + center (if center exists)
-      let leftThreat = leftAttack + centerAttack
-      let rightThreat = rightAttack + centerAttack
-
-      // Determine preferred direction based on threats
-      let (preferredDodgeDirection, shouldRecalculate) = if leftThreat > rightThreat {
-        // More threat on left → move right
-        (Right, true)
-      } else if rightThreat > leftThreat {
-        // More threat on right → move left
-        (Left, true)
+      // Determine preferred direction from facts
+      let preferredDirection = if preferLeft > 0.0 {
+        Left
+      } else if preferRight > 0.0 {
+        Right
+      } // Fallback: pick based on space (shouldn't happen if threats computed correctly)
+      else if leftSpace > rightSpace {
+        Left
       } else {
-        // Equal threats (only center attack)
+        Right
+      }
 
-        switch rs.state.dodgeDirection {
-        | None => // No direction yet, pick based on space
-          (leftSpace > rightSpace ? Left : Right, true)
-        | Some(
-            currentDirection,
-          ) => // Already have a direction for equal threats, keep it to avoid oscillation
-          (currentDirection, false)
+      // Check if we have space in the preferred direction
+      let hasSpaceInPreferred = switch preferredDirection {
+      | Left => leftSpace > 0.0
+      | Right => rightSpace > 0.0
+      }
+
+      // Determine final direction considering space availability
+      let finalDirection = if hasSpaceInPreferred {
+        preferredDirection
+      } else {
+        // No space in preferred direction, try the other side
+        switch preferredDirection {
+        | Left => rightSpace > 0.0 ? Right : Left
+        | Right => leftSpace > 0.0 ? Left : Right
         }
       }
 
-      // Only recalculate final direction if we should (not when keeping existing direction)
-      let finalDirection = if !shouldRecalculate {
-        // Keep current direction (equal threats, already have direction)
-        switch rs.state.dodgeDirection {
-        | Some(dir) => dir
-        | None => preferredDodgeDirection // Shouldn't happen, but fallback
-        }
-      } else {
-        // Check if we have space in the preferred direction
-        let hasSpaceInPreferred = switch preferredDodgeDirection {
-        | Left => leftSpace > 0.0
-        | Right => rightSpace > 0.0
-        }
-
-        // If no space in preferred direction, try the other side
-        hasSpaceInPreferred
-          ? preferredDodgeDirection
-          : switch preferredDodgeDirection {
-            | Left => rightSpace > 0.0 ? Right : Left
-            | Right => leftSpace > 0.0 ? Left : Right
-            }
-      }
+      // Handle oscillation prevention for equal threats
+      // If threats are equal and we already have a direction, keep it to avoid oscillation
+      let RuleSystem.Grade(leftThreat) = RuleSystem.gradeForFact(rs, Facts.leftThreat)
+      let RuleSystem.Grade(rightThreat) = RuleSystem.gradeForFact(rs, Facts.rightThreat)
+      let threatsAreEqual = leftThreat == rightThreat && leftThreat > 0.0
 
       switch rs.state.dodgeDirection {
       | None =>
         // Pick initial direction
         rs.state.dodgeDirection = Some(finalDirection)
       | Some(currentDirection) =>
-        if currentDirection != finalDirection {
+        if threatsAreEqual {
+          // Keep current direction to avoid oscillation when threats are equal
+          ()
+        } else if currentDirection != finalDirection {
+          // Update direction when threats are different
           rs.state.dodgeDirection = Some(finalDirection)
+        } else {
+          // Direction unchanged
+          ()
         }
       }
     },
