@@ -2,6 +2,7 @@
 
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Team$Skirmish from "./Team.res.mjs";
+import * as Ember$Skirmish from "./Moves/Ember.res.mjs";
 import * as Attack$Skirmish from "./Moves/Attack.res.mjs";
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as RuleSystem$Kaplay from "@nojaf/rescript-kaplay/src/RuleSystem.res.mjs";
@@ -226,6 +227,25 @@ function addRules$2(rs) {
   }, 20.0);
 }
 
+let shouldAttack = "shouldAttack";
+
+function addRules$3(rs) {
+  rs.addRuleExecutingAction(rs => {
+    if (rs.state.enemy.attackStatus !== true) {
+      return false;
+    }
+    let preferLeft = rs.gradeForFact(preferredDodgeLeft);
+    let preferRight = rs.gradeForFact(preferredDodgeRight);
+    if (preferLeft === 0.0) {
+      return preferRight === 0.0;
+    } else {
+      return false;
+    }
+  }, rs => {
+    rs.assertFact(shouldAttack, 1.0);
+  }, 30.0);
+}
+
 function makeRuleSystem(k, enemy, player) {
   let rs = RuleSystem$Kaplay.make(k);
   rs.state = {
@@ -238,6 +258,7 @@ function makeRuleSystem(k, enemy, player) {
   addRules(k, rs);
   addRules$1(rs);
   addRules$2(rs);
+  addRules$3(rs);
   return rs;
 }
 
@@ -258,10 +279,14 @@ function update(k, rs, param) {
   let match = rs.state.horizontalMovement;
   if (match !== undefined) {
     if (match === true) {
-      return Pokemon$Skirmish.moveLeft(k, rs.state.enemy);
+      Pokemon$Skirmish.moveLeft(k, rs.state.enemy);
     } else {
-      return Pokemon$Skirmish.moveRight(k, rs.state.enemy);
+      Pokemon$Skirmish.moveRight(k, rs.state.enemy);
     }
+  }
+  let g = rs.gradeForFact(shouldAttack);
+  if (g > 0.0) {
+    return Ember$Skirmish.cast(k, rs.state.enemy);
   }
 }
 
@@ -290,17 +315,22 @@ let DerivedFacts = {
   rightThreat: rightThreat
 };
 
-let DecisionsFacts = {
+let DefensiveFacts = {
   preferredDodgeLeft: preferredDodgeLeft,
   preferredDodgeRight: preferredDodgeRight
+};
+
+let AttackFacts = {
+  shouldAttack: shouldAttack
 };
 
 export {
   BaseFacts,
   DerivedFacts,
-  DecisionsFacts,
+  DefensiveFacts,
+  AttackFacts,
   make,
   makeRuleSystem,
   update,
 }
-/* Attack-Skirmish Not a pure module */
+/* Ember-Skirmish Not a pure module */

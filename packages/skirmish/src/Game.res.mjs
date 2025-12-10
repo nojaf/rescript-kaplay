@@ -23,7 +23,7 @@ function scene() {
   Pokemon$Skirmish.load(GameContext$Skirmish.k, 4);
   Pokemon$Skirmish.load(GameContext$Skirmish.k, 25);
   Thundershock$Skirmish.load();
-  Ember$Skirmish.load();
+  Ember$Skirmish.load(GameContext$Skirmish.k);
   GameContext$Skirmish.k.onLoad(sceneLoaded);
 }
 

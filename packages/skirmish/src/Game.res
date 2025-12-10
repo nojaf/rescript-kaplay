@@ -15,6 +15,6 @@ let scene = () => {
   Pokemon.load(k, 4)
   Pokemon.load(k, 25)
   Thundershock.load()
-  Ember.load()
+  Ember.load(k)
   k->Context.onLoad(sceneLoaded)
 }

@@ -29,7 +29,7 @@ let withKaplayContext = (
   Pokemon.load(k, 4)
   Pokemon.load(k, 25)
   Thundershock.load()
-  Ember.load()
+  Ember.load(k)
 
   Promise.make((resolve, reject) => {
     if Array.length(playingField) == 0 {
@@ -229,4 +229,78 @@ test("enemy should not move when in front of player", () => {
       expect(rs.facts->Map.has(EnemyAI.BaseFacts.isPlayerRight))->Expect.toBeFalsy
     },
   )
+})
+
+test("enemy should attack when not under threat and can attack", () => {
+  withKaplayContext(
+    [
+      // game level - enemy and player aligned, no attacks
+      "..E..",
+      ".....",
+      "..P..",
+    ],
+    async (k, rs) => {
+      // Ensure enemy can attack
+      rs.state.enemy.attackStatus = Pokemon.CanAttack
+
+      EnemyAI.update(k, rs, ())
+
+      // Query for enemy attacks (Team.opponent)
+      let enemyAttacks =
+        k
+        ->Context.query({
+          include_: [Attack.tag, Team.opponent],
+          hierarchy: Descendants,
+        })
+        ->Array.filterMap(Attack.Unit.fromGameObj)
+
+      expect(enemyAttacks->Array.length)->Expect.toBe(1)
+      expect(rs.facts->Map.has(EnemyAI.AttackFacts.shouldAttack))->Expect.toBeTruthy
+    },
+  )
+})
+
+test("enemy should not attack when under threat", () => {
+  withKaplayContext(
+    [
+      // game level - enemy with center attack
+      "..E..",
+      "..A..", // Attack in center
+      "..P..",
+    ],
+    async (k, rs) => {
+      rs.state.enemy.attackStatus = Pokemon.CanAttack
+
+      EnemyAI.update(k, rs, ())
+
+      let enemyAttacks =
+        k
+        ->Context.query({
+          include_: [Attack.tag, Team.opponent],
+          hierarchy: Descendants,
+        })
+        ->Array.filterMap(Attack.Unit.fromGameObj)
+
+      expect(enemyAttacks->Array.length)->Expect.toBe(0)
+    },
+  )
+})
+
+test("enemy should not attack when already attacking", () => {
+  withKaplayContext(["..E..", ".....", "..P.."], async (k, rs) => {
+    // Enemy is already attacking
+    rs.state.enemy.attackStatus = Pokemon.Attacking
+
+    EnemyAI.update(k, rs, ())
+
+    let enemyAttacks =
+      k
+      ->Context.query({
+        include_: [Attack.tag, Team.opponent],
+        hierarchy: Descendants,
+      })
+      ->Array.filterMap(Attack.Unit.fromGameObj)
+
+    expect(enemyAttacks->Array.length)->Expect.toBe(0)
+  })
 })

@@ -15,6 +15,13 @@ let overlapX = ((ax1, ax2), (bx1, bx2)) => {
   Stdlib_Math.max(ax1, bx1) <= Stdlib_Math.min(ax2, bx2)
 }
 
+/** Base facts module for enemy AI.
+  *
+  * This module computes base facts directly from game state (no dependencies on other facts).
+  * It provides foundational information about attack positions, space availability, and
+  * player position relative to the enemy. These facts are used by DerivedFacts and
+  * DefensiveFacts modules to make higher-level decisions.
+  */
 module BaseFacts = {
   open RuleSystem
 
@@ -33,10 +40,7 @@ module BaseFacts = {
   let isPlayerLeft = Fact("isPlayerLeft")
   let isPlayerRight = Fact("isPlayerRight")
 
-  let addRules = (
-    k: Context.t,
-    rs: RuleSystem.t<ruleSystemState>,
-  ) => {
+  let addRules = (k: Context.t, rs: RuleSystem.t<ruleSystemState>) => {
     // Base fact: Attack positions
     rs->RuleSystem.addRuleExecutingAction(
       rs => rs.state.playerAttacks->Array.length > 0,
@@ -52,7 +56,8 @@ module BaseFacts = {
 
         rs.state.playerAttacks->Array.forEach(attack => {
           let attackWorldRect = attack->Attack.Unit.getWorldRect
-          let closestCorner = attack->Attack.Unit.getClosestCorner(k, ~pokemonPosition=enemyWorldPos)
+          let closestCorner =
+            attack->Attack.Unit.getClosestCorner(k, ~pokemonPosition=enemyWorldPos)
 
           // Check is attack is in center of enemy
           if (
@@ -114,7 +119,7 @@ module BaseFacts = {
           rs->RuleSystem.assertFact(attackInCenterOfEnemy, ~grade=centerGrade.contents)
         }
       },
-      ~salient=salience,
+      ~salience,
     )
 
     // Base fact: Space availability
@@ -133,7 +138,7 @@ module BaseFacts = {
           rs->RuleSystem.assertFact(hasSpaceOnTheRight, ~grade=RuleSystem.Grade(rightSpace))
         }
       },
-      ~salient=salience,
+      ~salience,
     )
 
     // Base fact: Player position relative to enemy
@@ -156,11 +161,18 @@ module BaseFacts = {
           rs->RuleSystem.assertFact(isPlayerRight, ~grade=RuleSystem.Grade(1.0))
         }
       },
-      ~salient=salience,
+      ~salience,
     )
   }
 }
 
+/** Derived facts module for enemy AI.
+  *
+  * This module computes derived facts based on facts from BaseFacts module.
+  * It aggregates attack information into threat levels (leftThreat, rightThreat)
+  * that combine information about attacks from different directions. These threat
+  * facts are used by DefensiveFacts module to determine defensive behavior.
+  */
 module DerivedFacts = {
   open RuleSystem
 
@@ -175,15 +187,33 @@ module DerivedFacts = {
     rs->RuleSystem.addRuleExecutingAction(
       rs => {
         // Compute threats when we have attack information
-        let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(rs, BaseFacts.attackInCenterOfEnemy)
-        let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(rs, BaseFacts.attackOnTheLeftOfEnemy)
-        let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(rs, BaseFacts.attackOnTheRightOfEnemy)
+        let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(
+          rs,
+          BaseFacts.attackInCenterOfEnemy,
+        )
+        let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(
+          rs,
+          BaseFacts.attackOnTheLeftOfEnemy,
+        )
+        let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(
+          rs,
+          BaseFacts.attackOnTheRightOfEnemy,
+        )
         centerAttack > 0.0 || leftAttack > 0.0 || rightAttack > 0.0
       },
       rs => {
-        let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(rs, BaseFacts.attackInCenterOfEnemy)
-        let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(rs, BaseFacts.attackOnTheLeftOfEnemy)
-        let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(rs, BaseFacts.attackOnTheRightOfEnemy)
+        let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(
+          rs,
+          BaseFacts.attackInCenterOfEnemy,
+        )
+        let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(
+          rs,
+          BaseFacts.attackOnTheLeftOfEnemy,
+        )
+        let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(
+          rs,
+          BaseFacts.attackOnTheRightOfEnemy,
+        )
 
         // Left side threat = attacks on left + center (if center exists)
         let leftThreatGrade = leftAttack + centerAttack
@@ -197,12 +227,18 @@ module DerivedFacts = {
           rs->RuleSystem.assertFact(rightThreat, ~grade=RuleSystem.Grade(rightThreatGrade))
         }
       },
-      ~salient=salience,
+      ~salience,
     )
   }
 }
 
-module DecisionsFacts = {
+/** Defensive facts module for enemy AI.
+  *
+  * This module computes defensive decisions (dodging, positioning) based on facts
+  * from BaseFacts and DerivedFacts modules. It uses facts about threats, space
+  * availability, and player position to determine defensive movement.
+  */
+module DefensiveFacts = {
   open RuleSystem
   let salience = Salience(20.0)
 
@@ -238,7 +274,7 @@ module DecisionsFacts = {
           rs->RuleSystem.assertFact(preferredDodgeRight, ~grade=RuleSystem.Grade(1.0))
         }
       },
-      ~salient=salience,
+      ~salience,
     )
 
     // Decision: Dodge when there's a center attack
@@ -308,7 +344,7 @@ module DecisionsFacts = {
           }
         }
       },
-      ~salient=salience,
+      ~salience,
     )
 
     // Rule: Reset horizontal movement when center attack is gone
@@ -322,7 +358,7 @@ module DecisionsFacts = {
       rs => {
         rs.state.horizontalMovement = None
       },
-      ~salient=salience,
+      ~salience,
     )
 
     // Decision: Position in front of player when there are no attacks
@@ -349,7 +385,49 @@ module DecisionsFacts = {
           rs.state.horizontalMovement = None
         }
       },
-      ~salient=salience,
+      ~salience,
+    )
+  }
+}
+
+/** Attack facts module for enemy AI.
+  *
+  * This module computes attack decisions based on facts from DefensiveFacts module.
+  * It determines when the enemy should attack based on defensive state (whether
+  * the enemy is under threat) and attack readiness.
+  */
+module AttackFacts = {
+  open RuleSystem
+  let salience = Salience(30.0)
+
+  // Attack decision
+  let shouldAttack = Fact("shouldAttack")
+
+  let addRules = (rs: RuleSystem.t<ruleSystemState>) => {
+    // Decision: Attack when not under threat and can attack
+    rs->RuleSystem.addRuleExecutingAction(
+      rs => {
+        // Check if enemy can attack
+        rs.state.enemy.attackStatus ==
+          Pokemon.CanAttack && // Check if not under threat (both preferred dodge facts should be 0.0)
+          // Uses facts from DefensiveFacts module (computed at salience 20.0)
+
+          {
+            let RuleSystem.Grade(preferLeft) = RuleSystem.gradeForFact(
+              rs,
+              DefensiveFacts.preferredDodgeLeft,
+            )
+            let RuleSystem.Grade(preferRight) = RuleSystem.gradeForFact(
+              rs,
+              DefensiveFacts.preferredDodgeRight,
+            )
+            preferLeft == 0.0 && preferRight == 0.0
+          }
+      },
+      rs => {
+        rs->RuleSystem.assertFact(shouldAttack, ~grade=RuleSystem.Grade(1.0))
+      },
+      ~salience,
     )
   }
 }
@@ -376,7 +454,8 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
 
   BaseFacts.addRules(k, rs)
   DerivedFacts.addRules(rs)
-  DecisionsFacts.addRules(rs)
+  DefensiveFacts.addRules(rs)
+  AttackFacts.addRules(rs)
 
   rs
 }
@@ -400,6 +479,12 @@ let update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
   | None => ()
   | Some(Left) => Pokemon.moveLeft(k, rs.state.enemy)
   | Some(Right) => Pokemon.moveRight(k, rs.state.enemy)
+  }
+
+  // Check if should attack and execute
+  switch rs->RuleSystem.gradeForFact(AttackFacts.shouldAttack) {
+  | RuleSystem.Grade(g) if g > 0.0 => Ember.cast(k, rs.state.enemy)
+  | _ => ()
   }
 }
 

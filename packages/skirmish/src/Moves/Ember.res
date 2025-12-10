@@ -1,5 +1,4 @@
 open Kaplay
-open GameContext
 
 type t
 
@@ -14,13 +13,13 @@ include Attack.Comp({type t = t})
 
 let spriteName = "flame"
 
-let load = () => {
+let load = (k: Context.t) => {
   k->Context.loadSprite(spriteName, "/sprites/moves/flame.png")
 }
 
 let coolDown = 1.
 
-let cast = (pokemon: Pokemon.t) => {
+let cast = (k: Context.t, pokemon: Pokemon.t) => {
   // Use the pokemon's world position for the flame's position
   // Because flame is using the move component, it will move based on a direction vector relative to the parent.
   // That is why the pokemon cannot be the parent of the flame.

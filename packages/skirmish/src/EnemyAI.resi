@@ -36,12 +36,19 @@ module DerivedFacts: {
   let rightThreat: fact
 }
 
-module DecisionsFacts: {
+module DefensiveFacts: {
   open RuleSystem
 
   // Preferred dodge direction
   let preferredDodgeLeft: fact
   let preferredDodgeRight: fact
+}
+
+module AttackFacts: {
+  open RuleSystem
+
+  // Attack decision
+  let shouldAttack: fact
 }
 
 let make: (Context.t, ~pokemonId: int, ~level: int, Pokemon.t) => Pokemon.t

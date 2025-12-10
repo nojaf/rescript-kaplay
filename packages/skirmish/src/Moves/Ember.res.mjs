@@ -13,7 +13,6 @@ import * as Wall$Skirmish from "../Wall.res.mjs";
 import * as Attack$Skirmish from "./Attack.res.mjs";
 import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
-import * as GameContext$Skirmish from "../GameContext.res.mjs";
 
 GameObjRaw$Kaplay.Comp({});
 
@@ -35,25 +34,25 @@ let addAttack = include.addAttack;
 
 let spriteName = "flame";
 
-function load() {
-  GameContext$Skirmish.k.loadSprite(spriteName, "/sprites/moves/flame.png");
+function load(k) {
+  k.loadSprite(spriteName, "/sprites/moves/flame.png");
 }
 
-function cast(pokemon) {
+function cast(k, pokemon) {
   let pokemonWorldPos = pokemon.worldPos();
-  let flame = GameContext$Skirmish.k.add(Belt_Array.concatMany([
+  let flame = k.add(Belt_Array.concatMany([
     [
-      GameContext$Skirmish.k.sprite(spriteName),
-      GameContext$Skirmish.k.pos(pokemonWorldPos),
-      GameContext$Skirmish.k.move(pokemon.direction, 120),
-      GameContext$Skirmish.k.z(-1),
-      GameContext$Skirmish.k.area(),
-      pokemon.direction.y < 0 ? GameContext$Skirmish.k.anchor("bot") : GameContext$Skirmish.k.anchor("top"),
+      k.sprite(spriteName),
+      k.pos(pokemonWorldPos),
+      k.move(pokemon.direction, 120),
+      k.z(-1),
+      k.area(),
+      pokemon.direction.y < 0 ? k.anchor("bot") : k.anchor("top"),
       Team$Skirmish.getTagComponent(pokemon.team)
     ],
     addAttack(function () {
       let flame = this ;
-      return Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, flame.worldPos(), flame.width, flame.height);
+      return Math$Kaplay.Rect.makeWorld(k, flame.worldPos(), flame.width, flame.height);
     })
   ]));
   pokemon.attackStatus = false;
@@ -68,7 +67,7 @@ function cast(pokemon) {
   flame.onCollide(Wall$Skirmish.tag, (param, _collision) => {
     flame.destroy();
   });
-  GameContext$Skirmish.k.wait(1, () => {
+  k.wait(1, () => {
     pokemon.attackStatus = true;
   });
 }

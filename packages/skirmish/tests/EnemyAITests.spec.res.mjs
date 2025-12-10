@@ -2,8 +2,10 @@
 
 import Kaplay from "kaplay";
 import * as Vitest from "vitest";
+import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Team$Skirmish from "../src/Team.res.mjs";
 import * as Ember$Skirmish from "../src/Moves/Ember.res.mjs";
+import * as Attack$Skirmish from "../src/Moves/Attack.res.mjs";
 import * as EnemyAI$Skirmish from "../src/EnemyAI.res.mjs";
 import * as Pokemon$Skirmish from "../src/Pokemon.res.mjs";
 import * as GenericMove$Skirmish from "./GenericMove.res.mjs";
@@ -21,7 +23,7 @@ function withKaplayContext(playingField, testFn) {
   Pokemon$Skirmish.load(k, 4);
   Pokemon$Skirmish.load(k, 25);
   Thundershock$Skirmish.load();
-  Ember$Skirmish.load();
+  Ember$Skirmish.load(k);
   return new Promise((resolve, reject) => {
     if (playingField.length === 0) {
       reject(new Error("Playing field is empty"));
@@ -161,6 +163,58 @@ Vitest.test("enemy should not move when in front of player", () => withKaplayCon
   Vitest.expect(enemyMoveSpy).not.toHaveBeenCalled();
   Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.isPlayerLeft)).toBeFalsy();
   Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.isPlayerRight)).toBeFalsy();
+}));
+
+Vitest.test("enemy should attack when not under threat and can attack", () => withKaplayContext([
+  "..E..",
+  ".....",
+  "..P.."
+], async (k, rs) => {
+  rs.state.enemy.attackStatus = true;
+  EnemyAI$Skirmish.update(k, rs, undefined);
+  let enemyAttacks = Stdlib_Array.filterMap(k.query({
+    include: [
+      Attack$Skirmish.tag,
+      Team$Skirmish.opponent
+    ],
+    hierarchy: "descendants"
+  }), Attack$Skirmish.Unit.fromGameObj);
+  Vitest.expect(enemyAttacks.length).toBe(1);
+  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.AttackFacts.shouldAttack)).toBeTruthy();
+}));
+
+Vitest.test("enemy should not attack when under threat", () => withKaplayContext([
+  "..E..",
+  "..A..",
+  "..P.."
+], async (k, rs) => {
+  rs.state.enemy.attackStatus = true;
+  EnemyAI$Skirmish.update(k, rs, undefined);
+  let enemyAttacks = Stdlib_Array.filterMap(k.query({
+    include: [
+      Attack$Skirmish.tag,
+      Team$Skirmish.opponent
+    ],
+    hierarchy: "descendants"
+  }), Attack$Skirmish.Unit.fromGameObj);
+  Vitest.expect(enemyAttacks.length).toBe(0);
+}));
+
+Vitest.test("enemy should not attack when already attacking", () => withKaplayContext([
+  "..E..",
+  ".....",
+  "..P.."
+], async (k, rs) => {
+  rs.state.enemy.attackStatus = false;
+  EnemyAI$Skirmish.update(k, rs, undefined);
+  let enemyAttacks = Stdlib_Array.filterMap(k.query({
+    include: [
+      Attack$Skirmish.tag,
+      Team$Skirmish.opponent
+    ],
+    hierarchy: "descendants"
+  }), Attack$Skirmish.Unit.fromGameObj);
+  Vitest.expect(enemyAttacks.length).toBe(0);
 }));
 
 export {

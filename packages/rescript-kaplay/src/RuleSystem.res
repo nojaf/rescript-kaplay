@@ -96,7 +96,7 @@ external addRuleExecutingAction: (
   t<'state>,
   predicate<'state>,
   action<'state>,
-  ~salient: salience=?,
+  ~salience: salience=?,
 ) => unit = "addRuleExecutingAction"
 
 /** Add a rule which asserts a fact if its predicate evaluates to true. */
@@ -111,7 +111,7 @@ external addRuleRetractingFact: (
   predicate<'state>,
   fact,
   ~grade: grade=?,
-  ~salient: salience=?,
+  ~salience: salience=?,
 ) => unit = "addRuleRetractingFact"
 
 /** Add a custom rule. */
