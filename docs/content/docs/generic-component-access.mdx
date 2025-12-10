@@ -32,8 +32,10 @@ let getObjectPosition = (obj: Pos.Unit.t) => {
 The `fromGameObj()` function performs a runtime check to ensure the object has the required component, then safely casts it to the `Unit` type.
 
 <Aside type="note">
-Not every component in the library has a `Unit` module. This was a recent addition to the library and thus not all components have one yet.
-If you find yourself needing a `Unit` module for a component that doesn't have one, pull requests are welcome!
+  Not every component in the library has a `Unit` module. This was a recent
+  addition to the library and thus not all components have one yet. If you find
+  yourself needing a `Unit` module for a component that doesn't have one, pull
+  requests are welcome!
 </Aside>
 
 ## Combining Multiple Components
@@ -47,7 +49,7 @@ module Collidable = {
     include GameObjRaw.Comp({type t = t})
     include Pos.Comp({type t = t})
     include Area.Comp({type t = t})
-    
+
     let fromGameObj = (obj: GameObjRaw.Unit.t): option<t> => {
       if obj->has("pos") && obj->has("area") {
         Some(Obj.magic(obj))
@@ -75,14 +77,19 @@ let checkCollision = (obj: Collidable.Unit.t, point: Vec2.World.t) => {
 ```
 
 This approach:
+
 - **Domain-specific**: Tailored to your use case
 - **Composable**: Uses the same `include` pattern as regular game objects
 - **Type-safe**: You get all methods from all included components
 - **Flexible**: Easy to add more components later
 
 <Aside type="caution">
-**Creating Unit modules is uncommon**: Most of the time, you'll use existing `Unit` modules from the library or create custom combined modules for your domain. Creating a `Unit` module for a single component (like `Attack.Unit`) is typically only done when that component is central to your game's architecture and needs to be queried generically across many different object types.
+  **Creating Unit modules is uncommon**: Most of the time, you'll use existing
+  `Unit` modules from the library or create custom combined modules for your
+  domain. Creating a `Unit` module for a single component (like `Attack.Unit`)
+  is typically only done when that component is central to your game's
+  architecture and needs to be queried generically across many different object
+  types.
 </Aside>
 
 This pattern enables powerful abstractions for spatial queries, rule systems, and other scenarios where you need to work with objects generically.
-
