@@ -114,7 +114,7 @@ Vitest.test("player attack on the right of enemy", () => withKaplayContext([
 ], async (k, rs) => {
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
-  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.Facts.attackOnTheRightOfEnemy)).toBeTruthy();
+  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.attackOnTheRightOfEnemy)).toBeTruthy();
 }));
 
 Vitest.test("player attack on the left of enemy", () => withKaplayContext([
@@ -126,7 +126,7 @@ Vitest.test("player attack on the left of enemy", () => withKaplayContext([
 ], async (k, rs) => {
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
-  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.Facts.attackOnTheLeftOfEnemy)).toBeTruthy();
+  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.attackOnTheLeftOfEnemy)).toBeTruthy();
 }));
 
 Vitest.test("enemy should move to the right to be in front of player", () => withKaplayContext([
@@ -159,8 +159,8 @@ Vitest.test("enemy should not move when in front of player", () => withKaplayCon
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
   Vitest.expect(enemyMoveSpy).not.toHaveBeenCalled();
-  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.Facts.isPlayerLeft)).toBeFalsy();
-  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.Facts.isPlayerRight)).toBeFalsy();
+  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.isPlayerLeft)).toBeFalsy();
+  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.isPlayerRight)).toBeFalsy();
 }));
 
 export {

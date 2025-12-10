@@ -11,27 +11,35 @@ type ruleSystemState = {
   lastAttackAt: float,
 }
 
-module Facts: {
+module BaseFacts: {
   open RuleSystem
 
-  // Base facts: Attack positions
+  // Attack positions
   let attackInCenterOfEnemy: fact
   let attackOnTheLeftOfEnemy: fact
   let attackOnTheRightOfEnemy: fact
 
-  // Base facts: Space availability
+  // Space availability
   let hasSpaceOnTheLeft: fact
   let hasSpaceOnTheRight: fact
 
-  // Base facts: Player position relative to enemy
+  // Player position relative to enemy
   let isPlayerLeft: fact
   let isPlayerRight: fact
+}
 
-  // Derived facts: Threat levels (computed from attack facts)
+module DerivedFacts: {
+  open RuleSystem
+
+  // Threat levels (computed from attack facts)
   let leftThreat: fact
   let rightThreat: fact
+}
 
-  // Derived facts: Preferred dodge direction
+module DecisionsFacts: {
+  open RuleSystem
+
+  // Preferred dodge direction
   let preferredDodgeLeft: fact
   let preferredDodgeRight: fact
 }

@@ -151,7 +151,7 @@ test("player attack on the right of enemy", () => {
       EnemyAI.update(k, rs, ())
 
       expect(rs.state.horizontalMovement)->Expect.toBeUndefined
-      expect(rs.facts->Map.has(EnemyAI.Facts.attackOnTheRightOfEnemy))->Expect.toBeTruthy
+      expect(rs.facts->Map.has(EnemyAI.BaseFacts.attackOnTheRightOfEnemy))->Expect.toBeTruthy
     },
   )
 })
@@ -170,7 +170,7 @@ test("player attack on the left of enemy", () => {
       EnemyAI.update(k, rs, ())
 
       expect(rs.state.horizontalMovement)->Expect.toBeUndefined
-      expect(rs.facts->Map.has(EnemyAI.Facts.attackOnTheLeftOfEnemy))->Expect.toBeTruthy
+      expect(rs.facts->Map.has(EnemyAI.BaseFacts.attackOnTheLeftOfEnemy))->Expect.toBeTruthy
     },
   )
 })
@@ -225,8 +225,8 @@ test("enemy should not move when in front of player", () => {
       expect(rs.state.horizontalMovement)->Expect.toBeUndefined
       expect(enemyMoveSpy)->Expect.not->Expect.toHaveBeenCalled
       // When aligned, player position facts should not be asserted
-      expect(rs.facts->Map.has(EnemyAI.Facts.isPlayerLeft))->Expect.toBeFalsy
-      expect(rs.facts->Map.has(EnemyAI.Facts.isPlayerRight))->Expect.toBeFalsy
+      expect(rs.facts->Map.has(EnemyAI.BaseFacts.isPlayerLeft))->Expect.toBeFalsy
+      expect(rs.facts->Map.has(EnemyAI.BaseFacts.isPlayerRight))->Expect.toBeFalsy
     },
   )
 })

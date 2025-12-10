@@ -7,6 +7,10 @@ import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as RuleSystem$Kaplay from "@nojaf/rescript-kaplay/src/RuleSystem.res.mjs";
 import * as DebugRuleSystem$Skirmish from "./DebugRuleSystem.res.mjs";
 
+function overlapX(param, param$1) {
+  return Math.max(param[0], param$1[0]) <= Math.min(param[1], param$1[1]);
+}
+
 let attackInCenterOfEnemy = "attackInCenterOfEnemy";
 
 let attackOnTheLeftOfEnemy = "attackOnTheLeftOfEnemy";
@@ -21,41 +25,7 @@ let isPlayerLeft = "isPlayerLeft";
 
 let isPlayerRight = "isPlayerRight";
 
-let leftThreat = "leftThreat";
-
-let rightThreat = "rightThreat";
-
-let preferredDodgeLeft = "preferredDodgeLeft";
-
-let preferredDodgeRight = "preferredDodgeRight";
-
-let Facts = {
-  attackInCenterOfEnemy: attackInCenterOfEnemy,
-  attackOnTheLeftOfEnemy: attackOnTheLeftOfEnemy,
-  attackOnTheRightOfEnemy: attackOnTheRightOfEnemy,
-  hasSpaceOnTheLeft: hasSpaceOnTheLeft,
-  hasSpaceOnTheRight: hasSpaceOnTheRight,
-  isPlayerLeft: isPlayerLeft,
-  isPlayerRight: isPlayerRight,
-  leftThreat: leftThreat,
-  rightThreat: rightThreat,
-  preferredDodgeLeft: preferredDodgeLeft,
-  preferredDodgeRight: preferredDodgeRight
-};
-
-function overlapX(param, param$1) {
-  return Math.max(param[0], param$1[0]) <= Math.min(param[1], param$1[1]);
-}
-
-function makeRuleSystem(k, enemy, player) {
-  let rs = RuleSystem$Kaplay.make(k);
-  rs.state = {
-    enemy: enemy,
-    player: player,
-    playerAttacks: [],
-    horizontalMovement: undefined,
-    lastAttackAt: 0
-  };
+function addRules(k, rs) {
   rs.addRuleExecutingAction(rs => rs.state.playerAttacks.length !== 0, rs => {
     let leftGrade = {
       contents: 0
@@ -148,6 +118,13 @@ function makeRuleSystem(k, enemy, player) {
       return;
     }
   }, 0.0);
+}
+
+let leftThreat = "leftThreat";
+
+let rightThreat = "rightThreat";
+
+function addRules$1(rs) {
   rs.addRuleExecutingAction(rs => {
     let centerAttack = rs.gradeForFact(attackInCenterOfEnemy);
     let leftAttack = rs.gradeForFact(attackOnTheLeftOfEnemy);
@@ -171,6 +148,13 @@ function makeRuleSystem(k, enemy, player) {
       return;
     }
   }, 10.0);
+}
+
+let preferredDodgeLeft = "preferredDodgeLeft";
+
+let preferredDodgeRight = "preferredDodgeRight";
+
+function addRules$2(rs) {
   rs.addRuleExecutingAction(rs => {
     let leftThreat$1 = rs.gradeForFact(leftThreat);
     let rightThreat$1 = rs.gradeForFact(rightThreat);
@@ -193,7 +177,7 @@ function makeRuleSystem(k, enemy, player) {
     } else {
       rs.assertFact(preferredDodgeRight, 1.0);
     }
-  }, 10.0);
+  }, 20.0);
   rs.addRuleExecutingAction(rs => {
     let c = rs.gradeForFact(attackInCenterOfEnemy);
     return c > 0.0;
@@ -240,6 +224,20 @@ function makeRuleSystem(k, enemy, player) {
       rs.state.horizontalMovement = undefined;
     }
   }, 20.0);
+}
+
+function makeRuleSystem(k, enemy, player) {
+  let rs = RuleSystem$Kaplay.make(k);
+  rs.state = {
+    enemy: enemy,
+    player: player,
+    playerAttacks: [],
+    horizontalMovement: undefined,
+    lastAttackAt: 0
+  };
+  addRules(k, rs);
+  addRules$1(rs);
+  addRules$2(rs);
   return rs;
 }
 
@@ -277,8 +275,30 @@ function make(k, pokemonId, level, player) {
   return enemy;
 }
 
+let BaseFacts = {
+  attackInCenterOfEnemy: attackInCenterOfEnemy,
+  attackOnTheLeftOfEnemy: attackOnTheLeftOfEnemy,
+  attackOnTheRightOfEnemy: attackOnTheRightOfEnemy,
+  hasSpaceOnTheLeft: hasSpaceOnTheLeft,
+  hasSpaceOnTheRight: hasSpaceOnTheRight,
+  isPlayerLeft: isPlayerLeft,
+  isPlayerRight: isPlayerRight
+};
+
+let DerivedFacts = {
+  leftThreat: leftThreat,
+  rightThreat: rightThreat
+};
+
+let DecisionsFacts = {
+  preferredDodgeLeft: preferredDodgeLeft,
+  preferredDodgeRight: preferredDodgeRight
+};
+
 export {
-  Facts,
+  BaseFacts,
+  DerivedFacts,
+  DecisionsFacts,
   make,
   makeRuleSystem,
   update,
