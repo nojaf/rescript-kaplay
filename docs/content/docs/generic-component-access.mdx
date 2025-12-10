@@ -1,0 +1,95 @@
+---
+title: Generic Component Access
+description: Learn how to access component methods on generic game objects from queries.
+slug: generic-component-access
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+When using [Context.query()](../api-reference/Kaplay.Context#query) to find game objects by tag, you get back generic objects where you don't know the specific type. `Unit` modules provide a type-safe way to access component methods on these generic objects.
+
+## Using Existing Unit Modules
+
+Many components in the library provide a `Unit` module that you can use when querying for objects by tag. For example, if you need to access position methods on generic objects:
+
+```ReScript
+let getMovableObjects = (k: Context.t): array<Pos.Unit.t> => {
+  k
+  ->Context.query({
+    include_: ["movable"],
+    hierarchy: Descendants,
+  })
+  ->Array.filterMap(Pos.Unit.fromGameObj)
+}
+
+// Now you can call Pos methods on generic objects:
+let getObjectPosition = (obj: Pos.Unit.t) => {
+  let worldPos = obj->Pos.Unit.worldPos
+  // ... use worldPos ...
+}
+```
+
+The `fromGameObj()` function performs a runtime check to ensure the object has the required component, then safely casts it to the `Unit` type.
+
+<Aside type="note">
+  Not every component in the library has a `Unit` module. This was a recent
+  addition to the library and thus not all components have one yet. If you find
+  yourself needing a `Unit` module for a component that doesn't have one, pull
+  requests are welcome!
+</Aside>
+
+## Combining Multiple Components
+
+When you need multiple components together on generic objects, create a custom combined module in your game code:
+
+```ReScript
+module Collidable = {
+  module Unit = {
+    type t
+    include GameObjRaw.Comp({type t = t})
+    include Pos.Comp({type t = t})
+    include Area.Comp({type t = t})
+
+    let fromGameObj = (obj: GameObjRaw.Unit.t): option<t> => {
+      if obj->has("pos") && obj->has("area") {
+        Some(Obj.magic(obj))
+      } else {
+        None
+      }
+    }
+  }
+}
+
+// Usage:
+let getCollidables = (k: Context.t): array<Collidable.Unit.t> => {
+  k
+  ->Context.query({
+    include_: ["collidable"],
+  })
+  ->Array.filterMap(Collidable.Unit.fromGameObj)
+}
+
+// Now you can use both Pos and Area methods:
+let checkCollision = (obj: Collidable.Unit.t, point: Vec2.World.t) => {
+  let worldPos = obj->Collidable.Unit.worldPos
+  obj->Collidable.Unit.hasPoint(point)
+}
+```
+
+This approach:
+
+- **Domain-specific**: Tailored to your use case
+- **Composable**: Uses the same `include` pattern as regular game objects
+- **Type-safe**: You get all methods from all included components
+- **Flexible**: Easy to add more components later
+
+<Aside type="caution">
+  **Creating Unit modules is uncommon**: Most of the time, you'll use existing
+  `Unit` modules from the library or create custom combined modules for your
+  domain. Creating a `Unit` module for a single component (like `Attack.Unit`)
+  is typically only done when that component is central to your game's
+  architecture and needs to be queried generically across many different object
+  types.
+</Aside>
+
+This pattern enables powerful abstractions for spatial queries, rule systems, and other scenarios where you need to work with objects generically.

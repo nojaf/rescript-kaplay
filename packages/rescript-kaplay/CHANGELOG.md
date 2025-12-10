@@ -4,10 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.12.0] - 2025-12-10
 
 ### Changed
 - Split `Vec2.t` into `Vec2.World.t`, `Vec2.Local.t`, `Vec2.Screen.t`, `Vec2.Unit.t` & `Vec2.Tile.t`
+
+### Added
+- `Context.onError`
+- `Context.quit`
+- `RuleSystem`, `Rule`
+- `Vec2.sdist`
+- `Math.Rect.center`
+- `GameObjRaw.Unit`
+- `Pos.Unit`
+
+### Fixed
+- `SpriteData.height` as `@get`
+- `SpriteData.width` as `@get`
 
 ## [0.11.0] - 2025-11-26
 

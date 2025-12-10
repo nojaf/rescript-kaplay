@@ -4,19 +4,38 @@ module Impl = (
   },
 ) => {
   /**
-`Vec2.x(vec2)` get the x coordinate of the vector
+`x(vec2)` get the x coordinate of the vector
 This is the same as `vec2.x` but more convenient to use when piping.
+
+## Examples
+
+```rescript
+external vec : Vec2.World.t = "someWorldVector"
+let x = vec->Vec2.World.x
+// x is 10.
+```
  */
   @get
   external x: T.t => float = "x"
 
   /**
-`Vec2.y(vec2)` get the y coordinate of the vector
+`y(vec2)` get the y coordinate of the vector
 This is the same as `vec2.y` but more convenient to use when piping.
  */
   @get
   external y: T.t => float = "y"
 
+  /**
+  `add(vec2, vec2)` adds two vectors together by summing their x and y components.
+
+   ## Examples
+   ```rescript
+   let vec1 = k->Context.vec2(10., 20.)
+   let vec2 = k->Context.vec2(30., 40.)
+   let vec3 = vec1->Vec2.add(vec2)
+   // vec3 is {x: 40., y: 60.}
+   ```
+   */
   @send
   external add: (T.t, T.t) => T.t = "add"
 
@@ -44,8 +63,15 @@ This is the same as `vec2.y` but more convenient to use when piping.
   @send
   external dist: (T.t, T.t) => float = "dist"
 
+  /** Get squared distance between another vector */
+  @send
+  external sdist: (T.t, T.t) => float = "sdist"
+
   @send
   external dot: (T.t, T.t) => float = "dot"
+
+  @send
+  external clone: T.t => T.t = "clone"
 }
 
 /**

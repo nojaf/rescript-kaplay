@@ -3,7 +3,9 @@
 import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Stdlib_Option from "@rescript/runtime/lib/es6/Stdlib_Option.js";
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
+import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
 import * as MetaData$Skirmish from "./MetaData.res.mjs";
+import * as PkmnFont$Skirmish from "./PkmnFont.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
 
 Pos$Kaplay.Comp({});
@@ -15,14 +17,14 @@ let middle = GameContext$Skirmish.k.Color.fromHex("#ffdf20");
 let bad = GameContext$Skirmish.k.Color.fromHex("#e7000b");
 
 function getHealthColor(healthPercent) {
-  if (healthPercent >= 70) {
-    let t = (100 - healthPercent) / 30;
+  if (healthPercent >= 60) {
+    let t = (100 - healthPercent) / (100 - 60);
     return good.lerp(middle, t);
   }
-  if (healthPercent < 40) {
+  if (healthPercent < 20) {
     return bad;
   }
-  let t$1 = (70 - healthPercent) / 30;
+  let t$1 = (60 - healthPercent) / (60 - 20);
   return middle.lerp(bad, t$1);
 }
 
@@ -60,32 +62,33 @@ function draw() {
     pos: GameContext$Skirmish.k.vec2(5, 0),
     color: GameContext$Skirmish.k.BLACK,
     text: healthbar.name.toUpperCase(),
-    font: "system-ui",
-    size: 15,
+    font: Primitive_option.some(PkmnFont$Skirmish.name),
+    size: 10,
     letterSpacing: 0.5
   });
   GameContext$Skirmish.k.drawText({
-    pos: GameContext$Skirmish.k.vec2(80, 15),
+    pos: GameContext$Skirmish.k.vec2(70, 12),
     color: GameContext$Skirmish.k.BLACK,
     text: ":L" + healthbar.level.toString(),
-    font: "system-ui",
+    font: Primitive_option.some(PkmnFont$Skirmish.name),
     size: 10
   });
   GameContext$Skirmish.k.drawText({
-    pos: GameContext$Skirmish.k.vec2(5, 26),
+    pos: GameContext$Skirmish.k.vec2(5, 25),
     color: GameContext$Skirmish.k.BLACK,
     text: "HP:",
-    size: 7
+    font: Primitive_option.some(PkmnFont$Skirmish.name),
+    size: 6
   });
   GameContext$Skirmish.k.drawRect({
-    pos: GameContext$Skirmish.k.vec2(20, 26),
+    pos: GameContext$Skirmish.k.vec2(25, 25),
     color: GameContext$Skirmish.k.Color.fromHex("#e5e7eb"),
     outline: {
       width: 1,
       color: GameContext$Skirmish.k.BLACK
     },
     width: 100,
-    height: 6,
+    height: 5,
     radius: [
       3,
       3,
@@ -97,7 +100,7 @@ function draw() {
   let healthColor = getHealthColor(animatedPercent);
   let healthbarWidth = healthbar.healthPercentage;
   GameContext$Skirmish.k.drawRect({
-    pos: GameContext$Skirmish.k.vec2(20, 26),
+    pos: GameContext$Skirmish.k.vec2(25, 25),
     color: healthColor,
     width: healthbarWidth,
     height: 5,
@@ -122,7 +125,7 @@ function make(pokemon) {
       id: "healthbar",
       draw: draw
     },
-    pokemon.team === false ? GameContext$Skirmish.k.pos(10, 10) : GameContext$Skirmish.k.pos(GameContext$Skirmish.k.width() - 160, GameContext$Skirmish.k.height() - 50)
+    pokemon.team === false ? GameContext$Skirmish.k.pos(10, 10) : GameContext$Skirmish.k.pos(GameContext$Skirmish.k.width() / 2 - 10, GameContext$Skirmish.k.height() - 50)
   ]);
   pokemon.onHurt(_deltaHP => {
     let newHealthPercent = Pokemon$Skirmish.getHealthPercentage(pokemon);
@@ -131,10 +134,16 @@ function make(pokemon) {
   return healthbar;
 }
 
+let middleUpperLimit = 60;
+
+let middleLowerLimit = 20;
+
 export {
   good,
   middle,
   bad,
+  middleUpperLimit,
+  middleLowerLimit,
   getHealthColor,
   setHealth,
   draw,

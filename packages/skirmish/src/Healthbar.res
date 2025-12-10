@@ -6,7 +6,7 @@ type t = {
   mutable tweenControllerRef?: TweenController.t,
   name: string,
   level: int,
-  team: Pokemon.team,
+  team: Team.t,
 }
 
 external initialState: t => Types.comp = "%identity"
@@ -17,21 +17,26 @@ let good = k->Color.fromHex("#00bc7d") // green
 let middle = k->Color.fromHex("#ffdf20") // yellow
 let bad = k->Color.fromHex("#e7000b") // red
 
+let middleUpperLimit = 60.
+let middleLowerLimit = 20.
+
 let getHealthColor = (healthPercent: float): Color.t => {
   switch healthPercent {
-  | hp if hp >= 70. => {
+  | hp if hp >= middleUpperLimit => {
       // Interpolate between good (100%) and middle (70%)
       // At 100%: t=0 (pure good), at 70%: t=1 (pure middle)
-      let t = (100. -. hp) /. 30.
+      // Range: 100 - 70 = 30 percentage points
+      let t = (100. -. hp) /. (100. -. middleUpperLimit)
       good->Color.lerp(middle, t)
     }
-  | hp if hp >= 40. => {
-      // Interpolate between middle (70%) and bad (40%)
-      // At 70%: t=0 (pure middle), at 40%: t=1 (pure bad)
-      let t = (70. -. hp) /. 30.
+  | hp if hp >= middleLowerLimit => {
+      // Interpolate between middle (70%) and bad (20%)
+      // At 70%: t=0 (pure middle), at 20%: t=1 (pure bad)
+      // Range: 70 - 20 = 50 percentage points
+      let t = (middleUpperLimit -. hp) /. (middleUpperLimit -. middleLowerLimit)
       middle->Color.lerp(bad, t)
     }
-  | _ => // Below 40%, use bad color
+  | _ => // Below 20%, use bad color
     bad
   }
 }
@@ -67,7 +72,7 @@ let draw =
   (healthbar: t) => {
     // Lines
     let lines =
-      healthbar.team == Pokemon.Opponent
+      healthbar.team == Team.Opponent
         ? [
             k->Context.vec2ZeroLocal,
             k->Context.vec2Local(0., 40.),
@@ -85,38 +90,41 @@ let draw =
       width: 2.,
     })
 
+    let font = Context.makeDrawTextFontInfoFromString(PkmnFont.name)
+
     // Pokemon name
     k->Context.drawText({
       pos: k->Context.vec2Local(5., 0.),
       text: healthbar.name->String.toUpperCase,
       letterSpacing: 0.5,
-      size: 15.,
+      size: 10.,
       color: k->Color.black,
-      font: Context.makeDrawTextFontInfoFromString("system-ui"),
+      font,
     })
 
     // Pokemon level
     k->Context.drawText({
-      pos: k->Context.vec2Local(80., 15.),
+      pos: k->Context.vec2Local(70., 12.),
       text: ":L" ++ Int.toString(healthbar.level),
       size: 10.,
       color: k->Color.black,
-      font: Context.makeDrawTextFontInfoFromString("system-ui"),
+      font,
     })
 
     // HP:
     k->Context.drawText({
-      pos: k->Context.vec2Local(5., 26.),
+      pos: k->Context.vec2Local(5., 25.),
       text: "HP:",
-      size: 7.,
+      size: 6.,
       color: k->Color.black,
+      font,
     })
 
     //Healthbar background
     k->Context.drawRect({
-      pos: k->Context.vec2Local(20., 26.),
+      pos: k->Context.vec2Local(25., 25.),
       width: 100.,
-      height: 6.,
+      height: 5.,
       radius: [3., 3., 3., 3.],
       color: k->Color.fromHex("#e5e7eb"),
       outline: {
@@ -131,13 +139,15 @@ let draw =
     let healthbarWidth = healthbar.healthPercentage
 
     k->Context.drawRect({
-      pos: k->Context.vec2Local(20., 26.),
+      pos: k->Context.vec2Local(25., 25.),
       width: healthbarWidth,
       height: 5.,
       radius: [3., 0., 0., 3.],
       color: healthColor,
     })
   }
+
+// TODO: maybe change the anchor based on player or opponent
 
 let make = (pokemon: Pokemon.t) => {
   let healthbar: t = k->Context.add([
@@ -148,9 +158,9 @@ let make = (pokemon: Pokemon.t) => {
       team: pokemon.team,
     }),
     CustomComponent.make({id: "healthbar", draw}),
-    pokemon.team == Pokemon.Opponent
+    pokemon.team == Team.Opponent
       ? addPos(k, 10., 10.)
-      : addPos(k, k->Context.width - 160., k->Context.height - 50.),
+      : addPos(k, k->Context.width / 2. - 10., k->Context.height - 50.),
   ])
 
   pokemon
