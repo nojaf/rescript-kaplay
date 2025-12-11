@@ -33,7 +33,6 @@ module GameOverScreen = {
           })
 
           // Draw button
-
           k->Context.drawRect({
             color: k->Color.fromHex("#fb2c36"),
             pos: btnPos,
