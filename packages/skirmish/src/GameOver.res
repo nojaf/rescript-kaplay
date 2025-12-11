@@ -10,7 +10,10 @@ module GameOverScreen = {
   include Text.Comp({type t = t})
 
   let make = (k: Context.t, ~teamWhoLost: Team.t) => {
-    let rect = Kaplay.Math.Rect.makeLocal(k, k->Context.vec2ZeroLocal, 180., 50.)
+    let (btnWidth, btnHeight) = (180., 50.)
+    let btnPos =
+      k->Context.vec2Local(k->Context.width / 2. - btnWidth / 2., k->Context.height * 0.66)
+    let rect = Kaplay.Math.Rect.makeLocal(k, btnPos, btnWidth, btnHeight)
     let btn = k->Context.add([
       addPosFromVec2(k, k->Context.vec2ZeroLocal),
       addArea(k, ~options={shape: rect->Kaplay.Math.Rect.asShape}),
@@ -30,11 +33,10 @@ module GameOverScreen = {
           })
 
           // Draw button
-          let buttonPos =
-            k->Context.vec2Local(k->Context.width / 2. - rect.width / 2., k->Context.height * 0.66)
+
           k->Context.drawRect({
             color: k->Color.fromHex("#fb2c36"),
-            pos: buttonPos,
+            pos: btnPos,
             width: rect.width,
             height: rect.height,
             outline: {
@@ -47,7 +49,7 @@ module GameOverScreen = {
             text: "Play Again",
             font: PkmnFont.font,
             size: 20.,
-            pos: buttonPos->Vec2.Local.add(k->Context.vec2Local(20., 15.)),
+            pos: btnPos->Vec2.Local.add(k->Context.vec2Local(20., 15.)),
           })
         },
       }),

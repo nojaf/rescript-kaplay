@@ -18,7 +18,8 @@ Area$Kaplay.Comp({});
 Text$Kaplay.Comp({});
 
 function make(k, teamWhoLost) {
-  let rect = Math$Kaplay.Rect.makeLocal(k, k.Vec2.ZERO, 180, 50);
+  let btnPos = k.vec2(k.width() / 2 - 180 / 2, k.height() * 0.66);
+  let rect = Math$Kaplay.Rect.makeLocal(k, btnPos, 180, 50);
   let btn = k.add([
     k.pos(k.Vec2.ZERO),
     k.area({
@@ -36,9 +37,8 @@ function make(k, teamWhoLost) {
           align: "center",
           width: k.width()
         });
-        let buttonPos = k.vec2(k.width() / 2 - rect.width / 2, k.height() * 0.66);
         k.drawRect({
-          pos: buttonPos,
+          pos: btnPos,
           color: k.Color.fromHex("#fb2c36"),
           outline: {
             width: 4,
@@ -48,7 +48,7 @@ function make(k, teamWhoLost) {
           height: rect.height
         });
         k.drawText({
-          pos: buttonPos.add(k.vec2(20, 15)),
+          pos: btnPos.add(k.vec2(20, 15)),
           text: "Play Again",
           font: Primitive_option.some(PkmnFont$Skirmish.font),
           size: 20
