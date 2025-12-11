@@ -69,7 +69,7 @@ module GameOverScreen = {
   }
 }
 
-let sceneName = "victory-screen"
+let sceneName = "game-over"
 
 let scene = (teamWhoLost: Team.t) => {
   PkmnFont.load(k)

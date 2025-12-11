@@ -77,7 +77,7 @@ function scene(teamWhoLost) {
   GameContext$Skirmish.k.onLoad(() => make(GameContext$Skirmish.k, teamWhoLost));
 }
 
-let sceneName = "victory-screen";
+let sceneName = "game-over";
 
 export {
   GameOverScreen,
