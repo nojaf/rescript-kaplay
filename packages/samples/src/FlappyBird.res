@@ -82,9 +82,8 @@ module Bird = {
     }
 
     k->Context.onKeyRelease(key => {
-      switch key {
-      | Space => fly(bird)
-      | _ => ()
+      if key == Space {
+        fly(bird)
       }
     })
 

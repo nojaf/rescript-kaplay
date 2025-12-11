@@ -108,7 +108,7 @@ function make() {
     });
   };
   k.onKeyRelease(key => {
-    if ((key === "f6" || key === " " || key === "f7" || key === "space" || key === "f8" || key === "meta" || key === "f9" || key === "alt" || key === "f10" || key === "control" || key === "f11" || key === "tab" || key === "f12" || key === "enter" || key === "`" || key === "backspace" || key === "1" || key === "escape" || key === "2" || key === "/" || key === "3" || key === "." || key === "4" || key === "," || key === "5" || key === "m" || key === "6" || key === "n" || key === "7" || key === "b" || key === "8" || key === "v" || key === "9" || key === "c" || key === "0" || key === "x" || key === "-" || key === "z" || key === "+" || key === "'" || key === "=" || key === ";" || key === "q" || key === "l" || key === "w" || key === "k" || key === "e" || key === "j" || key === "r" || key === "h" || key === "t" || key === "g" || key === "y" || key === "f" || key === "u" || key === "d" || key === "i" || key === "s" || key === "o" || key === "a" || key === "p" || key === "\\" || key === "[" || key === "]") && key === "space") {
+    if (key === "space") {
       return fly(bird);
     }
   });
