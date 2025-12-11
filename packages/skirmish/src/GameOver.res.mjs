@@ -17,18 +17,28 @@ Area$Kaplay.Comp({});
 
 Text$Kaplay.Comp({});
 
-function make(k) {
+function make(k, teamWhoLost) {
   let rect = Math$Kaplay.Rect.makeLocal(k, k.Vec2.ZERO, 180, 50);
   let btn = k.add([
-    k.pos(k.vec2(k.width() / 2 - rect.width / 2, k.height() * 0.66)),
+    k.pos(k.Vec2.ZERO),
     k.area({
       shape: Primitive_option.some(rect)
     }),
     {
-      id: "button",
+      id: "game-over-screen",
       draw: function () {
+        k.drawText({
+          pos: k.vec2(0, k.height() / 4),
+          color: k.BLACK,
+          text: teamWhoLost === false ? "You win!" : "You lose!",
+          font: Primitive_option.some(PkmnFont$Skirmish.font),
+          size: 32,
+          align: "center",
+          width: k.width()
+        });
+        let buttonPos = k.vec2(k.width() / 2 - rect.width / 2, k.height() * 0.66);
         k.drawRect({
-          pos: k.vec2(0, 0),
+          pos: buttonPos,
           color: k.Color.fromHex("#fb2c36"),
           outline: {
             width: 4,
@@ -38,7 +48,7 @@ function make(k) {
           height: rect.height
         });
         k.drawText({
-          pos: k.vec2(20, 15),
+          pos: buttonPos.add(k.vec2(20, 15)),
           text: "Play Again",
           font: Primitive_option.some(PkmnFont$Skirmish.font),
           size: 20
@@ -58,35 +68,19 @@ function make(k) {
   });
 }
 
-let Button = {
+let GameOverScreen = {
   make: make
 };
 
 function scene(teamWhoLost) {
   PkmnFont$Skirmish.load(GameContext$Skirmish.k);
-  GameContext$Skirmish.k.onLoad(() => {
-    GameContext$Skirmish.k.add([{
-        id: "victory-screen",
-        draw: function () {
-          GameContext$Skirmish.k.drawText({
-            pos: GameContext$Skirmish.k.vec2(0, GameContext$Skirmish.k.height() / 4),
-            color: GameContext$Skirmish.k.BLACK,
-            text: teamWhoLost === false ? "You win!" : "You lose!",
-            font: Primitive_option.some(PkmnFont$Skirmish.font),
-            size: 32,
-            align: "center",
-            width: GameContext$Skirmish.k.width()
-          });
-        }
-      }]);
-    make(GameContext$Skirmish.k);
-  });
+  GameContext$Skirmish.k.onLoad(() => make(GameContext$Skirmish.k, teamWhoLost));
 }
 
 let sceneName = "victory-screen";
 
 export {
-  Button,
+  GameOverScreen,
   sceneName,
   scene,
 }
