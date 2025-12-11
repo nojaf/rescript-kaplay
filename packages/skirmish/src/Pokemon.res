@@ -140,5 +140,9 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
     )
   })
 
+  gameObj->onDeath(() => {
+    k->Context.go(GameOver.sceneName, ~data=gameObj.team)
+  })
+
   gameObj
 }

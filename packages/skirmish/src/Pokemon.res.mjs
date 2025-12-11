@@ -11,6 +11,7 @@ import * as Team$Skirmish from "./Team.res.mjs";
 import * as Animate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Animate.res.mjs";
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
+import * as GameOver$Skirmish from "./GameOver.res.mjs";
 
 GameObjRaw$Kaplay.Comp({});
 
@@ -150,6 +151,9 @@ function make(k, pokemonId, level, team) {
       duration: 0.4,
       loops: 1
     });
+  });
+  gameObj.onDeath(() => {
+    k.go(GameOver$Skirmish.sceneName, gameObj.team);
   });
   return gameObj;
 }

@@ -7,8 +7,11 @@ function load(k) {
   k.loadFont(name, "/pkmn.ttf");
 }
 
+let font = name;
+
 export {
   name,
   load,
+  font,
 }
 /* No side effect */
