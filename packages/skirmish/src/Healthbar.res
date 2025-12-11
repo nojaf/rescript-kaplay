@@ -90,8 +90,6 @@ let draw =
       width: 2.,
     })
 
-    let font = Context.makeDrawTextFontInfoFromString(PkmnFont.name)
-
     // Pokemon name
     k->Context.drawText({
       pos: k->Context.vec2Local(5., 0.),
@@ -99,7 +97,7 @@ let draw =
       letterSpacing: 0.5,
       size: 10.,
       color: k->Color.black,
-      font,
+      font: PkmnFont.font,
     })
 
     // Pokemon level
@@ -108,7 +106,7 @@ let draw =
       text: ":L" ++ Int.toString(healthbar.level),
       size: 10.,
       color: k->Color.black,
-      font,
+      font: PkmnFont.font,
     })
 
     // HP:
@@ -117,7 +115,7 @@ let draw =
       text: "HP:",
       size: 6.,
       color: k->Color.black,
-      font,
+      font: PkmnFont.font,
     })
 
     //Healthbar background

@@ -34,6 +34,7 @@ These should reflect the types in [kaplay node_module](../../node_modules/kaplay
   - Include component module functions you need: `include Pos.Comp({type t = t})`, `include Sprite.Comp({type t = t})`, etc.
   - Create objects by calling `k->Context.add([ ... list of comp ... ])` and annotate the return as your type `t`.
 - Critical pitfall: Including `XYZ.Comp` only exposes functions at compile time; you must also add the runtime comp in `Context.add` via the corresponding `addXYZ(k, ...)`. If you omit `addXYZ`, getters/setters may compile but crash or be undefined at runtime.
+- **Don't overuse game objects**: Sometimes a single game object with a custom `draw` function is sufficient. If you have multiple related UI elements (e.g., a title and a button) that don't need separate component behaviors, combine them into one game object with a single `CustomComponent.make({draw: ...})` that handles all the drawing. This reduces overhead and simplifies the code structure.
 - Common components and their creation helpers (all live under `Kaplay.Components` when referenced in source, re-exported by `Kaplay`):
   - `Pos`: `addPos(k, x, y)` or `addPosFromVec2(k, v)`. Accessors: `getPos`, `setPos`, `getPosX`, `getPosY`, `move`, `worldPos`, etc.
   - `Sprite`: `addSprite(k, name, ~options=?)`. Methods: `play`, `getFrame`, `setFrame`, `getAnimSpeed`, `setAnimSpeed`, `getWidth/Height`, `setWidth/Height`, etc.

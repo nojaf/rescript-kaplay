@@ -62,7 +62,7 @@ function draw() {
     pos: GameContext$Skirmish.k.vec2(5, 0),
     color: GameContext$Skirmish.k.BLACK,
     text: healthbar.name.toUpperCase(),
-    font: Primitive_option.some(PkmnFont$Skirmish.name),
+    font: Primitive_option.some(PkmnFont$Skirmish.font),
     size: 10,
     letterSpacing: 0.5
   });
@@ -70,14 +70,14 @@ function draw() {
     pos: GameContext$Skirmish.k.vec2(70, 12),
     color: GameContext$Skirmish.k.BLACK,
     text: ":L" + healthbar.level.toString(),
-    font: Primitive_option.some(PkmnFont$Skirmish.name),
+    font: Primitive_option.some(PkmnFont$Skirmish.font),
     size: 10
   });
   GameContext$Skirmish.k.drawText({
     pos: GameContext$Skirmish.k.vec2(5, 25),
     color: GameContext$Skirmish.k.BLACK,
     text: "HP:",
-    font: Primitive_option.some(PkmnFont$Skirmish.name),
+    font: Primitive_option.some(PkmnFont$Skirmish.font),
     size: 6
   });
   GameContext$Skirmish.k.drawRect({
