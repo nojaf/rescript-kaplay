@@ -84,7 +84,8 @@ function make(k, pokemonId, level, team) {
       k.Vec2.DOWN,
       k.height() * 0.25
     ];
-  let sprite = k.getSprite(match[0]).data;
+  let spriteName = match[0];
+  let sprite = k.getSprite(spriteName).data;
   let match$1;
   if (sprite === null) {
     match$1 = [
@@ -112,7 +113,7 @@ function make(k, pokemonId, level, team) {
       squaredPersonalSpace: match$1[1]
     },
     k.pos(k.center().x, match[2]),
-    k.sprite(frontSpriteName(pokemonId)),
+    k.sprite(spriteName),
     team === true ? Team$Skirmish.playerTagComponent : Team$Skirmish.opponentTagComponent,
     k.area(),
     k.body(),

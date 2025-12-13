@@ -188,7 +188,7 @@ let cast = (pokemon: Pokemon.t) => {
         draw,
         drawInspect,
       }),
-      ...addAttack(@this (thundershock: t) => thundershock.worldRect),
+      ...addAttackWithTag(@this (thundershock: t) => thundershock.worldRect),
     ],
   )
 

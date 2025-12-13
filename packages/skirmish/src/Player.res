@@ -19,6 +19,7 @@ let make = (~pokemonId: int, ~level: int): Pokemon.t => {
 
     if isNewSpacePress && gameObj.attackStatus == Pokemon.CanAttack {
       Thundershock.cast(gameObj)
+      QuickAttack.cast(k, gameObj)
     } else if isUpPressed {
       gameObj.direction = k->Context.vec2Up
       gameObj->Pokemon.setSprite(Pokemon.backSpriteName(pokemonId))

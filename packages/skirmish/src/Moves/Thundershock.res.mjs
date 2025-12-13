@@ -28,7 +28,7 @@ Shader$Kaplay.Comp({});
 
 let include = Attack$Skirmish.Comp({});
 
-let addAttack = include.addAttack;
+let addAttackWithTag = include.addAttackWithTag;
 
 let glowSource = GlowFragraw;
 
@@ -118,7 +118,7 @@ function cast(pokemon) {
         drawInspect: drawInspect
       }
     ],
-    addAttack(function () {
+    addAttackWithTag(function () {
       let thundershock = this ;
       return thundershock.worldRect;
     })

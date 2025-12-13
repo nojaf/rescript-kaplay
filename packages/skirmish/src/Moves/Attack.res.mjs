@@ -27,16 +27,18 @@ function Comp(T) {
       return k.vec2(leftX, topY);
     }
   };
-  let addAttack = getWorldRect => [
-    {
-      id: tag,
-      getWorldRect: getWorldRect
-    },
+  let addAttack = getWorldRect => ({
+    id: tag,
+    getWorldRect: getWorldRect
+  });
+  let addAttackWithTag = getWorldRectX => [
+    addAttack(getWorldRectX),
     tag
   ];
   return {
     getClosestCorner: getClosestCorner,
-    addAttack: addAttack
+    addAttack: addAttack,
+    addAttackWithTag: addAttackWithTag
   };
 }
 
@@ -65,11 +67,15 @@ function getClosestCorner(attack, k, pokemonPosition) {
 }
 
 function addAttack(getWorldRect) {
+  return {
+    id: tag,
+    getWorldRect: getWorldRect
+  };
+}
+
+function addAttackWithTag(getWorldRectX) {
   return [
-    {
-      id: tag,
-      getWorldRect: getWorldRect
-    },
+    addAttack(getWorldRectX),
     tag
   ];
 }
@@ -83,6 +89,7 @@ function fromGameObj(obj) {
 let Unit = {
   getClosestCorner: getClosestCorner,
   addAttack: addAttack,
+  addAttackWithTag: addAttackWithTag,
   fromGameObj: fromGameObj
 };
 

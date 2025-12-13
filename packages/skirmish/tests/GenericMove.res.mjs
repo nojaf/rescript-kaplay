@@ -21,7 +21,7 @@ let include = Attack$Skirmish.Comp({});
 
 let getClosestCorner = include.getClosestCorner;
 
-let addAttack = include.addAttack;
+let addAttackWithTag = include.addAttackWithTag;
 
 Anchor$Kaplay.Comp({});
 
@@ -49,7 +49,7 @@ function make(k, x, y, size, team) {
       k.anchor("center"),
       Team$Skirmish.getTagComponent(team)
     ],
-    addAttack(function () {
+    addAttackWithTag(function () {
       let gameObj = this ;
       let halfSize = size / 2;
       let worldPos = gameObj.worldPos();
@@ -86,9 +86,12 @@ function make(k, x, y, size, team) {
   return gameObj;
 }
 
+let addAttack = include.addAttack;
+
 export {
   getClosestCorner,
   addAttack,
+  addAttackWithTag,
   tag,
   getCorner,
   make,
