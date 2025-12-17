@@ -5,6 +5,8 @@ import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameOb
 
 let tag = "attack";
 
+let id = "attack";
+
 function Comp(T) {
   let getClosestCorner = (attack, k, pokemonPosition) => {
     let attackRect = attack.getWorldRect();
@@ -28,7 +30,7 @@ function Comp(T) {
     }
   };
   let addAttack = getWorldRect => ({
-    id: tag,
+    id: id,
     getWorldRect: getWorldRect
   });
   let addAttackWithTag = getWorldRectX => [
@@ -68,7 +70,7 @@ function getClosestCorner(attack, k, pokemonPosition) {
 
 function addAttack(getWorldRect) {
   return {
-    id: tag,
+    id: id,
     getWorldRect: getWorldRect
   };
 }
@@ -95,6 +97,7 @@ let Unit = {
 
 export {
   tag,
+  id,
   Comp,
   Unit,
 }

@@ -21,6 +21,7 @@ open Kaplay
  */
 
 let tag = "attack"
+let id = "attack"
 
 type customType<'t> = {
   ...CustomComponent.t<'t>,
@@ -64,7 +65,7 @@ module Comp = (
 
   let addAttack = (getWorldRect: @this (T.t => Types.rect<Kaplay.Vec2.World.t>)): Types.comp =>
     asAttack({
-      id: tag,
+      id,
       getWorldRect,
     })
 
