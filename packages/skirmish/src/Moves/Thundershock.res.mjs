@@ -91,7 +91,7 @@ function expandRectWithPoint(currentRect, newPoint) {
 function destroy(pokemon, thundershock) {
   thundershock.timerRef.cancel();
   GameContext$Skirmish.k.wait(5 * 0.050, () => {
-    pokemon.unuse("shader");
+    pokemon.unuse(Shader$Kaplay.id);
     pokemon.mobility = true;
     thundershock.destroy();
   });
