@@ -57,6 +57,12 @@ module Comp = (
   @send
   external destroy: T.t => unit = "destroy"
 
+  /**
+  Check if a game object has a specific tag.
+  */
+  @send
+  external is: (T.t, 'tag) => bool = "is"
+
   @send
   external get: (T.t, 'tag) => array<'t> = "get"
 
@@ -65,6 +71,9 @@ module Comp = (
 
   @send
   external untag: (T.t, 'tag) => unit = "untag"
+
+  @get
+  external tags: T.t => array<string> = "tags"
 
   @send
   external onDestroy: (T.t, unit => unit) => KEventController.t = "onDestroy"

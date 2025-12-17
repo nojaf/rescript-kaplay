@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `GameObjRaw.is`
+- `GameObjRaw.tags`
+- `Body.applyImpulse`
+- `Body.vel`
+- `Body.gravityScale`
+- `Body.isStatic`
+
 ## [0.12.0] - 2025-12-10
 
 ### Changed
