@@ -95,14 +95,14 @@ let draw =
       pos: k->Context.vec2Local(5., 0.),
       text: healthbar.name->String.toUpperCase,
       letterSpacing: 0.5,
-      size: 10.,
+      size: 14.,
       color: k->Color.black,
       font: PkmnFont.font,
     })
 
     // Pokemon level
     k->Context.drawText({
-      pos: k->Context.vec2Local(70., 12.),
+      pos: k->Context.vec2Local(70., 16.),
       text: ":L" ++ Int.toString(healthbar.level),
       size: 10.,
       color: k->Color.black,
@@ -111,22 +111,22 @@ let draw =
 
     // HP:
     k->Context.drawText({
-      pos: k->Context.vec2Local(5., 25.),
+      pos: k->Context.vec2Local(5., 28.),
       text: "HP:",
-      size: 6.,
+      size: 8.,
       color: k->Color.black,
       font: PkmnFont.font,
     })
 
     //Healthbar background
     k->Context.drawRect({
-      pos: k->Context.vec2Local(25., 25.),
+      pos: k->Context.vec2Local(30., 30.),
       width: 100.,
       height: 5.,
       radius: [3., 3., 3., 3.],
       color: k->Color.fromHex("#e5e7eb"),
       outline: {
-        width: 1.,
+        width: 2.,
         color: k->Color.black,
       },
     })
@@ -137,7 +137,7 @@ let draw =
     let healthbarWidth = healthbar.healthPercentage
 
     k->Context.drawRect({
-      pos: k->Context.vec2Local(25., 25.),
+      pos: k->Context.vec2Local(30., 30.),
       width: healthbarWidth,
       height: 5.,
       radius: [3., 0., 0., 3.],

@@ -63,28 +63,28 @@ function draw() {
     color: GameContext$Skirmish.k.BLACK,
     text: healthbar.name.toUpperCase(),
     font: Primitive_option.some(PkmnFont$Skirmish.font),
-    size: 10,
+    size: 14,
     letterSpacing: 0.5
   });
   GameContext$Skirmish.k.drawText({
-    pos: GameContext$Skirmish.k.vec2(70, 12),
+    pos: GameContext$Skirmish.k.vec2(70, 16),
     color: GameContext$Skirmish.k.BLACK,
     text: ":L" + healthbar.level.toString(),
     font: Primitive_option.some(PkmnFont$Skirmish.font),
     size: 10
   });
   GameContext$Skirmish.k.drawText({
-    pos: GameContext$Skirmish.k.vec2(5, 25),
+    pos: GameContext$Skirmish.k.vec2(5, 28),
     color: GameContext$Skirmish.k.BLACK,
     text: "HP:",
     font: Primitive_option.some(PkmnFont$Skirmish.font),
-    size: 6
+    size: 8
   });
   GameContext$Skirmish.k.drawRect({
-    pos: GameContext$Skirmish.k.vec2(25, 25),
+    pos: GameContext$Skirmish.k.vec2(30, 30),
     color: GameContext$Skirmish.k.Color.fromHex("#e5e7eb"),
     outline: {
-      width: 1,
+      width: 2,
       color: GameContext$Skirmish.k.BLACK
     },
     width: 100,
@@ -100,7 +100,7 @@ function draw() {
   let healthColor = getHealthColor(animatedPercent);
   let healthbarWidth = healthbar.healthPercentage;
   GameContext$Skirmish.k.drawRect({
-    pos: GameContext$Skirmish.k.vec2(25, 25),
+    pos: GameContext$Skirmish.k.vec2(30, 30),
     color: healthColor,
     width: healthbarWidth,
     height: 5,
