@@ -2,13 +2,13 @@
   "name": "rescript-kaplay",
   "devDependencies": {
     "@astrojs/starlight": "^0.37.1",
-    "@types/bun": "^1.3.4",
-    "astro": "^5.16.5",
+    "@types/bun": "^1.3.5",
+    "astro": "^5.16.6",
     "keep-a-changelog": "^2.7.1",
     "micromark": "^4.0.2",
     "prettier-plugin-astro": "^0.14.1",
     "semver": "^7.7.3",
-    "starlight-theme-flexoki": "^0.2.1"
+    "starlight-theme-flexoki": "^0.2.2"
   },
   "packageManager": "bun@1.2.15",
   "private": true,
