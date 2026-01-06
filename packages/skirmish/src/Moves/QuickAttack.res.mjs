@@ -3,6 +3,7 @@
 import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Team$Skirmish from "../Team.res.mjs";
 import * as Attack$Skirmish from "./Attack.res.mjs";
+import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as TweenController$Kaplay from "@nojaf/rescript-kaplay/src/TweenController.res.mjs";
 import * as KEventController$Kaplay from "@nojaf/rescript-kaplay/src/KEventController.res.mjs";
 import Outline2pxFragraw from "../../shaders/outline2px.frag?raw";
@@ -38,8 +39,20 @@ function cast(k, pokemon) {
     pokemon.unuse("shader");
   };
   collisionCtrl.contents = pokemon.onCollide(Team$Skirmish.opponent, (other, param) => {
+    if (!other.is(Pokemon$Skirmish.tag)) {
+      return;
+    }
     console.log("Collided with opponent");
     other.hp = other.hp - 3 | 0;
+    let pokemonPos = pokemon.worldPos();
+    let otherPos = other.worldPos();
+    let bounceDirection = pokemonPos.sub(otherPos).unit();
+    pokemon.applyImpulse(bounceDirection.scale(90));
+    other.applyImpulse(bounceDirection.scale(- 90));
+    k.wait(0.15, () => {
+      pokemon.vel = k.Vec2.ZERO;
+      other.vel = k.Vec2.ZERO;
+    });
     endAttack();
   });
   pokemon.use(k.shader(shaderName, () => ({
@@ -51,7 +64,7 @@ function cast(k, pokemon) {
     return Math$Kaplay.Rect.makeWorld(k, pokemonWorldPos, pokemon.width, 100);
   }));
   pokemon.tag(Attack$Skirmish.tag);
-  tweenCtrl.contents = k.tween(startY, endY, 4, value => {
+  tweenCtrl.contents = k.tween(startY, endY, 0.4, value => {
     pokemon.worldPos(k.vec2(pokemonWorldPos.x, value));
   }, k.easings.easeOutElastic);
   tweenCtrl.contents.onEnd(endAttack);
@@ -59,7 +72,9 @@ function cast(k, pokemon) {
 
 let distance = 30;
 
-let duration = 4;
+let duration = 0.4;
+
+let cooldown = 0.4;
 
 export {
   shaderName,
@@ -67,6 +82,7 @@ export {
   load,
   distance,
   duration,
+  cooldown,
   cast,
 }
 /* outline2pxSource Not a pure module */

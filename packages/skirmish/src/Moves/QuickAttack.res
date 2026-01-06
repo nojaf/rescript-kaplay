@@ -10,7 +10,8 @@ let load = (k: Context.t) => {
 }
 
 let distance = 30.
-let duration = 4.
+let duration = 0.4
+let cooldown = 0.4
 
 let cast = (k: Context.t, pokemon: Pokemon.t) => {
   Console.log("QuickAttack cast")
@@ -31,7 +32,7 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
     collisionCtrl.contents->KEventController.cancel
     tweenCtrl.contents->TweenController.cancel
 
-    k->Context.wait(0.4, () => {
+    k->Context.wait(cooldown, () => {
       pokemon.attackStatus = CanAttack
     })
     pokemon.mobility = CanMove
@@ -40,9 +41,27 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
 
   collisionCtrl :=
     pokemon->Pokemon.onCollideWithController(Team.opponent, (other: Pokemon.t, _) => {
-      Console.log("Collided with opponent")
-      other->Pokemon.setHp(other->Pokemon.getHp - 3)
-      endAttack()
+      if other->Pokemon.is(Pokemon.tag) {
+        Console.log("Collided with opponent")
+        other->Pokemon.setHp(other->Pokemon.getHp - 3)
+
+        // Calculate bounce direction (from other to pokemon)
+        let pokemonPos = pokemon->Pokemon.worldPos
+        let otherPos = other->Pokemon.worldPos
+        let bounceDirection = pokemonPos->Vec2.World.sub(otherPos)->Vec2.World.unit
+
+        // Apply bounce force to both pokemon
+        let bounceImpulse = 90. // velocity in pixels/sec
+        pokemon->Pokemon.applyImpulse(bounceDirection->Vec2.World.scaleWith(bounceImpulse))
+        other->Pokemon.applyImpulse(bounceDirection->Vec2.World.scaleWith(-.bounceImpulse))
+
+        k->Context.wait(0.15, () => {
+          pokemon->Pokemon.setVel(k->Context.vec2ZeroWorld)
+          other->Pokemon.setVel(k->Context.vec2ZeroWorld)
+        })
+
+        endAttack()
+      }
     })
 
   pokemon->Pokemon.use(
@@ -62,10 +81,6 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
       rect
     }),
   )
-
-  if k.debug.inspect {
-    ()
-  }
 
   pokemon->Pokemon.addTag(Attack.tag)
 

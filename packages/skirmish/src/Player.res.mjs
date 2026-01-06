@@ -3,7 +3,6 @@
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
 import * as QuickAttack$Skirmish from "./Moves/QuickAttack.res.mjs";
-import * as Thundershock$Skirmish from "./Moves/Thundershock.res.mjs";
 
 function make(pokemonId, level) {
   let gameObj = Pokemon$Skirmish.make(GameContext$Skirmish.k, pokemonId, level, true);
@@ -20,7 +19,6 @@ function make(pokemonId, level) {
     let isRightPressed = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
     let movementPressed = isUpPressed || isDownPressed || isLeftPressed || isRightPressed;
     if (isNewSpacePress && gameObj.attackStatus === true) {
-      Thundershock$Skirmish.cast(gameObj);
       QuickAttack$Skirmish.cast(GameContext$Skirmish.k, gameObj);
     } else if (isUpPressed) {
       gameObj.direction = GameContext$Skirmish.k.Vec2.UP;

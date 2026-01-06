@@ -18,7 +18,7 @@ let make = (~pokemonId: int, ~level: int): Pokemon.t => {
     let movementPressed = isUpPressed || isDownPressed || isLeftPressed || isRightPressed
 
     if isNewSpacePress && gameObj.attackStatus == Pokemon.CanAttack {
-      Thundershock.cast(gameObj)
+      // Thundershock.cast(gameObj)
       QuickAttack.cast(k, gameObj)
     } else if isUpPressed {
       gameObj.direction = k->Context.vec2Up
