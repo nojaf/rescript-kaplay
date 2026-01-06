@@ -24,7 +24,8 @@
     "rescript-bun": "^2.1.0",
     "sharp": "^0.34.5",
     "vite": "catalog:",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.15",
+    "@nojaf/vite-plugin-rescript": "catalog:"
   },
   "trustedDependencies": [
     "esbuild",

@@ -58,6 +58,12 @@ module GameOverScreen = {
       k->Context.go("game")
     })
 
+    k->Context.onKeyPress(key => {
+      if key == Types.Space {
+        k->Context.go("game")
+      }
+    })
+
     let defaultCursor = k->Context.getCursor
 
     onHover(btn, () => {

@@ -5,7 +5,10 @@ function Comp(T) {
   return {};
 }
 
+let id = "shader";
+
 export {
+  id,
   Comp,
 }
 /* No side effect */

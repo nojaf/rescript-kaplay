@@ -99,7 +99,7 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
       squaredPersonalSpace,
     }),
     k->addPos(k->Context.center->Vec2.World.x, posY),
-    k->addSprite(frontSpriteName(pokemonId)),
+    k->addSprite(spriteName),
     team == Player ? Team.playerTagComponent : Team.opponentTagComponent,
     k->addArea,
     k->addBody,

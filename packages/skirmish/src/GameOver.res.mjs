@@ -59,6 +59,12 @@ function make(k, teamWhoLost) {
   btn.onClick(() => {
     k.go("game");
   });
+  k.onKeyPress(key => {
+    if (key === "space") {
+      k.go("game");
+      return;
+    }
+  });
   let defaultCursor = k.getCursor();
   btn.onHover(() => {
     k.setCursor("pointer");

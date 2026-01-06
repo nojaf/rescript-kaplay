@@ -97,7 +97,7 @@ let destroy = (pokemon: Pokemon.t, thundershock: t) => {
 
   k->Context.wait(5. * intervalSeconds, () => {
     // Remove the shader from the Pokemon
-    pokemon->Pokemon.unuse("shader")
+    pokemon->Pokemon.unuse(Shader.id)
 
     // Allow the Pokemon to move again
     pokemon.mobility = CanMove
@@ -188,7 +188,7 @@ let cast = (pokemon: Pokemon.t) => {
         draw,
         drawInspect,
       }),
-      ...addAttack(@this (thundershock: t) => thundershock.worldRect),
+      ...addAttackWithTag(@this (thundershock: t) => thundershock.worldRect),
     ],
   )
 

@@ -36,7 +36,7 @@ let make = (k: Context.t, ~x, ~y, ~size: float, team: Team.t): t => {
       addPos(k, x, y),
       addAnchorCenter(k),
       Team.getTagComponent(team),
-      ...addAttack(@this (gameObj: t) => {
+      ...addAttackWithTag(@this (gameObj: t) => {
         let halfSize = size / 2.
         let worldPos = gameObj->worldPos
         Kaplay.Math.Rect.makeWorld(

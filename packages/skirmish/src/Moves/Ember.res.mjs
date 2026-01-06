@@ -30,7 +30,7 @@ Area$Kaplay.Comp({});
 
 let include = Attack$Skirmish.Comp({});
 
-let addAttack = include.addAttack;
+let addAttackWithTag = include.addAttackWithTag;
 
 let spriteName = "flame";
 
@@ -50,7 +50,7 @@ function cast(k, pokemon) {
       pokemon.direction.y < 0 ? k.anchor("bot") : k.anchor("top"),
       Team$Skirmish.getTagComponent(pokemon.team)
     ],
-    addAttack(function () {
+    addAttackWithTag(function () {
       let flame = this ;
       return Math$Kaplay.Rect.makeWorld(k, flame.worldPos(), flame.width, flame.height);
     })
@@ -74,11 +74,14 @@ function cast(k, pokemon) {
 
 let getClosestCorner = include.getClosestCorner;
 
+let addAttack = include.addAttack;
+
 let coolDown = 1;
 
 export {
   getClosestCorner,
   addAttack,
+  addAttackWithTag,
   spriteName,
   load,
   coolDown,

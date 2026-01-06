@@ -21,6 +21,7 @@ open Kaplay
  */
 
 let tag = "attack"
+let id = "attack"
 
 type customType<'t> = {
   ...CustomComponent.t<'t>,
@@ -62,20 +63,20 @@ module Comp = (
     }
   }
 
+  let addAttack = (getWorldRect: @this (T.t => Types.rect<Kaplay.Vec2.World.t>)): Types.comp =>
+    asAttack({
+      id,
+      getWorldRect,
+    })
+
   /***
    * Add an Attack component to a game object.
    * @param getWorldRect Function that returns the world-space bounding rectangle of the attack.
    *                     This is called when the attack is queried (e.g., by rule systems).
    */
-  let addAttack = (getWorldRect: @this (T.t => Types.rect<Kaplay.Vec2.World.t>)): array<
+  let addAttackWithTag = (getWorldRectX: @this (T.t => Types.rect<Kaplay.Vec2.World.t>)): array<
     Types.comp,
-  > => [
-    asAttack({
-      id: tag,
-      getWorldRect,
-    }),
-    Context.tag(tag),
-  ]
+  > => [addAttack(getWorldRectX), Context.tag(tag)]
 }
 
 module Unit = {

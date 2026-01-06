@@ -1,3 +1,5 @@
+let id = "shader"
+
 module Comp = (
   T: {
     type t
