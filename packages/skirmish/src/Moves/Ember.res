@@ -5,7 +5,7 @@ type t
 include GameObjRaw.Comp({type t = t})
 include Sprite.Comp({type t = t})
 include Pos.Comp({type t = t})
-include Move.Comp({type t = t})
+include Kaplay.Move.Comp({type t = t})
 include Anchor.Comp({type t = t})
 include Z.Comp({type t = t})
 include Area.Comp({type t = t})

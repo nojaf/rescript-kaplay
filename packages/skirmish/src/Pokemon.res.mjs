@@ -12,6 +12,7 @@ import * as Animate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Animate.r
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameOver$Skirmish from "./GameOver.res.mjs";
+import * as ZeroMove$Skirmish from "./Moves/ZeroMove.res.mjs";
 
 GameObjRaw$Kaplay.Comp({});
 
@@ -110,7 +111,11 @@ function make(k, pokemonId, level, team) {
       pokemonId: pokemonId,
       team: team,
       halfSize: match$1[0],
-      squaredPersonalSpace: match$1[1]
+      squaredPersonalSpace: match$1[1],
+      moveSlot1: ZeroMove$Skirmish.moveSlot,
+      moveSlot2: ZeroMove$Skirmish.moveSlot,
+      moveSlot3: ZeroMove$Skirmish.moveSlot,
+      moveSlot4: ZeroMove$Skirmish.moveSlot
     },
     k.pos(k.center().x, match[2]),
     k.sprite(spriteName),

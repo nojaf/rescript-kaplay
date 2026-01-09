@@ -23,6 +23,11 @@ type t = {
       This is used to determine how close a potential attack is to the pokemon's personal space.
    */
   squaredPersonalSpace: float,
+  // Moves
+  moveSlot1: PkmnMove.moveSlot,
+  moveSlot2: PkmnMove.moveSlot,
+  moveSlot3: PkmnMove.moveSlot,
+  moveSlot4: PkmnMove.moveSlot,
 }
 
 include GameObjRaw.Comp({type t = t})
@@ -97,6 +102,10 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
       attackStatus: CanAttack,
       halfSize,
       squaredPersonalSpace,
+      moveSlot1: ZeroMove.moveSlot,
+      moveSlot2: ZeroMove.moveSlot,
+      moveSlot3: ZeroMove.moveSlot,
+      moveSlot4: ZeroMove.moveSlot,
     }),
     k->addPos(k->Context.center->Vec2.World.x, posY),
     k->addSprite(spriteName),
