@@ -408,21 +408,22 @@ module AttackFacts = {
     rs->RuleSystem.addRuleExecutingAction(
       rs => {
         // Check if enemy can attack
-        rs.state.enemy.attackStatus ==
-          Pokemon.CanAttack && // Check if not under threat (both preferred dodge facts should be 0.0)
-          // Uses facts from DefensiveFacts module (computed at salience 20.0)
+        Pokemon.canAttack(
+          rs.state.enemy,
+        ) && // Check if not under threat (both preferred dodge facts should be 0.0)
+        // Uses facts from DefensiveFacts module (computed at salience 20.0)
 
-          {
-            let RuleSystem.Grade(preferLeft) = RuleSystem.gradeForFact(
-              rs,
-              DefensiveFacts.preferredDodgeLeft,
-            )
-            let RuleSystem.Grade(preferRight) = RuleSystem.gradeForFact(
-              rs,
-              DefensiveFacts.preferredDodgeRight,
-            )
-            preferLeft == 0.0 && preferRight == 0.0
-          }
+        {
+          let RuleSystem.Grade(preferLeft) = RuleSystem.gradeForFact(
+            rs,
+            DefensiveFacts.preferredDodgeLeft,
+          )
+          let RuleSystem.Grade(preferRight) = RuleSystem.gradeForFact(
+            rs,
+            DefensiveFacts.preferredDodgeRight,
+          )
+          preferLeft == 0.0 && preferRight == 0.0
+        }
       },
       rs => {
         rs->RuleSystem.assertFact(shouldAttack, ~grade=RuleSystem.Grade(1.0))
@@ -483,7 +484,7 @@ let update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
 
   // Check if should attack and execute
   switch rs->RuleSystem.gradeForFact(AttackFacts.shouldAttack) {
-  | RuleSystem.Grade(g) if g > 0.0 => Ember.cast(k, rs.state.enemy)
+  | RuleSystem.Grade(g) if g > 0.0 => Pokemon.tryCastMove(k, rs.state.enemy, 0)
   | _ => ()
   }
 }

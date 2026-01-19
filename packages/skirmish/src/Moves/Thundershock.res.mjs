@@ -10,6 +10,7 @@ import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res
 import * as Team$Skirmish from "../Team.res.mjs";
 import * as Wall$Skirmish from "../Wall.res.mjs";
 import * as Attack$Skirmish from "./Attack.res.mjs";
+import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "../GameContext.res.mjs";
 import GlowFragraw from "../../shaders/glow.frag?raw";
@@ -95,14 +96,11 @@ function destroy(pokemon, thundershock) {
     pokemon.mobility = true;
     thundershock.destroy();
   });
-  GameContext$Skirmish.k.wait(1, () => {
-    pokemon.attackStatus = true;
-  });
+  GameContext$Skirmish.k.wait(1, () => Pokemon$Skirmish.finishAttack(pokemon));
 }
 
 function cast(pokemon) {
   pokemon.mobility = false;
-  pokemon.attackStatus = false;
   let direction = pokemon.facing === true ? up : down;
   let otherPokemon = GameContext$Skirmish.k.query({
     include: ["pokemon"]
@@ -157,8 +155,27 @@ function cast(pokemon) {
   })));
 }
 
+function move_cast(_k, pkmn) {
+  cast(pkmn);
+}
+
+function move_addRulesForAI(param, param$1, param$2, param$3) {
+  
+}
+
+let move = {
+  id: 2,
+  name: "Thundershock",
+  maxPP: 30,
+  baseDamage: 40,
+  coolDownDuration: 1,
+  cast: move_cast,
+  addRulesForAI: move_addRulesForAI
+};
+
 export {
   load,
   cast,
+  move,
 }
 /*  Not a pure module */

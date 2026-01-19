@@ -1,9 +1,7 @@
 open Kaplay
 open GameContext
 
-let make = (~pokemonId: int, ~level: int): Pokemon.t => {
-  let gameObj: Pokemon.t = Pokemon.make(k, ~pokemonId, ~level, Player)
-
+let make = (pokemon: Pokemon.t): unit => {
   let spaceWasDown = ref(false)
 
   k->Context.onUpdate(() => {
@@ -17,27 +15,24 @@ let make = (~pokemonId: int, ~level: int): Pokemon.t => {
     let isRightPressed = k->Context.isKeyDown(Right) || k->Context.isKeyDown(D)
     let movementPressed = isUpPressed || isDownPressed || isLeftPressed || isRightPressed
 
-    if isNewSpacePress && gameObj.attackStatus == Pokemon.CanAttack {
-      // Thundershock.cast(gameObj)
-      QuickAttack.cast(k, gameObj)
+    if isNewSpacePress {
+      Pokemon.tryCastMove(k, pokemon, 0)
     } else if isUpPressed {
-      gameObj.direction = k->Context.vec2Up
-      gameObj->Pokemon.setSprite(Pokemon.backSpriteName(pokemonId))
+      pokemon.direction = k->Context.vec2Up
+      pokemon->Pokemon.setSprite(Pokemon.backSpriteName(pokemon.pokemonId))
     } else if isDownPressed {
-      gameObj.direction = k->Context.vec2Down
-      gameObj->Pokemon.setSprite(Pokemon.frontSpriteName(pokemonId))
+      pokemon.direction = k->Context.vec2Down
+      pokemon->Pokemon.setSprite(Pokemon.frontSpriteName(pokemon.pokemonId))
     } else if isLeftPressed {
-      gameObj.direction = k->Context.vec2Left
+      pokemon.direction = k->Context.vec2Left
     } else if isRightPressed {
-      gameObj.direction = k->Context.vec2Right
+      pokemon.direction = k->Context.vec2Right
     }
 
-    if gameObj.mobility == Pokemon.CanMove && movementPressed {
-      gameObj->Pokemon.move(
-        gameObj.direction->Vec2.Unit.asWorld->Vec2.World.scaleWith(Pokemon.movementSpeed),
+    if pokemon.mobility == Pokemon.CanMove && movementPressed {
+      pokemon->Pokemon.move(
+        pokemon.direction->Vec2.Unit.asWorld->Vec2.World.scaleWith(Pokemon.movementSpeed),
       )
     }
   })
-
-  gameObj
 }

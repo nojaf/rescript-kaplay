@@ -3,7 +3,15 @@ open GameContext
 
 let sceneLoaded = () => {
   Wall.makeAll()
-  let pikachu = Player.make(~pokemonId=25, ~level=12)
+  let pikachu = Pokemon.make(
+    k,
+    ~pokemonId=25,
+    ~level=12,
+    ~move1=Thundershock.move,
+    ~move2=QuickAttack.move,
+    Team.Player,
+  )
+  Player.make(pikachu)
   let _pikachuHealthbar = Healthbar.make(pikachu)
   let enemy = Pokemon.make(k, ~pokemonId=4, ~level=5, Team.Opponent)
   // let _charmander = EnemyAI.make(k, ~pokemonId=4, ~level=5, pikachu)

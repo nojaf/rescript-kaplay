@@ -8,10 +8,12 @@ import * as Ember$Skirmish from "../src/Moves/Ember.res.mjs";
 import * as Attack$Skirmish from "../src/Moves/Attack.res.mjs";
 import * as EnemyAI$Skirmish from "../src/EnemyAI.res.mjs";
 import * as Pokemon$Skirmish from "../src/Pokemon.res.mjs";
+import * as ZeroMove$Skirmish from "../src/Moves/ZeroMove.res.mjs";
 import * as GenericMove$Skirmish from "./GenericMove.res.mjs";
 import * as Thundershock$Skirmish from "../src/Moves/Thundershock.res.mjs";
 
-function withKaplayContext(playingField, testFn) {
+function withKaplayContext(playingField, enemyMove1Opt, testFn) {
+  let enemyMove1 = enemyMove1Opt !== undefined ? enemyMove1Opt : ZeroMove$Skirmish.move;
   let k = Kaplay({
     width: 160,
     height: 160,
@@ -54,13 +56,13 @@ function withKaplayContext(playingField, testFn) {
             case "E" :
               let x$2 = x * 32 + halfTile;
               let y$2 = y * 32 + halfTile;
-              let enemy = Pokemon$Skirmish.make(k, 4, 5, false);
+              let enemy = Pokemon$Skirmish.make(k, 4, 5, enemyMove1, undefined, undefined, undefined, false);
               enemy.pos = k.vec2(x$2, y$2);
               break;
             case "P" :
               let x$3 = x * 32 + halfTile;
               let y$3 = y * 32 + halfTile;
-              let player = Pokemon$Skirmish.make(k, 25, 12, true);
+              let player = Pokemon$Skirmish.make(k, 25, 12, undefined, undefined, undefined, undefined, true);
               player.pos = k.vec2(x$3, y$3);
               break;
             default:
@@ -100,7 +102,7 @@ Vitest.test("player attack right in center of enemy", () => withKaplayContext([
   "..A..",
   ".....",
   "..P.."
-], async (k, rs) => {
+], undefined, async (k, rs) => {
   let enemyMoveSpy = Vitest.vi.spyOn(rs.state.enemy, "move");
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBe(false);
@@ -113,7 +115,7 @@ Vitest.test("player attack on the right of enemy", () => withKaplayContext([
   "....A",
   ".....",
   "..P.."
-], async (k, rs) => {
+], undefined, async (k, rs) => {
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
   Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.attackOnTheRightOfEnemy)).toBeTruthy();
@@ -125,7 +127,7 @@ Vitest.test("player attack on the left of enemy", () => withKaplayContext([
   "A....",
   ".....",
   "..P.."
-], async (k, rs) => {
+], undefined, async (k, rs) => {
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
   Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.attackOnTheLeftOfEnemy)).toBeTruthy();
@@ -135,7 +137,7 @@ Vitest.test("enemy should move to the right to be in front of player", () => wit
   ".E...",
   ".....",
   "....P"
-], async (k, rs) => {
+], undefined, async (k, rs) => {
   let enemyMoveSpy = Vitest.vi.spyOn(rs.state.enemy, "move");
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBe(false);
@@ -146,7 +148,7 @@ Vitest.test("enemy should move to the left to be in front of player", () => with
   "....E",
   ".....",
   "P...."
-], async (k, rs) => {
+], undefined, async (k, rs) => {
   let enemyMoveSpy = Vitest.vi.spyOn(rs.state.enemy, "move");
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBe(true);
@@ -156,7 +158,7 @@ Vitest.test("enemy should move to the left to be in front of player", () => with
 Vitest.test("enemy should not move when in front of player", () => withKaplayContext([
   ".E.",
   ".P."
-], async (k, rs) => {
+], undefined, async (k, rs) => {
   let enemyMoveSpy = Vitest.vi.spyOn(rs.state.enemy, "move");
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
@@ -169,8 +171,13 @@ Vitest.test("enemy should attack when not under threat and can attack", () => wi
   "..E..",
   ".....",
   "..P.."
-], async (k, rs) => {
-  rs.state.enemy.attackStatus = true;
+], Ember$Skirmish.move, async (k, rs) => {
+  rs.state.enemy.attackStatus = [
+    0,
+    1,
+    2,
+    3
+  ];
   EnemyAI$Skirmish.update(k, rs, undefined);
   let enemyAttacks = Stdlib_Array.filterMap(k.query({
     include: [
@@ -187,8 +194,13 @@ Vitest.test("enemy should not attack when under threat", () => withKaplayContext
   "..E..",
   "..A..",
   "..P.."
-], async (k, rs) => {
-  rs.state.enemy.attackStatus = true;
+], undefined, async (k, rs) => {
+  rs.state.enemy.attackStatus = [
+    0,
+    1,
+    2,
+    3
+  ];
   EnemyAI$Skirmish.update(k, rs, undefined);
   let enemyAttacks = Stdlib_Array.filterMap(k.query({
     include: [
@@ -204,8 +216,8 @@ Vitest.test("enemy should not attack when already attacking", () => withKaplayCo
   "..E..",
   ".....",
   "..P.."
-], async (k, rs) => {
-  rs.state.enemy.attackStatus = false;
+], undefined, async (k, rs) => {
+  rs.state.enemy.attackStatus = "CannotAttack";
   EnemyAI$Skirmish.update(k, rs, undefined);
   let enemyAttacks = Stdlib_Array.filterMap(k.query({
     include: [

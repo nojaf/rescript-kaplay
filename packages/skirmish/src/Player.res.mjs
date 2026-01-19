@@ -2,10 +2,8 @@
 
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
-import * as QuickAttack$Skirmish from "./Moves/QuickAttack.res.mjs";
 
-function make(pokemonId, level) {
-  let gameObj = Pokemon$Skirmish.make(GameContext$Skirmish.k, pokemonId, level, true);
+function make(pokemon) {
   let spaceWasDown = {
     contents: false
   };
@@ -18,25 +16,24 @@ function make(pokemonId, level) {
     let isLeftPressed = GameContext$Skirmish.k.isKeyDown("left") || GameContext$Skirmish.k.isKeyDown("a");
     let isRightPressed = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
     let movementPressed = isUpPressed || isDownPressed || isLeftPressed || isRightPressed;
-    if (isNewSpacePress && gameObj.attackStatus === true) {
-      QuickAttack$Skirmish.cast(GameContext$Skirmish.k, gameObj);
+    if (isNewSpacePress) {
+      Pokemon$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 0);
     } else if (isUpPressed) {
-      gameObj.direction = GameContext$Skirmish.k.Vec2.UP;
-      gameObj.sprite = Pokemon$Skirmish.backSpriteName(pokemonId);
+      pokemon.direction = GameContext$Skirmish.k.Vec2.UP;
+      pokemon.sprite = Pokemon$Skirmish.backSpriteName(pokemon.pokemonId);
     } else if (isDownPressed) {
-      gameObj.direction = GameContext$Skirmish.k.Vec2.DOWN;
-      gameObj.sprite = Pokemon$Skirmish.frontSpriteName(pokemonId);
+      pokemon.direction = GameContext$Skirmish.k.Vec2.DOWN;
+      pokemon.sprite = Pokemon$Skirmish.frontSpriteName(pokemon.pokemonId);
     } else if (isLeftPressed) {
-      gameObj.direction = GameContext$Skirmish.k.Vec2.LEFT;
+      pokemon.direction = GameContext$Skirmish.k.Vec2.LEFT;
     } else if (isRightPressed) {
-      gameObj.direction = GameContext$Skirmish.k.Vec2.RIGHT;
+      pokemon.direction = GameContext$Skirmish.k.Vec2.RIGHT;
     }
-    if (gameObj.mobility === true && movementPressed) {
-      gameObj.move(gameObj.direction.scale(Pokemon$Skirmish.movementSpeed));
+    if (pokemon.mobility === true && movementPressed) {
+      pokemon.move(pokemon.direction.scale(Pokemon$Skirmish.movementSpeed));
       return;
     }
   });
-  return gameObj;
 }
 
 export {

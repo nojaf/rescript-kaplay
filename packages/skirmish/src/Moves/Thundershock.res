@@ -107,7 +107,7 @@ let destroy = (pokemon: Pokemon.t, thundershock: t) => {
 
   k->Context.wait(coolDown, () => {
     // Allow the Pokemon to attack again
-    pokemon.attackStatus = CanAttack
+    pokemon->Pokemon.finishAttack
   })
 }
 
@@ -165,7 +165,6 @@ let nextPartOfBolt = (
 let cast = (pokemon: Pokemon.t) => {
   // Prevent the Pokemon from moving while the Thundershock is active
   pokemon.mobility = CannotMove
-  pokemon.attackStatus = Attacking
 
   // Thundershock is either up or down, so we need to get the direction
   // We used cached vectors with the distance already applied to them
@@ -215,4 +214,14 @@ let cast = (pokemon: Pokemon.t) => {
       }
     ),
   )
+}
+
+let move: PkmnMove.t = {
+  id: 2,
+  name: "Thundershock",
+  maxPP: 30,
+  baseDamage: 40,
+  coolDownDuration: coolDown,
+  cast: (_k, pkmn) => cast(pkmn->Pokemon.fromAbstractPkmn),
+  addRulesForAI: (_, _, _, _) => (),
 }

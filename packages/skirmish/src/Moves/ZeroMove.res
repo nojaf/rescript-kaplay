@@ -14,11 +14,3 @@ let move: PkmnMove.t = {
     _: PkmnMove.moveFactNames,
   ) => (),
 }
-
-external infinity: float = "Infinity"
-
-let moveSlot: PkmnMove.moveSlot = {
-  move,
-  currentPP: 0,
-  lastUsedAt: -infinity,
-}

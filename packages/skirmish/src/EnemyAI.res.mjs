@@ -2,7 +2,6 @@
 
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
 import * as Team$Skirmish from "./Team.res.mjs";
-import * as Ember$Skirmish from "./Moves/Ember.res.mjs";
 import * as Attack$Skirmish from "./Moves/Attack.res.mjs";
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as RuleSystem$Kaplay from "@nojaf/rescript-kaplay/src/RuleSystem.res.mjs";
@@ -231,7 +230,7 @@ let shouldAttack = "shouldAttack";
 
 function addRules$3(rs) {
   rs.addRuleExecutingAction(rs => {
-    if (rs.state.enemy.attackStatus !== true) {
+    if (!Pokemon$Skirmish.canAttack(rs.state.enemy)) {
       return false;
     }
     let preferLeft = rs.gradeForFact(preferredDodgeLeft);
@@ -286,12 +285,12 @@ function update(k, rs, param) {
   }
   let g = rs.gradeForFact(shouldAttack);
   if (g > 0.0) {
-    return Ember$Skirmish.cast(k, rs.state.enemy);
+    return Pokemon$Skirmish.tryCastMove(k, rs.state.enemy, 0);
   }
 }
 
 function make(k, pokemonId, level, player) {
-  let enemy = Pokemon$Skirmish.make(k, pokemonId, level, false);
+  let enemy = Pokemon$Skirmish.make(k, pokemonId, level, undefined, undefined, undefined, undefined, false);
   let rs = makeRuleSystem(k, enemy, player);
   enemy.onUpdate(extra => update(k, rs, extra));
   if (k.debug.inspect) {
@@ -333,4 +332,4 @@ export {
   makeRuleSystem,
   update,
 }
-/* Ember-Skirmish Not a pure module */
+/* Attack-Skirmish Not a pure module */

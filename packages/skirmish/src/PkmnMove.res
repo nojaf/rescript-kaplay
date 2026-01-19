@@ -1,7 +1,8 @@
 open Kaplay
 
+/** Represents Pokemon.t without depending on Pokemon.res */
 type pkmn
-
+/**  Represents EnemyAIRuleSystemState.t without depending on EnemyAIRuleSystemState.res */
 type enemyAIRuleSystemState
 
 type moveFactNames = {
@@ -36,4 +37,11 @@ and moveSlot = {
   move: t,
   mutable currentPP: int,
   mutable lastUsedAt: float,
+}
+
+/** Create a moveSlot from a move definition with full PP and no cooldown */
+let makeMoveSlot = (move: t): moveSlot => {
+  move,
+  currentPP: move.maxPP,
+  lastUsedAt: neg_infinity,
 }

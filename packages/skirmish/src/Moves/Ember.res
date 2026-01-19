@@ -40,8 +40,6 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
     ],
   )
 
-  pokemon.attackStatus = Attacking
-
   flame->onCollide(Pokemon.tag, (other: Pokemon.t, _collision) => {
     if other.pokemonId != pokemon.pokemonId {
       Console.log2("Ember hit", other.pokemonId)
@@ -55,6 +53,16 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
   })
 
   k->Context.wait(coolDown, () => {
-    pokemon.attackStatus = CanAttack
+    pokemon->Pokemon.finishAttack
   })
+}
+
+let move: PkmnMove.t = {
+  id: 1,
+  name: "Ember",
+  maxPP: 25,
+  baseDamage: 40,
+  coolDownDuration: coolDown,
+  cast: (k, pkmn) => cast(k, pkmn->Pokemon.fromAbstractPkmn),
+  addRulesForAI: (_, _, _, _) => (),
 }

@@ -12,6 +12,7 @@ external finally: (promise<'data>, unit => unit) => unit = "finally"
 
 let withKaplayContext = (
   playingField: array<string>,
+  ~enemyMove1: PkmnMove.t=ZeroMove.move,
   testFn: (Context.t, RuleSystem.t<EnemyAI.ruleSystemState>) => promise<unit>,
 ): promise<unit> => {
   let k = Context.kaplay(
@@ -68,7 +69,7 @@ let withKaplayContext = (
           | "E" => {
               let x = x * tileSize + halfTile
               let y = y * tileSize + halfTile
-              let enemy = Pokemon.make(k, ~pokemonId=4, ~level=5, Opponent)
+              let enemy = Pokemon.make(k, ~pokemonId=4, ~level=5, ~move1=enemyMove1, Opponent)
               enemy->Pokemon.setPos(k->Context.vec2Local(x, y))
             }
           | "A" => {
@@ -239,9 +240,10 @@ test("enemy should attack when not under threat and can attack", () => {
       ".....",
       "..P..",
     ],
+    ~enemyMove1=Ember.move,
     async (k, rs) => {
       // Ensure enemy can attack
-      rs.state.enemy.attackStatus = Pokemon.CanAttack
+      rs.state.enemy.attackStatus = Pokemon.CanAttack([0, 1, 2, 3])
 
       EnemyAI.update(k, rs, ())
 
@@ -269,7 +271,7 @@ test("enemy should not attack when under threat", () => {
       "..P..",
     ],
     async (k, rs) => {
-      rs.state.enemy.attackStatus = Pokemon.CanAttack
+      rs.state.enemy.attackStatus = Pokemon.CanAttack([0, 1, 2, 3])
 
       EnemyAI.update(k, rs, ())
 
@@ -289,7 +291,7 @@ test("enemy should not attack when under threat", () => {
 test("enemy should not attack when already attacking", () => {
   withKaplayContext(["..E..", ".....", "..P.."], async (k, rs) => {
     // Enemy is already attacking
-    rs.state.enemy.attackStatus = Pokemon.Attacking
+    rs.state.enemy.attackStatus = Pokemon.CannotAttack
 
     EnemyAI.update(k, rs, ())
 

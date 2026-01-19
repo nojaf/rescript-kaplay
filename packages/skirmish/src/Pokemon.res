@@ -6,8 +6,13 @@ type facing = | @as(true) FacingUp | @as(false) FacingDown
 @unboxed
 type mobility = | @as(true) CanMove | @as(false) CannotMove
 
+/** Track if we can attack and which moves are available */
 @unboxed
-type attackStatus = | @as(true) CanAttack | @as(false) Attacking
+type attackStatus =
+  /** Currently executing a move */
+  | CannotAttack
+  /* Array of move indices (0-3) that are available */
+  | CanAttack(array<int>)
 
 type t = {
   mutable direction: Vec2.Unit.t,
@@ -74,7 +79,66 @@ let moveRight = (k: Context.t, pokemon: t) => {
   pokemon->move(k->Context.vec2World(100., 0.))
 }
 
-let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
+/** Recalculate which moves are available and restore attack status.
+    Call this after a move's cooldown finishes. */
+let finishAttack = (pokemon: t): unit => {
+  // TODO: Check PP and cooldowns for each move slot
+  // For now, just make all moves available again
+  pokemon.attackStatus = CanAttack([0, 1, 2, 3])
+}
+
+/** Check if the pokemon can attack */
+let canAttack = (pokemon: t): bool => {
+  switch pokemon.attackStatus {
+  | CannotAttack => false
+  | CanAttack(_) => true
+  }
+}
+
+/** Get move slot by index (0-3) */
+let getMoveSlot = (pokemon: t, index: int): option<PkmnMove.moveSlot> => {
+  switch index {
+  | 0 => Some(pokemon.moveSlot1)
+  | 1 => Some(pokemon.moveSlot2)
+  | 2 => Some(pokemon.moveSlot3)
+  | 3 => Some(pokemon.moveSlot4)
+  | _ => None
+  }
+}
+
+external toAbstractPkmn: t => PkmnMove.pkmn = "%identity"
+external fromAbstractPkmn: PkmnMove.pkmn => t = "%identity"
+
+/** Try to cast a move by index (0-3).
+    Handles setting attackStatus to CannotAttack before invoking the move's cast function. */
+let tryCastMove = (k: Context.t, pokemon: t, moveIndex: int): unit => {
+  switch pokemon.attackStatus {
+  | CannotAttack => ()
+  | CanAttack(availableMoves) if availableMoves->Array.includes(moveIndex) =>
+    switch getMoveSlot(pokemon, moveIndex) {
+    | None => ()
+    | Some(slot) =>
+      pokemon.attackStatus = CannotAttack
+      slot.move.cast(k, pokemon->toAbstractPkmn)
+    }
+  | CanAttack(_) => ()
+  }
+}
+
+let make = (
+  k: Context.t,
+  ~pokemonId: int,
+  ~level: int,
+  ~move1: PkmnMove.t=ZeroMove.move,
+  ~move2: PkmnMove.t=ZeroMove.move,
+  ~move3: PkmnMove.t=ZeroMove.move,
+  ~move4: PkmnMove.t=ZeroMove.move,
+  team: Team.t,
+): t => {
+  let moveSlot1 = PkmnMove.makeMoveSlot(move1)
+  let moveSlot2 = PkmnMove.makeMoveSlot(move2)
+  let moveSlot3 = PkmnMove.makeMoveSlot(move3)
+  let moveSlot4 = PkmnMove.makeMoveSlot(move4)
   let (spriteName, direction, posY) = if team == Player {
     (backSpriteName(pokemonId), k->Context.vec2Up, k->Context.height * 0.75)
   } else {
@@ -99,13 +163,13 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
       team,
       facing: FacingUp,
       mobility: CanMove,
-      attackStatus: CanAttack,
+      attackStatus: CanAttack([0, 1, 2, 3]),
       halfSize,
       squaredPersonalSpace,
-      moveSlot1: ZeroMove.moveSlot,
-      moveSlot2: ZeroMove.moveSlot,
-      moveSlot3: ZeroMove.moveSlot,
-      moveSlot4: ZeroMove.moveSlot,
+      moveSlot1,
+      moveSlot2,
+      moveSlot3,
+      moveSlot4,
     }),
     k->addPos(k->Context.center->Vec2.World.x, posY),
     k->addSprite(spriteName),

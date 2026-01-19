@@ -18,7 +18,6 @@ function load(k) {
 
 function cast(k, pokemon) {
   console.log("QuickAttack cast");
-  pokemon.attackStatus = false;
   pokemon.mobility = false;
   let pokemonWorldPos = pokemon.worldPos();
   let startY = pokemonWorldPos.y;
@@ -32,9 +31,7 @@ function cast(k, pokemon) {
   let endAttack = () => {
     collisionCtrl.contents.cancel();
     tweenCtrl.contents.cancel();
-    k.wait(0.4, () => {
-      pokemon.attackStatus = true;
-    });
+    k.wait(0.4, () => Pokemon$Skirmish.finishAttack(pokemon));
     pokemon.mobility = true;
     pokemon.unuse("shader");
   };
@@ -70,6 +67,22 @@ function cast(k, pokemon) {
   tweenCtrl.contents.onEnd(endAttack);
 }
 
+let move_cast = cast;
+
+function move_addRulesForAI(param, param$1, param$2, param$3) {
+  
+}
+
+let move = {
+  id: 3,
+  name: "Quick Attack",
+  maxPP: 30,
+  baseDamage: 40,
+  coolDownDuration: 0.4,
+  cast: move_cast,
+  addRulesForAI: move_addRulesForAI
+};
+
 let distance = 30;
 
 let duration = 0.4;
@@ -84,5 +97,6 @@ export {
   duration,
   cooldown,
   cast,
+  move,
 }
 /* outline2pxSource Not a pure module */

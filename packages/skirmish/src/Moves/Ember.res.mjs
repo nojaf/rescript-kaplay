@@ -55,7 +55,6 @@ function cast(k, pokemon) {
       return Math$Kaplay.Rect.makeWorld(k, flame.worldPos(), flame.width, flame.height);
     })
   ]));
-  pokemon.attackStatus = false;
   flame.onCollide(Pokemon$Skirmish.tag, (other, _collision) => {
     if (other.pokemonId !== pokemon.pokemonId) {
       console.log("Ember hit", other.pokemonId);
@@ -67,10 +66,24 @@ function cast(k, pokemon) {
   flame.onCollide(Wall$Skirmish.tag, (param, _collision) => {
     flame.destroy();
   });
-  k.wait(1, () => {
-    pokemon.attackStatus = true;
-  });
+  k.wait(1, () => Pokemon$Skirmish.finishAttack(pokemon));
 }
+
+let move_cast = cast;
+
+function move_addRulesForAI(param, param$1, param$2, param$3) {
+  
+}
+
+let move = {
+  id: 1,
+  name: "Ember",
+  maxPP: 25,
+  baseDamage: 40,
+  coolDownDuration: 1,
+  cast: move_cast,
+  addRulesForAI: move_addRulesForAI
+};
 
 let getClosestCorner = include.getClosestCorner;
 
@@ -86,5 +99,6 @@ export {
   load,
   coolDown,
   cast,
+  move,
 }
 /*  Not a pure module */

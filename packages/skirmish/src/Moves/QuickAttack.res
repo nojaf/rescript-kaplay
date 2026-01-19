@@ -15,7 +15,6 @@ let cooldown = 0.4
 
 let cast = (k: Context.t, pokemon: Pokemon.t) => {
   Console.log("QuickAttack cast")
-  pokemon.attackStatus = Attacking
   pokemon.mobility = CannotMove
 
   let pokemonWorldPos = pokemon->Pokemon.worldPos
@@ -33,7 +32,7 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
     tweenCtrl.contents->TweenController.cancel
 
     k->Context.wait(cooldown, () => {
-      pokemon.attackStatus = CanAttack
+      pokemon->Pokemon.finishAttack
     })
     pokemon.mobility = CanMove
     pokemon->Pokemon.unuse("shader")
@@ -97,4 +96,14 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
     )
 
   tweenCtrl.contents->TweenController.onEnd(endAttack)
+}
+
+let move: PkmnMove.t = {
+  id: 3,
+  name: "Quick Attack",
+  maxPP: 30,
+  baseDamage: 40,
+  coolDownDuration: cooldown,
+  cast: (k, pkmn) => cast(k, pkmn->Pokemon.fromAbstractPkmn),
+  addRulesForAI: (_, _, _, _) => (),
 }

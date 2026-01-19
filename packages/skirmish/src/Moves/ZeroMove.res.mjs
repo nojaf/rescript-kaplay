@@ -19,14 +19,7 @@ let move = {
   addRulesForAI: move_addRulesForAI
 };
 
-let moveSlot = {
-  move: move,
-  currentPP: 0,
-  lastUsedAt: - Infinity
-};
-
 export {
   move,
-  moveSlot,
 }
-/* moveSlot Not a pure module */
+/* No side effect */
