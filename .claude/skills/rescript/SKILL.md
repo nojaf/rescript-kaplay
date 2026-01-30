@@ -17,10 +17,10 @@ When the user invokes `/rescript`, check what they want:
 
 ## When to Use This Skill
 
-- Looking up function signatures from `@rescript/core`, `@rescript/react`, `@rescript/webapi`
+- Looking up function signatures from rescript dependenies
 - Finding what's available in a ReScript module
 - Checking type definitions (records, variants, abstract types)
-- Understanding functor-generated modules (like `PocketBase.BaseCollection`)
+- Understanding functor-generated modules (like `Kaplay.Pos.Comp`)
 - Any time you're unsure about ReScript API details
 
 ## Prerequisites
