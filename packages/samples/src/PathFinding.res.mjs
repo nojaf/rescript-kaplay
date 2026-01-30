@@ -10,7 +10,7 @@ import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.m
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as Outline$Kaplay from "@nojaf/rescript-kaplay/src/Components/Outline.res.mjs";
-import * as Primitive_float from "@rescript/runtime/lib/es6/Primitive_float.js";
+import * as Primitive_float from "@rescript/runtime/lib/es6/Primitive_float.mjs";
 
 let width = 12 * 64;
 

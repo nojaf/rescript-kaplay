@@ -4,7 +4,7 @@ open Kaplay
 type facing = | @as(true) FacingUp | @as(false) FacingDown
 
 @unboxed
-type mobility = | @as(true) CanMove | @as(false) CannotMove
+type mobility = | @as(true) CanMove | @as(false)   CannotMove
 
 /** Track if we can attack and which moves are available */
 @unboxed

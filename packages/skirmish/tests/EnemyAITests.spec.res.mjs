@@ -2,7 +2,7 @@
 
 import Kaplay from "kaplay";
 import * as Vitest from "vitest";
-import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
+import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.mjs";
 import * as Team$Skirmish from "../src/Team.res.mjs";
 import * as Ember$Skirmish from "../src/Moves/Ember.res.mjs";
 import * as Attack$Skirmish from "../src/Moves/Attack.res.mjs";
