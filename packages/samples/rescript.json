@@ -6,8 +6,9 @@
       "subdirs": true
     }
   ],
-  "dependencies": [
-    "@nojaf/rescript-kaplay"
-  ],
-  "compiler-flags":["-open Base"]
+  "dependencies": ["@nojaf/rescript-kaplay"],
+  "compiler-flags": ["-open Base"],
+  "js-post-build": {
+    "cmd": "uv run ../../.claude/skills/rescript/scripts/rescript-db.py update"
+  }
 }

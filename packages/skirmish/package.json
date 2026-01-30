@@ -16,7 +16,7 @@
   "dependencies": {
     "kaplay": "catalog:",
     "@nojaf/rescript-kaplay": "workspace:^",
-    "rescript": "catalog:"
+    "@rescript/runtime": "catalog:"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "^4.0.15",
@@ -25,7 +25,8 @@
     "sharp": "^0.34.5",
     "vite": "catalog:",
     "vitest": "^4.0.15",
-    "@nojaf/vite-plugin-rescript": "catalog:"
+    "@nojaf/vite-plugin-rescript": "catalog:",
+    "rescript": "catalog:"
   },
   "trustedDependencies": [
     "esbuild",
