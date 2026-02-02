@@ -1,5 +1,6 @@
 open Kaplay
 
+// ZeroMove never asserts availability - it's an empty slot
 let move: PkmnMove.t = {
   id: -1,
   name: "Zero move",
@@ -7,10 +8,5 @@ let move: PkmnMove.t = {
   baseDamage: 0,
   coolDownDuration: 0.,
   cast: (_: Context.t, _: PkmnMove.pkmn) => (),
-  addRulesForAI: (
-    _: PkmnMove.enemyAIRuleSystemState,
-    _: PkmnMove.moveSlot,
-    _: PkmnMove.enemyAIRuleSystemState,
-    _: PkmnMove.moveFactNames,
-  ) => (),
+  addRulesForAI: (_k, _rs, _slot, _facts) => (),
 }

@@ -10,6 +10,8 @@ This document describes the remaining work for implementing a moveset system whe
 
 - `PkmnMove.res` - Move type definitions with abstract `pkmn` type
   - `canCast(slot, currentTime)` - checks PP > 0, not ZeroMove, and cooldown elapsed
+  - `defaultAddRulesForAI` - generic AI availability rules for all moves
+  - `move0Facts` through `move3Facts` - fact names for each move slot
 - `ZeroMove.res` - No-op move for empty slots
 - `Pokemon.res` updates:
   - `attackStatus` variant: `CannotAttack | CanAttack(array<int>)`
@@ -30,7 +32,7 @@ This document describes the remaining work for implementing a moveset system whe
 
 ### Move Updates (Complete)
 
-- `Ember.res` - Has `move: PkmnMove.t` with `coolDownDuration`
+- `Ember.res` - Has `move: PkmnMove.t` with `coolDownDuration` and move-specific AI rules
 - `Thundershock.res` - Has `move: PkmnMove.t` with `coolDownDuration`
 - `QuickAttack.res` - Has `move: PkmnMove.t` with `coolDownDuration`
 - Moves no longer need to call `finishAttack` - handled automatically by `tryCastMove`
@@ -84,24 +86,28 @@ This document describes the remaining work for implementing a moveset system whe
   - Font sizes and dimensions
 - `Wall.res` uses Layout heights for play area calculation
 
-### EnemyAI Integration (Partial)
+### EnemyAI Integration (Complete)
 
-- Uses `Pokemon.canAttack()` for checking attack ability
-- Uses `Pokemon.tryCastMove(k, enemy, 0)` for executing attacks (hardcoded to move 0)
+- Modular architecture in `src/EnemyAI/` folder:
+  - `AIFacts.res` - Central registry of all fact names (breaks circular dependencies)
+  - `RuleSystemState.res` - State type for the rule system
+  - `BaseFacts.res` - Computes base facts from game state (attack positions, space, player position)
+  - `DerivedFacts.res` - Computes threat levels from base facts
+  - `DefensiveFacts.res` - Computes dodge decisions and movement
+  - `MoveFacts.res` - Handles move availability and selection
+- `EnemyAI.res` - Main entry point, re-exports modules
+- `EnemyAI.make(k, ~enemy, ~player)` - Attaches AI behavior to an existing Pokemon
+- Move-specific AI rules via `addRulesForAI` in each move:
+  - `PkmnMove.defaultAddRulesForAI` - Generic availability check (PP > 0, cooldown elapsed)
+  - Moves can add custom rules (e.g., Ember asserts `shouldAttack` when not under threat)
+- `MoveFacts.selectMove(rs)` - Returns first available move index
+- Dynamic move selection replaces hardcoded `tryCastMove(k, enemy, 0)`
 
 ---
 
 ## Remaining Work
 
-### Phase 1: AI Move Selection
-
-- [ ] Update `EnemyAI.res`:
-  - [ ] Implement `addRulesForAI` in each move for move-specific AI logic
-  - [ ] Add move rules to rule system (query each move's availability/score)
-  - [ ] Implement `selectBestMove()` function
-  - [ ] Replace hardcoded `tryCastMove(k, enemy, 0)` with intelligent move selection
-
-### Phase 2: Testing & Polish
+### Phase 1: Testing & Polish
 
 - [ ] Test player move casting with all 4 keys
 - [ ] Test PP depletion and move unavailability
@@ -118,11 +124,14 @@ This document describes the remaining work for implementing a moveset system whe
 2. **`attackStatus` tracks available move indices** - `CanAttack([0, 1, 2, 3])` means all 4 moves available
 3. **Cooldown handled automatically** - `tryCastMove` schedules `finishAttack` using the move's `coolDownDuration`
 4. **`Player.make` takes a Pokemon** - Doesn't create the Pokemon, just adds input handling
-5. **Abstract `pkmn` type in PkmnMove.res** - Breaks circular dependency with Pokemon.res
-6. **ZeroMove uses id = -1** - Reserved for empty slots
-7. **Vim-style keybindings** - j/k/l/; for moves 0-3 (home row, right hand)
-8. **Layout modules for UI** - All hardcoded values extracted to `Layout` and `OpponentLayout` modules for easy tweaking
-9. **Cooldown UI feedback** - Visual overlay on move cells shows cooldown progress
+5. **`EnemyAI.make` takes a Pokemon** - Doesn't create the Pokemon, just adds AI behavior
+6. **Abstract `pkmn` type in PkmnMove.res** - Breaks circular dependency with Pokemon.res
+7. **ZeroMove uses id = -1** - Reserved for empty slots
+8. **Vim-style keybindings** - j/k/l/; for moves 0-3 (home row, right hand)
+9. **Layout modules for UI** - All hardcoded values extracted to `Layout` and `OpponentLayout` modules for easy tweaking
+10. **Cooldown UI feedback** - Visual overlay on move cells shows cooldown progress
+11. **AIFacts as central registry** - All fact names in one place, accessible to both EnemyAI modules and individual moves
+12. **Move-specific AI rules** - Each move can define custom `addRulesForAI` for attack conditions (e.g., Ember attacks when safe)
 
 ---
 

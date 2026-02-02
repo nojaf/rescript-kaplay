@@ -218,5 +218,5 @@ let move: PkmnMove.t = {
   baseDamage: 40,
   coolDownDuration: coolDown,
   cast: (_k, pkmn) => cast(pkmn->Pokemon.fromAbstractPkmn),
-  addRulesForAI: (_, _, _, _) => (),
+  addRulesForAI: (_k, _rs, _slot, _facts) => (),
 }

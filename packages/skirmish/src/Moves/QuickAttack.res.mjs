@@ -68,7 +68,7 @@ function cast(k, pokemon) {
 
 let move_cast = cast;
 
-function move_addRulesForAI(param, param$1, param$2, param$3) {
+function move_addRulesForAI(_k, _rs, _slot, _facts) {
   
 }
 

@@ -13,7 +13,7 @@ external finally: (promise<'data>, unit => unit) => unit = "finally"
 let withKaplayContext = (
   playingField: array<string>,
   ~enemyMove1: PkmnMove.t=ZeroMove.move,
-  testFn: (Context.t, RuleSystem.t<EnemyAI.ruleSystemState>) => promise<unit>,
+  testFn: (Context.t, RuleSystem.t<RuleSystemState.t>) => promise<unit>,
 ): promise<unit> => {
   let k = Context.kaplay(
     ~initOptions={
@@ -132,7 +132,7 @@ test("player attack right in center of enemy", () => {
 
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.horizontalMovement)->Expect.toBe(EnemyAI.Right)
+      expect(rs.state.horizontalMovement)->Expect.toBe(RuleSystemState.Right)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
@@ -152,7 +152,7 @@ test("player attack on the right of enemy", () => {
       EnemyAI.update(k, rs, ())
 
       expect(rs.state.horizontalMovement)->Expect.toBeUndefined
-      expect(rs.facts->Map.has(EnemyAI.BaseFacts.attackOnTheRightOfEnemy))->Expect.toBeTruthy
+      expect(rs.facts->Map.has(AIFacts.attackOnTheRightOfEnemy))->Expect.toBeTruthy
     },
   )
 })
@@ -171,7 +171,7 @@ test("player attack on the left of enemy", () => {
       EnemyAI.update(k, rs, ())
 
       expect(rs.state.horizontalMovement)->Expect.toBeUndefined
-      expect(rs.facts->Map.has(EnemyAI.BaseFacts.attackOnTheLeftOfEnemy))->Expect.toBeTruthy
+      expect(rs.facts->Map.has(AIFacts.attackOnTheLeftOfEnemy))->Expect.toBeTruthy
     },
   )
 })
@@ -188,7 +188,7 @@ test("enemy should move to the right to be in front of player", () => {
       let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.horizontalMovement)->Expect.toBe(EnemyAI.Right)
+      expect(rs.state.horizontalMovement)->Expect.toBe(RuleSystemState.Right)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
@@ -206,7 +206,7 @@ test("enemy should move to the left to be in front of player", () => {
       let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.horizontalMovement)->Expect.toBe(EnemyAI.Left)
+      expect(rs.state.horizontalMovement)->Expect.toBe(RuleSystemState.Left)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
@@ -226,8 +226,8 @@ test("enemy should not move when in front of player", () => {
       expect(rs.state.horizontalMovement)->Expect.toBeUndefined
       expect(enemyMoveSpy)->Expect.not->Expect.toHaveBeenCalled
       // When aligned, player position facts should not be asserted
-      expect(rs.facts->Map.has(EnemyAI.BaseFacts.isPlayerLeft))->Expect.toBeFalsy
-      expect(rs.facts->Map.has(EnemyAI.BaseFacts.isPlayerRight))->Expect.toBeFalsy
+      expect(rs.facts->Map.has(AIFacts.isPlayerLeft))->Expect.toBeFalsy
+      expect(rs.facts->Map.has(AIFacts.isPlayerRight))->Expect.toBeFalsy
     },
   )
 })

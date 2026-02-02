@@ -6,6 +6,7 @@ import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.mjs";
 import * as Team$Skirmish from "../src/Team.res.mjs";
 import * as Ember$Skirmish from "../src/Moves/Ember.res.mjs";
 import * as Attack$Skirmish from "../src/Moves/Attack.res.mjs";
+import * as AIFacts$Skirmish from "../src/EnemyAI/AIFacts.res.mjs";
 import * as EnemyAI$Skirmish from "../src/EnemyAI.res.mjs";
 import * as Pokemon$Skirmish from "../src/Pokemon.res.mjs";
 import * as ZeroMove$Skirmish from "../src/Moves/ZeroMove.res.mjs";
@@ -118,7 +119,7 @@ Vitest.test("player attack on the right of enemy", () => withKaplayContext([
 ], undefined, async (k, rs) => {
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
-  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.attackOnTheRightOfEnemy)).toBeTruthy();
+  Vitest.expect(rs.facts.has(AIFacts$Skirmish.attackOnTheRightOfEnemy)).toBeTruthy();
 }));
 
 Vitest.test("player attack on the left of enemy", () => withKaplayContext([
@@ -130,7 +131,7 @@ Vitest.test("player attack on the left of enemy", () => withKaplayContext([
 ], undefined, async (k, rs) => {
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
-  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.attackOnTheLeftOfEnemy)).toBeTruthy();
+  Vitest.expect(rs.facts.has(AIFacts$Skirmish.attackOnTheLeftOfEnemy)).toBeTruthy();
 }));
 
 Vitest.test("enemy should move to the right to be in front of player", () => withKaplayContext([
@@ -163,8 +164,8 @@ Vitest.test("enemy should not move when in front of player", () => withKaplayCon
   EnemyAI$Skirmish.update(k, rs, undefined);
   Vitest.expect(rs.state.horizontalMovement).toBeUndefined();
   Vitest.expect(enemyMoveSpy).not.toHaveBeenCalled();
-  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.isPlayerLeft)).toBeFalsy();
-  Vitest.expect(rs.facts.has(EnemyAI$Skirmish.BaseFacts.isPlayerRight)).toBeFalsy();
+  Vitest.expect(rs.facts.has(AIFacts$Skirmish.isPlayerLeft)).toBeFalsy();
+  Vitest.expect(rs.facts.has(AIFacts$Skirmish.isPlayerRight)).toBeFalsy();
 }));
 
 Vitest.test("enemy should attack when not under threat and can attack", () => withKaplayContext([

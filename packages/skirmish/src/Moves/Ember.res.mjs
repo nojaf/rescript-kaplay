@@ -11,6 +11,7 @@ import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res
 import * as Team$Skirmish from "../Team.res.mjs";
 import * as Wall$Skirmish from "../Wall.res.mjs";
 import * as Attack$Skirmish from "./Attack.res.mjs";
+import * as AIFacts$Skirmish from "../EnemyAI/AIFacts.res.mjs";
 import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 
@@ -68,11 +69,24 @@ function cast(k, pokemon) {
   });
 }
 
-let move_cast = cast;
-
-function move_addRulesForAI(param, param$1, param$2, param$3) {
-  
+function addRulesForAI(_k, rs, _moveSlot, factNames) {
+  rs.addRuleExecutingAction(rs => {
+    let preferLeft = rs.gradeForFact(AIFacts$Skirmish.preferredDodgeLeft);
+    let preferRight = rs.gradeForFact(AIFacts$Skirmish.preferredDodgeRight);
+    let notUnderThreat = preferLeft === 0.0 && preferRight === 0.0;
+    let available = rs.gradeForFact(factNames.available);
+    let moveAvailable = available > 0.0;
+    if (notUnderThreat) {
+      return moveAvailable;
+    } else {
+      return false;
+    }
+  }, rs => {
+    rs.assertFact(AIFacts$Skirmish.shouldAttack);
+  }, 30.0);
 }
+
+let move_cast = cast;
 
 let move = {
   id: 1,
@@ -81,7 +95,7 @@ let move = {
   baseDamage: 40,
   coolDownDuration: 1,
   cast: move_cast,
-  addRulesForAI: move_addRulesForAI
+  addRulesForAI: addRulesForAI
 };
 
 let getClosestCorner = include.getClosestCorner;
@@ -98,6 +112,7 @@ export {
   load,
   coolDown,
   cast,
+  addRulesForAI,
   move,
 }
 /*  Not a pure module */

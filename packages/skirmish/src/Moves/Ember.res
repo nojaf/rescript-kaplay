@@ -53,6 +53,33 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
   })
 }
 
+let addRulesForAI = (
+  _k: Context.t,
+  rs: RuleSystem.t<PkmnMove.enemyAIRuleSystemState>,
+  _moveSlot: PkmnMove.moveSlot,
+  factNames: PkmnMove.moveFactNames,
+) => {
+  // Ember attacks when safe: not under threat and move is available
+  rs->RuleSystem.addRuleExecutingAction(
+    rs => {
+      // Check if not under threat (both preferred dodge facts should be 0.0)
+      let RuleSystem.Grade(preferLeft) = rs->RuleSystem.gradeForFact(AIFacts.preferredDodgeLeft)
+      let RuleSystem.Grade(preferRight) = rs->RuleSystem.gradeForFact(AIFacts.preferredDodgeRight)
+      let notUnderThreat = preferLeft == 0.0 && preferRight == 0.0
+
+      // Check if this move is available
+      let RuleSystem.Grade(available) = rs->RuleSystem.gradeForFact(factNames.available)
+      let moveAvailable = available > 0.0
+
+      notUnderThreat && moveAvailable
+    },
+    rs => {
+      rs->RuleSystem.assertFact(AIFacts.shouldAttack)
+    },
+    ~salience=RuleSystem.Salience(30.0),
+  )
+}
+
 let move: PkmnMove.t = {
   id: 1,
   name: "Ember",
@@ -60,5 +87,5 @@ let move: PkmnMove.t = {
   baseDamage: 40,
   coolDownDuration: coolDown,
   cast: (k, pkmn) => cast(k, pkmn->Pokemon.fromAbstractPkmn),
-  addRulesForAI: (_, _, _, _) => (),
+  addRulesForAI,
 }

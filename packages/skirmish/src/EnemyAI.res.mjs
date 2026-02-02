@@ -3,247 +3,18 @@
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.mjs";
 import * as Team$Skirmish from "./Team.res.mjs";
 import * as Attack$Skirmish from "./Moves/Attack.res.mjs";
+import * as AIFacts$Skirmish from "./EnemyAI/AIFacts.res.mjs";
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as RuleSystem$Kaplay from "@nojaf/rescript-kaplay/src/RuleSystem.res.mjs";
+import * as BaseFacts$Skirmish from "./EnemyAI/BaseFacts.res.mjs";
+import * as MoveFacts$Skirmish from "./EnemyAI/MoveFacts.res.mjs";
+import * as DerivedFacts$Skirmish from "./EnemyAI/DerivedFacts.res.mjs";
+import * as DefensiveFacts$Skirmish from "./EnemyAI/DefensiveFacts.res.mjs";
 import * as DebugRuleSystem$Skirmish from "./DebugRuleSystem.res.mjs";
 
-function overlapX(param, param$1) {
-  return Math.max(param[0], param$1[0]) <= Math.min(param[1], param$1[1]);
-}
-
-let attackInCenterOfEnemy = "attackInCenterOfEnemy";
-
-let attackOnTheLeftOfEnemy = "attackOnTheLeftOfEnemy";
-
-let attackOnTheRightOfEnemy = "attackOnTheRightOfEnemy";
-
-let hasSpaceOnTheLeft = "hasSpaceOnTheLeft";
-
-let hasSpaceOnTheRight = "hasSpaceOnTheRight";
-
-let isPlayerLeft = "isPlayerLeft";
-
-let isPlayerRight = "isPlayerRight";
-
-function addRules(k, rs) {
-  rs.addRuleExecutingAction(rs => rs.state.playerAttacks.length !== 0, rs => {
-    let leftGrade = {
-      contents: 0
-    };
-    let rightGrade = {
-      contents: 0
-    };
-    let centerGrade = {
-      contents: 0
-    };
-    let enemyWorldPos = rs.state.enemy.worldPos();
-    let enemyStartX = enemyWorldPos.x - rs.state.enemy.halfSize;
-    let enemyEndX = enemyWorldPos.x + rs.state.enemy.halfSize;
-    rs.state.playerAttacks.forEach(attack => {
-      let attackWorldRect = attack.getWorldRect();
-      let closestCorner = Attack$Skirmish.Unit.getClosestCorner(attack, k, enemyWorldPos);
-      if (overlapX([
-          enemyStartX,
-          enemyEndX
-        ], [
-          attackWorldRect.pos.x,
-          attackWorldRect.pos.x + attackWorldRect.width
-        ])) {
-        let squaredDistance = enemyWorldPos.sdist(attackWorldRect.center());
-        let currentGrade = squaredDistance === 0 ? 1 : rs.state.enemy.squaredPersonalSpace / squaredDistance;
-        if (centerGrade.contents < currentGrade) {
-          centerGrade.contents = currentGrade;
-          return;
-        } else {
-          return;
-        }
-      }
-      if (closestCorner.x < enemyStartX) {
-        let squaredDistance$1 = closestCorner.sdist(enemyWorldPos);
-        let currentGrade$1 = squaredDistance$1 === 0 ? 1 : rs.state.enemy.squaredPersonalSpace / squaredDistance$1;
-        if (leftGrade.contents < currentGrade$1) {
-          leftGrade.contents = currentGrade$1;
-          return;
-        } else {
-          return;
-        }
-      }
-      if (closestCorner.x <= enemyEndX) {
-        return;
-      }
-      let squaredDistance$2 = closestCorner.sdist(enemyWorldPos);
-      let currentGrade$2 = squaredDistance$2 === 0 ? 1 : rs.state.enemy.squaredPersonalSpace / squaredDistance$2;
-      if (rightGrade.contents < currentGrade$2) {
-        rightGrade.contents = currentGrade$2;
-        return;
-      }
-    });
-    if (leftGrade.contents > 0) {
-      rs.assertFact(attackOnTheLeftOfEnemy, leftGrade.contents);
-    }
-    if (rightGrade.contents > 0) {
-      rs.assertFact(attackOnTheRightOfEnemy, rightGrade.contents);
-    }
-    if (centerGrade.contents > 0) {
-      rs.assertFact(attackInCenterOfEnemy, centerGrade.contents);
-      return;
-    }
-  }, 0.0);
-  rs.addRuleExecutingAction(_rs => true, rs => {
-    let enemyWorldPos = rs.state.enemy.worldPos();
-    let enemyStartX = enemyWorldPos.x - rs.state.enemy.halfSize;
-    let enemyEndX = enemyWorldPos.x + rs.state.enemy.halfSize;
-    let leftSpace = enemyStartX / k.width();
-    let rightSpace = (k.width() - enemyEndX) / k.width();
-    if (leftSpace > 0) {
-      rs.assertFact(hasSpaceOnTheLeft, leftSpace);
-    }
-    if (rightSpace > 0) {
-      rs.assertFact(hasSpaceOnTheRight, rightSpace);
-      return;
-    }
-  }, 0.0);
-  rs.addRuleExecutingAction(_rs => true, rs => {
-    let enemyWorldPos = rs.state.enemy.worldPos();
-    let playerWorldPos = rs.state.player.worldPos();
-    let horizontalDistance = playerWorldPos.x - enemyWorldPos.x;
-    if (Math.abs(horizontalDistance) < 1.0) {
-      return;
-    } else {
-      if (horizontalDistance < 0.0) {
-        rs.assertFact(isPlayerLeft, 1.0);
-      } else {
-        rs.assertFact(isPlayerRight, 1.0);
-      }
-      return;
-    }
-  }, 0.0);
-}
-
-let leftThreat = "leftThreat";
-
-let rightThreat = "rightThreat";
-
-function addRules$1(rs) {
-  rs.addRuleExecutingAction(rs => {
-    let centerAttack = rs.gradeForFact(attackInCenterOfEnemy);
-    let leftAttack = rs.gradeForFact(attackOnTheLeftOfEnemy);
-    let rightAttack = rs.gradeForFact(attackOnTheRightOfEnemy);
-    if (centerAttack > 0.0 || leftAttack > 0.0) {
-      return true;
-    } else {
-      return rightAttack > 0.0;
-    }
-  }, rs => {
-    let centerAttack = rs.gradeForFact(attackInCenterOfEnemy);
-    let leftAttack = rs.gradeForFact(attackOnTheLeftOfEnemy);
-    let rightAttack = rs.gradeForFact(attackOnTheRightOfEnemy);
-    let leftThreatGrade = leftAttack + centerAttack;
-    let rightThreatGrade = rightAttack + centerAttack;
-    if (leftThreatGrade > 0.0) {
-      rs.assertFact(leftThreat, leftThreatGrade);
-    }
-    if (rightThreatGrade > 0.0) {
-      rs.assertFact(rightThreat, rightThreatGrade);
-      return;
-    }
-  }, 10.0);
-}
-
-let preferredDodgeLeft = "preferredDodgeLeft";
-
-let preferredDodgeRight = "preferredDodgeRight";
-
-function addRules$2(rs) {
-  rs.addRuleExecutingAction(rs => {
-    let leftThreat$1 = rs.gradeForFact(leftThreat);
-    let rightThreat$1 = rs.gradeForFact(rightThreat);
-    if (leftThreat$1 > 0.0) {
-      return true;
-    } else {
-      return rightThreat$1 > 0.0;
-    }
-  }, rs => {
-    let leftThreat$1 = rs.gradeForFact(leftThreat);
-    let rightThreat$1 = rs.gradeForFact(rightThreat);
-    let leftSpace = rs.gradeForFact(hasSpaceOnTheLeft);
-    let rightSpace = rs.gradeForFact(hasSpaceOnTheRight);
-    if (leftThreat$1 > rightThreat$1) {
-      rs.assertFact(preferredDodgeRight, 1.0);
-    } else if (rightThreat$1 > leftThreat$1) {
-      rs.assertFact(preferredDodgeLeft, 1.0);
-    } else if (leftSpace > rightSpace) {
-      rs.assertFact(preferredDodgeLeft, 1.0);
-    } else {
-      rs.assertFact(preferredDodgeRight, 1.0);
-    }
-  }, 20.0);
-  rs.addRuleExecutingAction(rs => {
-    let c = rs.gradeForFact(attackInCenterOfEnemy);
-    return c > 0.0;
-  }, rs => {
-    let preferLeft = rs.gradeForFact(preferredDodgeLeft);
-    let preferRight = rs.gradeForFact(preferredDodgeRight);
-    let leftSpace = rs.gradeForFact(hasSpaceOnTheLeft);
-    let rightSpace = rs.gradeForFact(hasSpaceOnTheRight);
-    let preferredDirection = preferLeft > 0.0 ? true : (
-        preferRight > 0.0 ? false : leftSpace > rightSpace
-      );
-    let hasSpaceInPreferred;
-    hasSpaceInPreferred = preferredDirection === true ? leftSpace > 0.0 : rightSpace > 0.0;
-    let finalDirection = hasSpaceInPreferred ? preferredDirection : (
-        preferredDirection === true ? rightSpace <= 0.0 : leftSpace > 0.0
-      );
-    let leftThreat$1 = rs.gradeForFact(leftThreat);
-    let rightThreat$1 = rs.gradeForFact(rightThreat);
-    let threatsAreEqual = leftThreat$1 === rightThreat$1 && leftThreat$1 > 0.0;
-    let currentDirection = rs.state.horizontalMovement;
-    if (currentDirection !== undefined && (threatsAreEqual || currentDirection === finalDirection)) {
-      return;
-    } else {
-      rs.state.horizontalMovement = finalDirection;
-      return;
-    }
-  }, 20.0);
-  rs.addRuleExecutingAction(rs => {
-    let c = rs.gradeForFact(attackInCenterOfEnemy);
-    return c === 0.0;
-  }, rs => {
-    rs.state.horizontalMovement = undefined;
-  }, 20.0);
-  rs.addRuleExecutingAction(rs => rs.state.playerAttacks.length === 0, rs => {
-    let playerLeft = rs.gradeForFact(isPlayerLeft);
-    let playerRight = rs.gradeForFact(isPlayerRight);
-    let leftSpace = rs.gradeForFact(hasSpaceOnTheLeft);
-    let rightSpace = rs.gradeForFact(hasSpaceOnTheRight);
-    if (playerLeft > 0.0) {
-      rs.state.horizontalMovement = leftSpace > 0.0 ? true : undefined;
-    } else if (playerRight > 0.0) {
-      rs.state.horizontalMovement = rightSpace > 0.0 ? false : undefined;
-    } else {
-      rs.state.horizontalMovement = undefined;
-    }
-  }, 20.0);
-}
-
-let shouldAttack = "shouldAttack";
-
-function addRules$3(rs) {
-  rs.addRuleExecutingAction(rs => {
-    if (!Pokemon$Skirmish.canAttack(rs.state.enemy)) {
-      return false;
-    }
-    let preferLeft = rs.gradeForFact(preferredDodgeLeft);
-    let preferRight = rs.gradeForFact(preferredDodgeRight);
-    if (preferLeft === 0.0) {
-      return preferRight === 0.0;
-    } else {
-      return false;
-    }
-  }, rs => {
-    rs.assertFact(shouldAttack, 1.0);
-  }, 30.0);
-}
+let AttackFacts = {
+  shouldAttack: AIFacts$Skirmish.shouldAttack
+};
 
 function makeRuleSystem(k, enemy, player) {
   let rs = RuleSystem$Kaplay.make(k);
@@ -254,10 +25,10 @@ function makeRuleSystem(k, enemy, player) {
     horizontalMovement: undefined,
     lastAttackAt: 0
   };
-  addRules(k, rs);
-  addRules$1(rs);
-  addRules$2(rs);
-  addRules$3(rs);
+  BaseFacts$Skirmish.addRules(k, rs);
+  DerivedFacts$Skirmish.addRules(rs);
+  DefensiveFacts$Skirmish.addRules(rs);
+  MoveFacts$Skirmish.addRules(k, rs);
   return rs;
 }
 
@@ -283,44 +54,38 @@ function update(k, rs, param) {
       Pokemon$Skirmish.moveRight(k, rs.state.enemy);
     }
   }
-  let g = rs.gradeForFact(shouldAttack);
-  if (g > 0.0) {
-    return Pokemon$Skirmish.tryCastMove(k, rs.state.enemy, 0);
+  let g = rs.gradeForFact(AIFacts$Skirmish.shouldAttack);
+  if (g <= 0.0) {
+    return;
+  }
+  let moveIndex = MoveFacts$Skirmish.selectMove(rs);
+  if (moveIndex !== undefined) {
+    return Pokemon$Skirmish.tryCastMove(k, rs.state.enemy, moveIndex);
   }
 }
 
-function make(k, pokemonId, level, player) {
-  let enemy = Pokemon$Skirmish.make(k, pokemonId, level, undefined, undefined, undefined, undefined, false);
+function make(k, enemy, player) {
   let rs = makeRuleSystem(k, enemy, player);
   enemy.onUpdate(extra => update(k, rs, extra));
   if (k.debug.inspect) {
-    DebugRuleSystem$Skirmish.make(k, rs);
+    return DebugRuleSystem$Skirmish.make(k, rs);
   }
-  return enemy;
 }
 
 let BaseFacts = {
-  attackInCenterOfEnemy: attackInCenterOfEnemy,
-  attackOnTheLeftOfEnemy: attackOnTheLeftOfEnemy,
-  attackOnTheRightOfEnemy: attackOnTheRightOfEnemy,
-  hasSpaceOnTheLeft: hasSpaceOnTheLeft,
-  hasSpaceOnTheRight: hasSpaceOnTheRight,
-  isPlayerLeft: isPlayerLeft,
-  isPlayerRight: isPlayerRight
+  addRules: BaseFacts$Skirmish.addRules
 };
 
 let DerivedFacts = {
-  leftThreat: leftThreat,
-  rightThreat: rightThreat
+  addRules: DerivedFacts$Skirmish.addRules
 };
 
 let DefensiveFacts = {
-  preferredDodgeLeft: preferredDodgeLeft,
-  preferredDodgeRight: preferredDodgeRight
+  addRules: DefensiveFacts$Skirmish.addRules
 };
 
-let AttackFacts = {
-  shouldAttack: shouldAttack
+let MoveFacts = {
+  selectMove: MoveFacts$Skirmish.selectMove
 };
 
 export {
@@ -328,6 +93,7 @@ export {
   DerivedFacts,
   DefensiveFacts,
   AttackFacts,
+  MoveFacts,
   make,
   makeRuleSystem,
   update,

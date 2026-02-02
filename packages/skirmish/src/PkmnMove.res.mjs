@@ -18,8 +18,42 @@ function canCast(slot, currentTime) {
   }
 }
 
+function defaultAddRulesForAI(k, rs, moveSlot, factNames) {
+  rs.addRuleExecutingAction(_rs => {
+    let currentTime = k.time();
+    return canCast(moveSlot, currentTime);
+  }, rs => {
+    rs.assertFact(factNames.available);
+  }, 25.0);
+}
+
+let move0Facts = {
+  available: "move-0-available",
+  successRate: "move-0-success-rate"
+};
+
+let move1Facts = {
+  available: "move-1-available",
+  successRate: "move-1-success-rate"
+};
+
+let move2Facts = {
+  available: "move-2-available",
+  successRate: "move-2-success-rate"
+};
+
+let move3Facts = {
+  available: "move-3-available",
+  successRate: "move-3-success-rate"
+};
+
 export {
+  move0Facts,
+  move1Facts,
+  move2Facts,
+  move3Facts,
   makeMoveSlot,
   canCast,
+  defaultAddRulesForAI,
 }
 /* No side effect */
