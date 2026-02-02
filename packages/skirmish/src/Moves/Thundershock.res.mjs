@@ -10,7 +10,6 @@ import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res
 import * as Team$Skirmish from "../Team.res.mjs";
 import * as Wall$Skirmish from "../Wall.res.mjs";
 import * as Attack$Skirmish from "./Attack.res.mjs";
-import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "../GameContext.res.mjs";
 import GlowFragraw from "../../shaders/glow.frag?raw";
@@ -96,7 +95,6 @@ function destroy(pokemon, thundershock) {
     pokemon.mobility = true;
     thundershock.destroy();
   });
-  GameContext$Skirmish.k.wait(1, () => Pokemon$Skirmish.finishAttack(pokemon));
 }
 
 function cast(pokemon) {

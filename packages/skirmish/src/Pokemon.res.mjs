@@ -76,34 +76,31 @@ function moveRight(k, pokemon) {
   pokemon.move(k.vec2(100, 0));
 }
 
-function isSlotAvailable(slot) {
-  if (slot.move.id !== -1) {
-    return slot.currentPP > 0;
-  } else {
-    return false;
-  }
-}
-
-function getAvailableMoveIndices(slot1, slot2, slot3, slot4) {
+function getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime) {
   let moves = [];
-  if (isSlotAvailable(slot1)) {
+  if (PkmnMove$Skirmish.canCast(slot1, currentTime)) {
     moves.push(0);
   }
-  if (isSlotAvailable(slot2)) {
+  if (PkmnMove$Skirmish.canCast(slot2, currentTime)) {
     moves.push(1);
   }
-  if (isSlotAvailable(slot3)) {
+  if (PkmnMove$Skirmish.canCast(slot3, currentTime)) {
     moves.push(2);
   }
-  if (isSlotAvailable(slot4)) {
+  if (PkmnMove$Skirmish.canCast(slot4, currentTime)) {
     moves.push(3);
   }
   return moves;
 }
 
-function finishAttack(pokemon) {
-  let availableMoves = getAvailableMoveIndices(pokemon.moveSlot1, pokemon.moveSlot2, pokemon.moveSlot3, pokemon.moveSlot4);
+function finishAttack(k, pokemon) {
+  let currentTime = k.time();
+  let availableMoves = getAvailableMoveIndices(pokemon.moveSlot1, pokemon.moveSlot2, pokemon.moveSlot3, pokemon.moveSlot4, currentTime);
   pokemon.attackStatus = availableMoves;
+}
+
+function scheduleFinishAttack(k, pokemon, cooldown) {
+  k.wait(cooldown, () => finishAttack(k, pokemon));
 }
 
 function canAttack(pokemon) {
@@ -139,7 +136,8 @@ function tryCastMove(k, pokemon, moveIndex) {
     slot.currentPP = slot.currentPP - 1 | 0;
     slot.lastUsedAt = k.time();
     pokemon.attackStatus = "CannotAttack";
-    return slot.move.cast(k, pokemon);
+    slot.move.cast(k, pokemon);
+    return scheduleFinishAttack(k, pokemon, slot.move.coolDownDuration);
   }
 }
 
@@ -177,7 +175,8 @@ function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, team)
       squaredPersonalSpace
     ];
   }
-  let initialAvailableMoves = getAvailableMoveIndices(moveSlot1, moveSlot2, moveSlot3, moveSlot4);
+  let currentTime = k.time();
+  let initialAvailableMoves = getAvailableMoveIndices(moveSlot1, moveSlot2, moveSlot3, moveSlot4, currentTime);
   let gameObj = k.add([
     {
       direction: match[1],
@@ -254,9 +253,9 @@ export {
   getHealthPercentage,
   moveLeft,
   moveRight,
-  isSlotAvailable,
   getAvailableMoveIndices,
   finishAttack,
+  scheduleFinishAttack,
   canAttack,
   getMoveSlot,
   tryCastMove,

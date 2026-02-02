@@ -51,10 +51,6 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
   flame->onCollide(Wall.tag, (_: Wall.t, _collision) => {
     flame->destroy
   })
-
-  k->Context.wait(coolDown, () => {
-    pokemon->Pokemon.finishAttack
-  })
 }
 
 let move: PkmnMove.t = {

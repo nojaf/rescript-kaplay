@@ -48,6 +48,8 @@ let cellBgLight = "#fafaf9";
 
 let cellBgDark = "#f3f4f6";
 
+let cellCooldownBg = "#94a3b8";
+
 let playerHeight = 3 * 2 + cellHeight * 2;
 
 let Layout = {
@@ -63,6 +65,7 @@ let Layout = {
   emptySlotFontSize: 8,
   cellBgLight: cellBgLight,
   cellBgDark: cellBgDark,
+  cellCooldownBg: cellCooldownBg,
   movesSectionRatio: 0.7,
   nameHpSectionRatio: 0.3,
   nameFontSize: 12,
@@ -165,6 +168,8 @@ function drawMoves(healthbar, movesWidth) {
   ];
   let bgLight = GameContext$Skirmish.k.Color.fromHex(cellBgLight);
   let bgDark = GameContext$Skirmish.k.Color.fromHex(cellBgDark);
+  let cooldownBg = GameContext$Skirmish.k.Color.fromHex(cellCooldownBg);
+  let currentTime = GameContext$Skirmish.k.time();
   moveSlots.forEach((slot, index) => {
     let col = index % 2;
     let row = index / 2 | 0;
@@ -177,6 +182,21 @@ function drawMoves(healthbar, movesWidth) {
       width: cellWidth,
       height: cellHeight$1
     });
+    if (slot.move.id !== -1 && slot.move.coolDownDuration > 0) {
+      let timeSinceUse = currentTime - slot.lastUsedAt;
+      let cooldownRemaining = slot.move.coolDownDuration - timeSinceUse;
+      if (cooldownRemaining > 0) {
+        let cooldownProgress = cooldownRemaining / slot.move.coolDownDuration;
+        let overlayWidth = cellWidth * cooldownProgress;
+        GameContext$Skirmish.k.drawRect({
+          pos: GameContext$Skirmish.k.vec2(x, y),
+          color: cooldownBg,
+          opacity: 0.5,
+          width: overlayWidth,
+          height: cellHeight$1
+        });
+      }
+    }
     if (GameContext$Skirmish.k.debug.inspect) {
       let debugColor = Stdlib_Option.getOr(debugColors[index], "#000000");
       GameContext$Skirmish.k.drawRect({

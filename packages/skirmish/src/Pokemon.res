@@ -79,29 +79,25 @@ let moveRight = (k: Context.t, pokemon: t) => {
   pokemon->move(k->Context.vec2World(100., 0.))
 }
 
-/** Check if a move slot is usable (real move with PP remaining) */
-let isSlotAvailable = (slot: PkmnMove.moveSlot): bool => {
-  slot.move.id != -1 && slot.currentPP > 0
-}
-
-/** Compute which move indices (0-3) are available based on PP */
+/** Compute which move indices (0-3) are available based on PP and cooldown */
 let getAvailableMoveIndices = (
   slot1: PkmnMove.moveSlot,
   slot2: PkmnMove.moveSlot,
   slot3: PkmnMove.moveSlot,
   slot4: PkmnMove.moveSlot,
+  currentTime: float,
 ): array<int> => {
   let moves = []
-  if isSlotAvailable(slot1) {
+  if PkmnMove.canCast(slot1, currentTime) {
     moves->Array.push(0)
   }
-  if isSlotAvailable(slot2) {
+  if PkmnMove.canCast(slot2, currentTime) {
     moves->Array.push(1)
   }
-  if isSlotAvailable(slot3) {
+  if PkmnMove.canCast(slot3, currentTime) {
     moves->Array.push(2)
   }
-  if isSlotAvailable(slot4) {
+  if PkmnMove.canCast(slot4, currentTime) {
     moves->Array.push(3)
   }
   moves
@@ -109,14 +105,24 @@ let getAvailableMoveIndices = (
 
 /** Recalculate which moves are available and restore attack status.
     Call this after a move's cooldown finishes. */
-let finishAttack = (pokemon: t): unit => {
+let finishAttack = (k: Kaplay.Context.t, pokemon: t): unit => {
+  let currentTime = k->Kaplay.Context.time
   let availableMoves = getAvailableMoveIndices(
     pokemon.moveSlot1,
     pokemon.moveSlot2,
     pokemon.moveSlot3,
     pokemon.moveSlot4,
+    currentTime,
   )
   pokemon.attackStatus = CanAttack(availableMoves)
+}
+
+/** Schedule finishAttack to be called after a cooldown duration.
+    Common pattern used by moves after their animation/effect completes. */
+let scheduleFinishAttack = (k: Kaplay.Context.t, pokemon: t, cooldown: float): unit => {
+  k->Kaplay.Context.wait(cooldown, () => {
+    finishAttack(k, pokemon)
+  })
 }
 
 /** Check if the pokemon can attack */
@@ -142,7 +148,8 @@ external toAbstractPkmn: t => PkmnMove.pkmn = "%identity"
 external fromAbstractPkmn: PkmnMove.pkmn => t = "%identity"
 
 /** Try to cast a move by index (0-3).
-    Handles setting attackStatus to CannotAttack before invoking the move's cast function. */
+    Handles setting attackStatus to CannotAttack before invoking the move's cast function.
+    Automatically schedules finishAttack after the move's cooldown duration. */
 let tryCastMove = (k: Context.t, pokemon: t, moveIndex: int): unit => {
   switch pokemon.attackStatus {
   | CannotAttack => ()
@@ -155,6 +162,8 @@ let tryCastMove = (k: Context.t, pokemon: t, moveIndex: int): unit => {
       slot.lastUsedAt = k->Context.time
       pokemon.attackStatus = CannotAttack
       slot.move.cast(k, pokemon->toAbstractPkmn)
+      // Automatically restore attack status after cooldown
+      scheduleFinishAttack(k, pokemon, slot.move.coolDownDuration)
     }
   | CanAttack(_) => ()
   }
@@ -189,7 +198,14 @@ let make = (
     }
   }
 
-  let initialAvailableMoves = getAvailableMoveIndices(moveSlot1, moveSlot2, moveSlot3, moveSlot4)
+  let currentTime = k->Context.time
+  let initialAvailableMoves = getAvailableMoveIndices(
+    moveSlot1,
+    moveSlot2,
+    moveSlot3,
+    moveSlot4,
+    currentTime,
+  )
 
   let gameObj: t = k->Context.add([
     // initialState

@@ -66,7 +66,6 @@ function cast(k, pokemon) {
   flame.onCollide(Wall$Skirmish.tag, (param, _collision) => {
     flame.destroy();
   });
-  k.wait(1, () => Pokemon$Skirmish.finishAttack(pokemon));
 }
 
 let move_cast = cast;

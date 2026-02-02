@@ -87,6 +87,7 @@ module Layout = {
   // Move cell background colors
   let cellBgLight = "#fafaf9"
   let cellBgDark = "#f3f4f6"
+  let cellCooldownBg = "#94a3b8"
 
   // Moves/NameHP split ratio
   let movesSectionRatio = 0.7
@@ -209,6 +210,8 @@ let drawMoves = (healthbar: t, movesWidth: float) => {
   // Alternating background colors for move cells
   let bgLight = k->Color.fromHex(Layout.cellBgLight)
   let bgDark = k->Color.fromHex(Layout.cellBgDark)
+  let cooldownBg = k->Color.fromHex(Layout.cellCooldownBg)
+  let currentTime = k->Context.time
 
   moveSlots->Array.forEachWithIndex((slot, index) => {
     let col = mod(index, 2)
@@ -224,6 +227,23 @@ let drawMoves = (healthbar: t, movesWidth: float) => {
       height: cellHeight,
       color: bgColor,
     })
+
+    // Cooldown overlay - shrinks from left to right as cooldown progresses
+    if slot.move.id != -1 && slot.move.coolDownDuration > 0. {
+      let timeSinceUse = currentTime - slot.lastUsedAt
+      let cooldownRemaining = slot.move.coolDownDuration - timeSinceUse
+      if cooldownRemaining > 0. {
+        let cooldownProgress = cooldownRemaining / slot.move.coolDownDuration
+        let overlayWidth = cellWidth * cooldownProgress
+        k->Context.drawRect({
+          pos: k->Context.vec2Local(x, y),
+          width: overlayWidth,
+          height: cellHeight,
+          color: cooldownBg,
+          opacity: 0.5,
+        })
+      }
+    }
 
     // Debug rectangle for each move cell
     if k.debug.inspect {

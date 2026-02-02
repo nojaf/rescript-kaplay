@@ -45,3 +45,13 @@ let makeMoveSlot = (move: t): moveSlot => {
   currentPP: move.maxPP,
   lastUsedAt: neg_infinity,
 }
+
+/** Check if a move slot can be cast based on PP and cooldown */
+let canCast = (slot: moveSlot, currentTime: float): bool => {
+  // Must have PP remaining
+  slot.currentPP > 0 &&
+  // Must not be a ZeroMove (empty slot)
+  slot.move.id != -1 &&
+  // Cooldown must have elapsed
+  currentTime - slot.lastUsedAt >= slot.move.coolDownDuration
+}

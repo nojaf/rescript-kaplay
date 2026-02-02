@@ -10,7 +10,16 @@ function makeMoveSlot(move) {
   };
 }
 
+function canCast(slot, currentTime) {
+  if (slot.currentPP > 0 && slot.move.id !== -1) {
+    return currentTime - slot.lastUsedAt >= slot.move.coolDownDuration;
+  } else {
+    return false;
+  }
+}
+
 export {
   makeMoveSlot,
+  canCast,
 }
 /* No side effect */

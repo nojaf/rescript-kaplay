@@ -104,11 +104,6 @@ let destroy = (pokemon: Pokemon.t, thundershock: t) => {
     // Destroy the Thundershock game object
     thundershock->destroy
   })
-
-  k->Context.wait(coolDown, () => {
-    // Allow the Pokemon to attack again
-    pokemon->Pokemon.finishAttack
-  })
 }
 
 let nextPartOfBolt = (

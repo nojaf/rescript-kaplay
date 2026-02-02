@@ -31,7 +31,6 @@ function cast(k, pokemon) {
   let endAttack = () => {
     collisionCtrl.contents.cancel();
     tweenCtrl.contents.cancel();
-    k.wait(0.4, () => Pokemon$Skirmish.finishAttack(pokemon));
     pokemon.mobility = true;
     pokemon.unuse("shader");
   };

@@ -30,10 +30,6 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
   let endAttack = () => {
     collisionCtrl.contents->KEventController.cancel
     tweenCtrl.contents->TweenController.cancel
-
-    k->Context.wait(cooldown, () => {
-      pokemon->Pokemon.finishAttack
-    })
     pokemon.mobility = CanMove
     pokemon->Pokemon.unuse("shader")
   }
