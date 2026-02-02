@@ -3,21 +3,54 @@
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
 
-function make(pokemon) {
-  let spaceWasDown = {
-    contents: false
+function make() {
+  return {
+    wasDown: false
+  };
+}
+
+function isNewPress(state, isDown) {
+  let isNew = isDown && !state.wasDown;
+  state.wasDown = isDown;
+  return isNew;
+}
+
+let KeyEdge = {
+  make: make,
+  isNewPress: isNewPress
+};
+
+function make$1(pokemon) {
+  let jKey = {
+    wasDown: false
+  };
+  let kKey = {
+    wasDown: false
+  };
+  let lKey = {
+    wasDown: false
+  };
+  let semicolonKey = {
+    wasDown: false
   };
   GameContext$Skirmish.k.onUpdate(() => {
-    let isSpacePressed = GameContext$Skirmish.k.isKeyDown("space");
-    let isNewSpacePress = isSpacePressed && !spaceWasDown.contents;
-    spaceWasDown.contents = isSpacePressed;
+    let isNewJPress = isNewPress(jKey, GameContext$Skirmish.k.isKeyDown("j"));
+    let isNewKPress = isNewPress(kKey, GameContext$Skirmish.k.isKeyDown("k"));
+    let isNewLPress = isNewPress(lKey, GameContext$Skirmish.k.isKeyDown("l"));
+    let isNewSemicolonPress = isNewPress(semicolonKey, GameContext$Skirmish.k.isKeyDown(";"));
     let isUpPressed = GameContext$Skirmish.k.isKeyDown("up") || GameContext$Skirmish.k.isKeyDown("w");
     let isDownPressed = GameContext$Skirmish.k.isKeyDown("down") || GameContext$Skirmish.k.isKeyDown("s");
     let isLeftPressed = GameContext$Skirmish.k.isKeyDown("left") || GameContext$Skirmish.k.isKeyDown("a");
     let isRightPressed = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
     let movementPressed = isUpPressed || isDownPressed || isLeftPressed || isRightPressed;
-    if (isNewSpacePress) {
+    if (isNewJPress) {
       Pokemon$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 0);
+    } else if (isNewKPress) {
+      Pokemon$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 1);
+    } else if (isNewLPress) {
+      Pokemon$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 2);
+    } else if (isNewSemicolonPress) {
+      Pokemon$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 3);
     } else if (isUpPressed) {
       pokemon.direction = GameContext$Skirmish.k.Vec2.UP;
       pokemon.sprite = Pokemon$Skirmish.backSpriteName(pokemon.pokemonId);
@@ -37,6 +70,7 @@ function make(pokemon) {
 }
 
 export {
-  make,
+  KeyEdge,
+  make$1 as make,
 }
 /* Pokemon-Skirmish Not a pure module */

@@ -13,13 +13,12 @@ let tag = "wall"
 let wallColor = k->Color.fromHex("#27272a")
 
 let wallSize = 2.
-let healthbarHeight = 60.
 
 let worldRect = Kaplay.Math.Rect.makeWorld(
   k,
-  k->Context.vec2World(0., healthbarHeight),
+  k->Context.vec2World(0., Healthbar.OpponentLayout.height),
   k->Context.width,
-  k->Context.height - 2. * healthbarHeight,
+  k->Context.height - Healthbar.OpponentLayout.height - Healthbar.Layout.playerHeight,
 )
 
 let make = (~pos: Vec2.World.t, ~width: float, ~height: float) => {
@@ -46,7 +45,11 @@ let makeAll = () => {
   )
 
   // Top wall
-  make(~pos=k->Context.vec2World(0., healthbarHeight), ~width=k->Context.width, ~height=wallSize)
+  make(
+    ~pos=k->Context.vec2World(0., Healthbar.OpponentLayout.height),
+    ~width=k->Context.width,
+    ~height=wallSize,
+  )
   // Bottom wall
   make(
     ~pos=k->Context.vec2World(0., worldRect.pos.y + worldRect.height),

@@ -79,12 +79,44 @@ let moveRight = (k: Context.t, pokemon: t) => {
   pokemon->move(k->Context.vec2World(100., 0.))
 }
 
+/** Check if a move slot is usable (real move with PP remaining) */
+let isSlotAvailable = (slot: PkmnMove.moveSlot): bool => {
+  slot.move.id != -1 && slot.currentPP > 0
+}
+
+/** Compute which move indices (0-3) are available based on PP */
+let getAvailableMoveIndices = (
+  slot1: PkmnMove.moveSlot,
+  slot2: PkmnMove.moveSlot,
+  slot3: PkmnMove.moveSlot,
+  slot4: PkmnMove.moveSlot,
+): array<int> => {
+  let moves = []
+  if isSlotAvailable(slot1) {
+    moves->Array.push(0)
+  }
+  if isSlotAvailable(slot2) {
+    moves->Array.push(1)
+  }
+  if isSlotAvailable(slot3) {
+    moves->Array.push(2)
+  }
+  if isSlotAvailable(slot4) {
+    moves->Array.push(3)
+  }
+  moves
+}
+
 /** Recalculate which moves are available and restore attack status.
     Call this after a move's cooldown finishes. */
 let finishAttack = (pokemon: t): unit => {
-  // TODO: Check PP and cooldowns for each move slot
-  // For now, just make all moves available again
-  pokemon.attackStatus = CanAttack([0, 1, 2, 3])
+  let availableMoves = getAvailableMoveIndices(
+    pokemon.moveSlot1,
+    pokemon.moveSlot2,
+    pokemon.moveSlot3,
+    pokemon.moveSlot4,
+  )
+  pokemon.attackStatus = CanAttack(availableMoves)
 }
 
 /** Check if the pokemon can attack */
@@ -118,6 +150,9 @@ let tryCastMove = (k: Context.t, pokemon: t, moveIndex: int): unit => {
     switch getMoveSlot(pokemon, moveIndex) {
     | None => ()
     | Some(slot) =>
+      // Decrement PP and record usage time
+      slot.currentPP = slot.currentPP - 1
+      slot.lastUsedAt = k->Context.time
       pokemon.attackStatus = CannotAttack
       slot.move.cast(k, pokemon->toAbstractPkmn)
     }
@@ -154,6 +189,8 @@ let make = (
     }
   }
 
+  let initialAvailableMoves = getAvailableMoveIndices(moveSlot1, moveSlot2, moveSlot3, moveSlot4)
+
   let gameObj: t = k->Context.add([
     // initialState
     internalState({
@@ -163,7 +200,7 @@ let make = (
       team,
       facing: FacingUp,
       mobility: CanMove,
-      attackStatus: CanAttack([0, 1, 2, 3]),
+      attackStatus: CanAttack(initialAvailableMoves),
       halfSize,
       squaredPersonalSpace,
       moveSlot1,

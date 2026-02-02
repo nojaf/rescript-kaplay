@@ -6,7 +6,7 @@ This document describes the remaining work for implementing a moveset system whe
 
 ## What's Already Implemented
 
-### Core Infrastructure (✅ Complete)
+### Core Infrastructure (Complete)
 
 - `PkmnMove.res` - Move type definitions with abstract `pkmn` type
 - `ZeroMove.res` - No-op move for empty slots
@@ -15,62 +15,75 @@ This document describes the remaining work for implementing a moveset system whe
   - Move slots in type `t` (`moveSlot1` through `moveSlot4`)
   - `make()` accepts optional `~moveSlot1`, `~moveSlot2`, etc. parameters (default to ZeroMove)
   - `getMoveSlot(pokemon, index)` helper returns `option<PkmnMove.moveSlot>`
-  - `finishAttack(pokemon)` recalculates available moves
+  - `finishAttack(pokemon)` recalculates available moves based on PP
   - `canAttack(pokemon)` checks if pokemon can attack
-  - `tryCastMove(k, pokemon, moveIndex)` handles attack execution
+  - `tryCastMove(k, pokemon, moveIndex)` handles attack execution, decrements PP, records lastUsedAt
+  - `isSlotAvailable(slot)` and `getAvailableMoveIndices(pokemon)` helpers
   - `fromAbstractPkmn` / `toAbstractPkmn` conversion functions
 
-### Move Updates (✅ Complete)
+### Move Updates (Complete)
 
 - `Ember.res` - Has `move: PkmnMove.t` and `moveSlot()` function
 - `Thundershock.res` - Has `move: PkmnMove.t` and `moveSlot()` function
 - `QuickAttack.res` - Has `move: PkmnMove.t` and `moveSlot()` function
 - All moves call `Pokemon.finishAttack` after cooldown instead of directly setting `attackStatus`
 
-### Player Integration (✅ Partial)
+### Player Integration (Complete)
 
 - `Player.res` now takes `Pokemon.t` as argument (doesn't construct it)
-- Uses `Pokemon.tryCastMove(k, pokemon, 0)` for attacking
-- `Game.res` creates Pokemon with move slots and passes to Player
+- `KeyEdge` module for edge detection of key presses
+- Uses vim-style home row keys: j/k/l/; for moves 0-3
+- Calls `Pokemon.tryCastMove(k, pokemon, moveIndex)` based on key pressed
 
-### EnemyAI Integration (✅ Partial)
+### PP Tracking (Complete)
+
+- `Pokemon.tryCastMove()` decrements PP and records `lastUsedAt`
+- `Pokemon.finishAttack()` only includes moves with PP > 0 in `CanAttack` array
+- `Pokemon.make()` uses `getAvailableMoveIndices` for initial `attackStatus`
+
+### Healthbar UI (Complete)
+
+- `Healthbar.res` stores pokemon reference in state
+- Player healthbar shows moves in 2x2 grid (left 70%) with name/HP section (right 30%)
+- Each move cell displays:
+  - Hotkey label (J/K/L/;) on left
+  - PP fraction (current/max) on right
+  - Move name centered below
+- Empty slots show "(key) ---" in gray
+- Alternating background colors for move cells
+- PP shown in red when depleted
+- Debug rectangles controlled by `k.debug.inspect`
+
+### Layout System (Complete)
+
+- `Healthbar.Layout` module with configurable constants for player healthbar:
+  - Move grid: padding, gap, cell dimensions, font sizes
+  - Cell backgrounds: light/dark alternating colors
+  - Section ratios: moves (70%) / nameHP (30%)
+  - Name/HP section: font sizes, spacing, HP bar dimensions
+- `Healthbar.OpponentLayout` module for opponent healthbar:
+  - Positioning for name, level, HP bar
+  - Font sizes and dimensions
+- `Wall.res` uses Layout heights for play area calculation
+
+### EnemyAI Integration (Partial)
 
 - Uses `Pokemon.canAttack()` for checking attack ability
-- Uses `Pokemon.tryCastMove(k, enemy, 0)` for executing attacks
+- Uses `Pokemon.tryCastMove(k, enemy, 0)` for executing attacks (hardcoded to move 0)
 
 ---
 
 ## Remaining Work
 
-### Phase 1: Player Input for Multiple Moves
+### Phase 1: Cooldown Tracking
 
-- [ ] Update `Player.res`:
-  - [ ] Add key binding constants (j/k/l/; keys)
-  - [ ] Add key press tracking for all 4 move keys
-  - [ ] Replace single spacebar attack with move key handling
-  - [ ] Call `tryCastMove` with appropriate index based on key pressed
-
-### Phase 2: UI Updates
-
-- [ ] Update `Healthbar.res`:
-  - [ ] Store pokemon reference in healthbar state
-  - [ ] Implement `drawMoves()` function
-  - [ ] Display move names, PP, and key bindings
-  - [ ] Only show for player team
-  - [ ] Skip ZeroMove slots (id == -1)
-
-### Phase 3: PP and Cooldown Tracking
-
-- [ ] Update `Pokemon.tryCastMove()`:
-  - [ ] Decrement PP when move is cast
-  - [ ] Record `lastUsedAt` time
 - [ ] Update `Pokemon.finishAttack()`:
-  - [ ] Check PP and cooldowns for each move slot
-  - [ ] Only include moves with PP > 0 and cooldown elapsed in `CanAttack` array
+  - [ ] Check cooldowns for each move slot (using `lastUsedAt` and `move.cooldown`)
+  - [ ] Only include moves with cooldown elapsed in `CanAttack` array
 - [ ] Add helper in `PkmnMove.res`:
   - [ ] `canCast(moveSlot, currentTime)` - checks PP and cooldown
 
-### Phase 4: AI Move Selection
+### Phase 2: AI Move Selection
 
 - [ ] Update `EnemyAI.res`:
   - [ ] Implement `addRulesForAI` in each move for move-specific AI logic
@@ -78,14 +91,14 @@ This document describes the remaining work for implementing a moveset system whe
   - [ ] Implement `selectBestMove()` function
   - [ ] Replace hardcoded `tryCastMove(k, enemy, 0)` with intelligent move selection
 
-### Phase 5: Testing & Polish
+### Phase 3: Testing & Polish
 
 - [ ] Test player move casting with all 4 keys
 - [ ] Test PP depletion and move unavailability
 - [ ] Test cooldown system per move
 - [ ] Test AI move selection
 - [ ] Test ZeroMove slots (empty slots)
-- [ ] Test healthbar display
+- [ ] Test healthbar display updates
 
 ---
 
@@ -97,6 +110,8 @@ This document describes the remaining work for implementing a moveset system whe
 4. **`Player.make` takes a Pokemon** - Doesn't create the Pokemon, just adds input handling
 5. **Abstract `pkmn` type in PkmnMove.res** - Breaks circular dependency with Pokemon.res
 6. **ZeroMove uses id = -1** - Reserved for empty slots
+7. **Vim-style keybindings** - j/k/l/; for moves 0-3 (home row, right hand)
+8. **Layout modules for UI** - All hardcoded values extracted to `Layout` and `OpponentLayout` modules for easy tweaking
 
 ---
 
@@ -115,11 +130,7 @@ Thundershock sets both, Ember only sets attackStatus.
 
 Each move has its own cooldown. After a move finishes, `finishAttack()` recalculates which moves are available based on individual cooldowns.
 
-### 3. **Healthbar Pokemon Reference**
-
-Healthbar needs access to Pokemon to display moves. Currently it only stores metadata. Needs to store pokemon reference.
-
-### 4. **PP Restoration**
+### 3. **PP Restoration**
 
 Currently PP is only set at Pokemon creation. Restoration is out of scope for now.
 

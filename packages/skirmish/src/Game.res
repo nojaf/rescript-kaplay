@@ -9,6 +9,8 @@ let sceneLoaded = () => {
     ~level=12,
     ~move1=Thundershock.move,
     ~move2=QuickAttack.move,
+    ~move3=Ember.move,
+    ~move4=Ember.move,
     Team.Player,
   )
   Player.make(pikachu)

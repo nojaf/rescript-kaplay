@@ -1,13 +1,31 @@
 open Kaplay
 open GameContext
 
+module KeyEdge = {
+  type t = {mutable wasDown: bool}
+
+  let make = () => {wasDown: false}
+
+  /** Returns true only on the frame the key is first pressed */
+  let isNewPress = (state: t, isDown: bool): bool => {
+    let isNew = isDown && !state.wasDown
+    state.wasDown = isDown
+    isNew
+  }
+}
+
 let make = (pokemon: Pokemon.t): unit => {
-  let spaceWasDown = ref(false)
+  let jKey = KeyEdge.make()
+  let kKey = KeyEdge.make()
+  let lKey = KeyEdge.make()
+  let semicolonKey = KeyEdge.make()
 
   k->Context.onUpdate(() => {
-    let isSpacePressed = k->Context.isKeyDown(Space)
-    let isNewSpacePress = isSpacePressed && !spaceWasDown.contents
-    spaceWasDown.contents = isSpacePressed
+    // Detect new key presses for move keys (home row: j/k/l/;)
+    let isNewJPress = jKey->KeyEdge.isNewPress(k->Context.isKeyDown(J))
+    let isNewKPress = kKey->KeyEdge.isNewPress(k->Context.isKeyDown(K))
+    let isNewLPress = lKey->KeyEdge.isNewPress(k->Context.isKeyDown(L))
+    let isNewSemicolonPress = semicolonKey->KeyEdge.isNewPress(k->Context.isKeyDown(Semicolon))
 
     let isUpPressed = k->Context.isKeyDown(Up) || k->Context.isKeyDown(W)
     let isDownPressed = k->Context.isKeyDown(Down) || k->Context.isKeyDown(S)
@@ -15,8 +33,15 @@ let make = (pokemon: Pokemon.t): unit => {
     let isRightPressed = k->Context.isKeyDown(Right) || k->Context.isKeyDown(D)
     let movementPressed = isUpPressed || isDownPressed || isLeftPressed || isRightPressed
 
-    if isNewSpacePress {
+    // Handle move key presses (j/k/l/; for slots 0-3)
+    if isNewJPress {
       Pokemon.tryCastMove(k, pokemon, 0)
+    } else if isNewKPress {
+      Pokemon.tryCastMove(k, pokemon, 1)
+    } else if isNewLPress {
+      Pokemon.tryCastMove(k, pokemon, 2)
+    } else if isNewSemicolonPress {
+      Pokemon.tryCastMove(k, pokemon, 3)
     } else if isUpPressed {
       pokemon.direction = k->Context.vec2Up
       pokemon->Pokemon.setSprite(Pokemon.backSpriteName(pokemon.pokemonId))
