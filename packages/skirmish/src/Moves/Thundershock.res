@@ -214,7 +214,7 @@ let cast = (pokemon: Pokemon.t) => {
 let move: PkmnMove.t = {
   id: 2,
   name: "Thundershock",
-  maxPP: 30,
+  maxPP: 25,
   baseDamage: 40,
   coolDownDuration: coolDown,
   cast: (_k, pkmn) => cast(pkmn->Pokemon.fromAbstractPkmn),

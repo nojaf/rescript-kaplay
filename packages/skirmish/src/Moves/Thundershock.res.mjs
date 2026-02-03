@@ -164,7 +164,7 @@ function move_addRulesForAI(_k, _rs, _slot, _facts) {
 let move = {
   id: 2,
   name: "Thundershock",
-  maxPP: 30,
+  maxPP: 25,
   baseDamage: 40,
   coolDownDuration: 1,
   cast: move_cast,

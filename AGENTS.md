@@ -3,7 +3,8 @@
 ## Build Commands
 
 - Use `bun` instead of `npm` for running scripts
-- For ReScript compilation, use `bun run res:build` in the package directory (e.g., `packages/skirmish`)
+- For ReScript compilation, use `bunx rescript` in the package directory (e.g., `packages/skirmish`) or on the root (to build all packages)
+- To run tests, use `bunx vitest run` in the package directory
 - The vite dev server is typically already running, so avoid running `vite build` for quick iterations
 
 ## Project Structure
