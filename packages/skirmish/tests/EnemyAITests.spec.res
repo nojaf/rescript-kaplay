@@ -12,7 +12,8 @@ external finally: (promise<'data>, unit => unit) => unit = "finally"
 
 let withKaplayContext = (
   playingField: array<string>,
-  testFn: (Context.t, RuleSystem.t<EnemyAI.ruleSystemState>) => promise<unit>,
+  ~enemyMove1: PkmnMove.t=ZeroMove.move,
+  testFn: (Context.t, RuleSystem.t<RuleSystemState.t>) => promise<unit>,
 ): promise<unit> => {
   let k = Context.kaplay(
     ~initOptions={
@@ -68,7 +69,7 @@ let withKaplayContext = (
           | "E" => {
               let x = x * tileSize + halfTile
               let y = y * tileSize + halfTile
-              let enemy = Pokemon.make(k, ~pokemonId=4, ~level=5, Opponent)
+              let enemy = Pokemon.make(k, ~pokemonId=4, ~level=5, ~move1=enemyMove1, Opponent)
               enemy->Pokemon.setPos(k->Context.vec2Local(x, y))
             }
           | "A" => {
@@ -131,7 +132,7 @@ test("player attack right in center of enemy", () => {
 
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.horizontalMovement)->Expect.toBe(EnemyAI.Right)
+      expect(rs.state.horizontalMovement)->Expect.toBe(RuleSystemState.Right)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
@@ -151,7 +152,7 @@ test("player attack on the right of enemy", () => {
       EnemyAI.update(k, rs, ())
 
       expect(rs.state.horizontalMovement)->Expect.toBeUndefined
-      expect(rs.facts->Map.has(EnemyAI.BaseFacts.attackOnTheRightOfEnemy))->Expect.toBeTruthy
+      expect(rs.facts->Map.has(AIFacts.attackOnTheRightOfEnemy))->Expect.toBeTruthy
     },
   )
 })
@@ -170,7 +171,7 @@ test("player attack on the left of enemy", () => {
       EnemyAI.update(k, rs, ())
 
       expect(rs.state.horizontalMovement)->Expect.toBeUndefined
-      expect(rs.facts->Map.has(EnemyAI.BaseFacts.attackOnTheLeftOfEnemy))->Expect.toBeTruthy
+      expect(rs.facts->Map.has(AIFacts.attackOnTheLeftOfEnemy))->Expect.toBeTruthy
     },
   )
 })
@@ -187,7 +188,7 @@ test("enemy should move to the right to be in front of player", () => {
       let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.horizontalMovement)->Expect.toBe(EnemyAI.Right)
+      expect(rs.state.horizontalMovement)->Expect.toBe(RuleSystemState.Right)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
@@ -205,7 +206,7 @@ test("enemy should move to the left to be in front of player", () => {
       let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.horizontalMovement)->Expect.toBe(EnemyAI.Left)
+      expect(rs.state.horizontalMovement)->Expect.toBe(RuleSystemState.Left)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
@@ -225,8 +226,8 @@ test("enemy should not move when in front of player", () => {
       expect(rs.state.horizontalMovement)->Expect.toBeUndefined
       expect(enemyMoveSpy)->Expect.not->Expect.toHaveBeenCalled
       // When aligned, player position facts should not be asserted
-      expect(rs.facts->Map.has(EnemyAI.BaseFacts.isPlayerLeft))->Expect.toBeFalsy
-      expect(rs.facts->Map.has(EnemyAI.BaseFacts.isPlayerRight))->Expect.toBeFalsy
+      expect(rs.facts->Map.has(AIFacts.isPlayerLeft))->Expect.toBeFalsy
+      expect(rs.facts->Map.has(AIFacts.isPlayerRight))->Expect.toBeFalsy
     },
   )
 })
@@ -239,9 +240,10 @@ test("enemy should attack when not under threat and can attack", () => {
       ".....",
       "..P..",
     ],
+    ~enemyMove1=Ember.move,
     async (k, rs) => {
       // Ensure enemy can attack
-      rs.state.enemy.attackStatus = Pokemon.CanAttack
+      rs.state.enemy.attackStatus = Pokemon.CanAttack([0, 1, 2, 3])
 
       EnemyAI.update(k, rs, ())
 
@@ -269,7 +271,7 @@ test("enemy should not attack when under threat", () => {
       "..P..",
     ],
     async (k, rs) => {
-      rs.state.enemy.attackStatus = Pokemon.CanAttack
+      rs.state.enemy.attackStatus = Pokemon.CanAttack([0, 1, 2, 3])
 
       EnemyAI.update(k, rs, ())
 
@@ -289,7 +291,7 @@ test("enemy should not attack when under threat", () => {
 test("enemy should not attack when already attacking", () => {
   withKaplayContext(["..E..", ".....", "..P.."], async (k, rs) => {
     // Enemy is already attacking
-    rs.state.enemy.attackStatus = Pokemon.Attacking
+    rs.state.enemy.attackStatus = Pokemon.CannotAttack
 
     EnemyAI.update(k, rs, ())
 

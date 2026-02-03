@@ -6,6 +6,7 @@ import * as Body$Kaplay from "@nojaf/rescript-kaplay/src/Components/Body.res.mjs
 import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Rect$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rect.res.mjs";
 import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.mjs";
+import * as Healthbar$Skirmish from "./Healthbar.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
 
 Pos$Kaplay.Comp({});
@@ -22,7 +23,7 @@ let tag = "wall";
 
 let wallColor = GameContext$Skirmish.k.Color.fromHex("#27272a");
 
-let worldRect = Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, GameContext$Skirmish.k.vec2(0, 60), GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height() - 2 * 60);
+let worldRect = Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, GameContext$Skirmish.k.vec2(0, Healthbar$Skirmish.OpponentLayout.height), GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height() - Healthbar$Skirmish.OpponentLayout.height - Healthbar$Skirmish.Layout.playerHeight);
 
 function make(pos, width, height) {
   GameContext$Skirmish.k.add([
@@ -40,19 +41,16 @@ function make(pos, width, height) {
 function makeAll() {
   make(worldRect.pos, 2, worldRect.height);
   make(GameContext$Skirmish.k.vec2(worldRect.pos.x + worldRect.width - 2, worldRect.pos.y), 2, worldRect.height);
-  make(GameContext$Skirmish.k.vec2(0, 60), GameContext$Skirmish.k.width(), 2);
+  make(GameContext$Skirmish.k.vec2(0, Healthbar$Skirmish.OpponentLayout.height), GameContext$Skirmish.k.width(), 2);
   make(GameContext$Skirmish.k.vec2(0, worldRect.pos.y + worldRect.height), worldRect.width, 2);
 }
 
 let wallSize = 2;
 
-let healthbarHeight = 60;
-
 export {
   tag,
   wallColor,
   wallSize,
-  healthbarHeight,
   worldRect,
   make,
   makeAll,

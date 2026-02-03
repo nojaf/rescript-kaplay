@@ -4,7 +4,7 @@ import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs";
 import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Text$Kaplay from "@nojaf/rescript-kaplay/src/Components/Text.res.mjs";
-import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
+import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as PkmnFont$Skirmish from "./PkmnFont.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
@@ -58,6 +58,12 @@ function make(k, teamWhoLost) {
   ]);
   btn.onClick(() => {
     k.go("game");
+  });
+  k.onKeyPress(key => {
+    if (key === "space") {
+      k.go("game");
+      return;
+    }
   });
   let defaultCursor = k.getCursor();
   btn.onHover(() => {

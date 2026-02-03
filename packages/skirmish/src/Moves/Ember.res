@@ -5,7 +5,7 @@ type t
 include GameObjRaw.Comp({type t = t})
 include Sprite.Comp({type t = t})
 include Pos.Comp({type t = t})
-include Move.Comp({type t = t})
+include Kaplay.Move.Comp({type t = t})
 include Anchor.Comp({type t = t})
 include Z.Comp({type t = t})
 include Area.Comp({type t = t})
@@ -34,13 +34,11 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
       addArea(k),
       pokemon.direction.y < 0. ? addAnchorBottom(k) : addAnchorTop(k),
       Team.getTagComponent(pokemon.team),
-      ...addAttack(@this (flame: t) => {
+      ...addAttackWithTag(@this (flame: t) => {
         Kaplay.Math.Rect.makeWorld(k, flame->worldPos, flame->getWidth, flame->getHeight)
       }),
     ],
   )
-
-  pokemon.attackStatus = Attacking
 
   flame->onCollide(Pokemon.tag, (other: Pokemon.t, _collision) => {
     if other.pokemonId != pokemon.pokemonId {
@@ -53,8 +51,41 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
   flame->onCollide(Wall.tag, (_: Wall.t, _collision) => {
     flame->destroy
   })
+}
 
-  k->Context.wait(coolDown, () => {
-    pokemon.attackStatus = CanAttack
-  })
+let addRulesForAI = (
+  _k: Context.t,
+  rs: RuleSystem.t<PkmnMove.enemyAIRuleSystemState>,
+  _moveSlot: PkmnMove.moveSlot,
+  factNames: PkmnMove.moveFactNames,
+) => {
+  // Ember attacks when safe: not under threat and move is available
+  rs->RuleSystem.addRuleExecutingAction(
+    rs => {
+      // Check if not under threat (both preferred dodge facts should be 0.0)
+      let RuleSystem.Grade(preferLeft) = rs->RuleSystem.gradeForFact(AIFacts.preferredDodgeLeft)
+      let RuleSystem.Grade(preferRight) = rs->RuleSystem.gradeForFact(AIFacts.preferredDodgeRight)
+      let notUnderThreat = preferLeft == 0.0 && preferRight == 0.0
+
+      // Check if this move is available
+      let RuleSystem.Grade(available) = rs->RuleSystem.gradeForFact(factNames.available)
+      let moveAvailable = available > 0.0
+
+      notUnderThreat && moveAvailable
+    },
+    rs => {
+      rs->RuleSystem.assertFact(AIFacts.shouldAttack)
+    },
+    ~salience=RuleSystem.Salience(30.0),
+  )
+}
+
+let move: PkmnMove.t = {
+  id: 1,
+  name: "Ember",
+  maxPP: 25,
+  baseDamage: 40,
+  coolDownDuration: coolDown,
+  cast: (k, pkmn) => cast(k, pkmn->Pokemon.fromAbstractPkmn),
+  addRulesForAI,
 }

@@ -8,14 +8,17 @@ import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as PkmnFont$Skirmish from "./PkmnFont.res.mjs";
 import * as Healthbar$Skirmish from "./Healthbar.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
+import * as QuickAttack$Skirmish from "./Moves/QuickAttack.res.mjs";
 import * as Thundershock$Skirmish from "./Moves/Thundershock.res.mjs";
 
 function sceneLoaded() {
   Wall$Skirmish.makeAll();
-  let pikachu = Player$Skirmish.make(25, 12);
+  let pikachu = Pokemon$Skirmish.make(GameContext$Skirmish.k, 25, 12, Thundershock$Skirmish.move, QuickAttack$Skirmish.move, undefined, undefined, true);
+  Player$Skirmish.make(pikachu);
   Healthbar$Skirmish.make(pikachu);
-  let _charmander = EnemyAI$Skirmish.make(GameContext$Skirmish.k, 4, 5, pikachu);
-  Healthbar$Skirmish.make(_charmander);
+  let charmander = Pokemon$Skirmish.make(GameContext$Skirmish.k, 4, 5, Ember$Skirmish.move, undefined, undefined, undefined, false);
+  EnemyAI$Skirmish.make(GameContext$Skirmish.k, charmander, pikachu);
+  Healthbar$Skirmish.make(charmander);
 }
 
 function scene() {
@@ -24,6 +27,7 @@ function scene() {
   Pokemon$Skirmish.load(GameContext$Skirmish.k, 25);
   Thundershock$Skirmish.load();
   Ember$Skirmish.load(GameContext$Skirmish.k);
+  QuickAttack$Skirmish.load(GameContext$Skirmish.k);
   GameContext$Skirmish.k.onLoad(sceneLoaded);
 }
 

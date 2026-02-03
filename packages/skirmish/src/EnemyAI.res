@@ -1,435 +1,12 @@
 open Kaplay
 
-@unboxed
-type horizontalMovement = | @as(true) Left | @as(false) Right
+module BaseFacts = BaseFacts
+module DerivedFacts = DerivedFacts
+module DefensiveFacts = DefensiveFacts
+module MoveFacts = MoveFacts
 
-type ruleSystemState = {
-  enemy: Pokemon.t,
-  player: Pokemon.t,
-  mutable playerAttacks: array<Attack.Unit.t>,
-  mutable horizontalMovement: option<horizontalMovement>,
-  lastAttackAt: float,
-}
-
-let overlapX = ((ax1, ax2), (bx1, bx2)) => {
-  Stdlib_Math.max(ax1, bx1) <= Stdlib_Math.min(ax2, bx2)
-}
-
-/** Base facts module for enemy AI.
-  *
-  * This module computes base facts directly from game state (no dependencies on other facts).
-  * It provides foundational information about attack positions, space availability, and
-  * player position relative to the enemy. These facts are used by DerivedFacts and
-  * DefensiveFacts modules to make higher-level decisions.
-  */
-module BaseFacts = {
-  open RuleSystem
-
-  let salience = Salience(0.0)
-
-  // Attack positions
-  let attackInCenterOfEnemy = Fact("attackInCenterOfEnemy")
-  let attackOnTheLeftOfEnemy = Fact("attackOnTheLeftOfEnemy")
-  let attackOnTheRightOfEnemy = Fact("attackOnTheRightOfEnemy")
-
-  // Space availability
-  let hasSpaceOnTheLeft = Fact("hasSpaceOnTheLeft")
-  let hasSpaceOnTheRight = Fact("hasSpaceOnTheRight")
-
-  // Player position relative to enemy
-  let isPlayerLeft = Fact("isPlayerLeft")
-  let isPlayerRight = Fact("isPlayerRight")
-
-  let addRules = (k: Context.t, rs: RuleSystem.t<ruleSystemState>) => {
-    // Base fact: Attack positions
-    rs->RuleSystem.addRuleExecutingAction(
-      rs => rs.state.playerAttacks->Array.length > 0,
-      rs => {
-        // Track maximum grades for each fact type
-        let leftGrade = ref(RuleSystem.Grade(0.))
-        let rightGrade = ref(RuleSystem.Grade(0.))
-        let centerGrade = ref(RuleSystem.Grade(0.))
-
-        let enemyWorldPos = rs.state.enemy->Pokemon.worldPos
-        let enemyStartX = enemyWorldPos.x - rs.state.enemy.halfSize
-        let enemyEndX = enemyWorldPos.x + rs.state.enemy.halfSize
-
-        rs.state.playerAttacks->Array.forEach(attack => {
-          let attackWorldRect = attack->Attack.Unit.getWorldRect
-          let closestCorner =
-            attack->Attack.Unit.getClosestCorner(k, ~pokemonPosition=enemyWorldPos)
-
-          // Check is attack is in center of enemy
-          if (
-            overlapX(
-              (enemyStartX, enemyEndX),
-              (attackWorldRect.pos.x, attackWorldRect.pos.x + attackWorldRect.width),
-            )
-          ) {
-            let squaredDistance = Vec2.World.sdist(
-              enemyWorldPos,
-              attackWorldRect->Kaplay.Math.Rect.centerWorld,
-            )
-            let currentGrade =
-              squaredDistance == 0.
-                ? RuleSystem.Grade(1.)
-                : RuleSystem.Grade(rs.state.enemy.squaredPersonalSpace / squaredDistance)
-
-            // replace current grade is higher
-            if centerGrade.contents < currentGrade {
-              centerGrade.contents = currentGrade
-            }
-          } // Check if attack is on the left
-          else if closestCorner.x < enemyStartX {
-            // calculate grade based on the distance between the attack and the enemy
-            let squaredDistance = closestCorner->Vec2.World.sdist(enemyWorldPos)
-
-            let currentGrade =
-              squaredDistance == 0.
-                ? RuleSystem.Grade(1.)
-                : RuleSystem.Grade(rs.state.enemy.squaredPersonalSpace / squaredDistance)
-
-            // replace current grade is higher
-            if leftGrade.contents < currentGrade {
-              leftGrade.contents = currentGrade
-            }
-          } else if closestCorner.x > enemyEndX {
-            // calculate grade based on the distance between the attack and the enemy
-            let squaredDistance = closestCorner->Vec2.World.sdist(enemyWorldPos)
-
-            let currentGrade =
-              squaredDistance == 0.
-                ? RuleSystem.Grade(1.)
-                : RuleSystem.Grade(rs.state.enemy.squaredPersonalSpace / squaredDistance)
-
-            // replace current grade is higher
-            if rightGrade.contents < currentGrade {
-              rightGrade.contents = currentGrade
-            }
-          }
-        })
-
-        if leftGrade.contents > RuleSystem.Grade(0.) {
-          rs->RuleSystem.assertFact(attackOnTheLeftOfEnemy, ~grade=leftGrade.contents)
-        }
-        if rightGrade.contents > RuleSystem.Grade(0.) {
-          rs->RuleSystem.assertFact(attackOnTheRightOfEnemy, ~grade=rightGrade.contents)
-        }
-        if centerGrade.contents > RuleSystem.Grade(0.) {
-          rs->RuleSystem.assertFact(attackInCenterOfEnemy, ~grade=centerGrade.contents)
-        }
-      },
-      ~salience,
-    )
-
-    // Base fact: Space availability
-    rs->RuleSystem.addRuleExecutingAction(
-      _rs => true,
-      rs => {
-        let enemyWorldPos = rs.state.enemy->Pokemon.worldPos
-        let enemyStartX = enemyWorldPos.x - rs.state.enemy.halfSize
-        let enemyEndX = enemyWorldPos.x + rs.state.enemy.halfSize
-        let leftSpace = enemyStartX / k->Context.width
-        let rightSpace = (k->Context.width - enemyEndX) / k->Context.width
-        if leftSpace > 0. {
-          rs->RuleSystem.assertFact(hasSpaceOnTheLeft, ~grade=RuleSystem.Grade(leftSpace))
-        }
-        if rightSpace > 0. {
-          rs->RuleSystem.assertFact(hasSpaceOnTheRight, ~grade=RuleSystem.Grade(rightSpace))
-        }
-      },
-      ~salience,
-    )
-
-    // Base fact: Player position relative to enemy
-    rs->RuleSystem.addRuleExecutingAction(
-      _rs => true,
-      rs => {
-        let enemyWorldPos = rs.state.enemy->Pokemon.worldPos
-        let playerWorldPos = rs.state.player->Pokemon.worldPos
-        let horizontalDistance = playerWorldPos.x - enemyWorldPos.x
-
-        // Use small threshold to prevent oscillation when very close to aligned
-        if Stdlib_Math.abs(horizontalDistance) < 1.0 {
-          // Within 1 pixel - considered aligned, don't assert left/right facts
-          ()
-        } else if horizontalDistance < 0.0 {
-          // Player is to the left
-          rs->RuleSystem.assertFact(isPlayerLeft, ~grade=RuleSystem.Grade(1.0))
-        } else {
-          // Player is to the right
-          rs->RuleSystem.assertFact(isPlayerRight, ~grade=RuleSystem.Grade(1.0))
-        }
-      },
-      ~salience,
-    )
-  }
-}
-
-/** Derived facts module for enemy AI.
-  *
-  * This module computes derived facts based on facts from BaseFacts module.
-  * It aggregates attack information into threat levels (leftThreat, rightThreat)
-  * that combine information about attacks from different directions. These threat
-  * facts are used by DefensiveFacts module to determine defensive behavior.
-  */
-module DerivedFacts = {
-  open RuleSystem
-
-  let salience = Salience(10.0)
-
-  // Threat levels (computed from attack facts)
-  let leftThreat = Fact("leftThreat")
-  let rightThreat = Fact("rightThreat")
-
-  let addRules = (rs: RuleSystem.t<ruleSystemState>) => {
-    // Derived fact: Threat levels (depends on attack facts)
-    rs->RuleSystem.addRuleExecutingAction(
-      rs => {
-        // Compute threats when we have attack information
-        let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(
-          rs,
-          BaseFacts.attackInCenterOfEnemy,
-        )
-        let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(
-          rs,
-          BaseFacts.attackOnTheLeftOfEnemy,
-        )
-        let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(
-          rs,
-          BaseFacts.attackOnTheRightOfEnemy,
-        )
-        centerAttack > 0.0 || leftAttack > 0.0 || rightAttack > 0.0
-      },
-      rs => {
-        let RuleSystem.Grade(centerAttack) = RuleSystem.gradeForFact(
-          rs,
-          BaseFacts.attackInCenterOfEnemy,
-        )
-        let RuleSystem.Grade(leftAttack) = RuleSystem.gradeForFact(
-          rs,
-          BaseFacts.attackOnTheLeftOfEnemy,
-        )
-        let RuleSystem.Grade(rightAttack) = RuleSystem.gradeForFact(
-          rs,
-          BaseFacts.attackOnTheRightOfEnemy,
-        )
-
-        // Left side threat = attacks on left + center (if center exists)
-        let leftThreatGrade = leftAttack + centerAttack
-        // Right side threat = attacks on right + center (if center exists)
-        let rightThreatGrade = rightAttack + centerAttack
-
-        if leftThreatGrade > 0.0 {
-          rs->RuleSystem.assertFact(leftThreat, ~grade=RuleSystem.Grade(leftThreatGrade))
-        }
-        if rightThreatGrade > 0.0 {
-          rs->RuleSystem.assertFact(rightThreat, ~grade=RuleSystem.Grade(rightThreatGrade))
-        }
-      },
-      ~salience,
-    )
-  }
-}
-
-/** Defensive facts module for enemy AI.
-  *
-  * This module computes defensive decisions (dodging, positioning) based on facts
-  * from BaseFacts and DerivedFacts modules. It uses facts about threats, space
-  * availability, and player position to determine defensive movement.
-  */
-module DefensiveFacts = {
-  open RuleSystem
-  let salience = Salience(20.0)
-
-  // Preferred dodge direction
-  let preferredDodgeLeft = Fact("preferredDodgeLeft")
-  let preferredDodgeRight = Fact("preferredDodgeRight")
-
-  let addRules = (rs: RuleSystem.t<ruleSystemState>) => {
-    // Decision fact: Preferred dodge direction based on threats
-    rs->RuleSystem.addRuleExecutingAction(
-      rs => {
-        // Only compute preferred direction when we have threat information
-        let RuleSystem.Grade(leftThreat) = RuleSystem.gradeForFact(rs, DerivedFacts.leftThreat)
-        let RuleSystem.Grade(rightThreat) = RuleSystem.gradeForFact(rs, DerivedFacts.rightThreat)
-        leftThreat > 0.0 || rightThreat > 0.0
-      },
-      rs => {
-        let RuleSystem.Grade(leftThreat) = RuleSystem.gradeForFact(rs, DerivedFacts.leftThreat)
-        let RuleSystem.Grade(rightThreat) = RuleSystem.gradeForFact(rs, DerivedFacts.rightThreat)
-        let RuleSystem.Grade(leftSpace) = RuleSystem.gradeForFact(rs, BaseFacts.hasSpaceOnTheLeft)
-        let RuleSystem.Grade(rightSpace) = RuleSystem.gradeForFact(rs, BaseFacts.hasSpaceOnTheRight)
-
-        if leftThreat > rightThreat {
-          // More threat on left → prefer moving right
-          rs->RuleSystem.assertFact(preferredDodgeRight, ~grade=RuleSystem.Grade(1.0))
-        } else if rightThreat > leftThreat {
-          // More threat on right → prefer moving left
-          rs->RuleSystem.assertFact(preferredDodgeLeft, ~grade=RuleSystem.Grade(1.0))
-        } // Equal threats (only center attack) - pick based on space
-        else if leftSpace > rightSpace {
-          rs->RuleSystem.assertFact(preferredDodgeLeft, ~grade=RuleSystem.Grade(1.0))
-        } else {
-          rs->RuleSystem.assertFact(preferredDodgeRight, ~grade=RuleSystem.Grade(1.0))
-        }
-      },
-      ~salience,
-    )
-
-    // Decision: Dodge when there's a center attack
-    rs->RuleSystem.addRuleExecutingAction(
-      rs => {
-        // Only dodge when there's an attack in the center (or center + sides)
-        // Side attacks alone don't require dodging
-        let RuleSystem.Grade(c) = RuleSystem.gradeForFact(rs, BaseFacts.attackInCenterOfEnemy)
-        c > 0.0
-      },
-      rs => {
-        // Read decision facts (computed at salience 20.0)
-        let RuleSystem.Grade(preferLeft) = RuleSystem.gradeForFact(rs, preferredDodgeLeft)
-        let RuleSystem.Grade(preferRight) = RuleSystem.gradeForFact(rs, preferredDodgeRight)
-        let RuleSystem.Grade(leftSpace) = RuleSystem.gradeForFact(rs, BaseFacts.hasSpaceOnTheLeft)
-        let RuleSystem.Grade(rightSpace) = RuleSystem.gradeForFact(rs, BaseFacts.hasSpaceOnTheRight)
-
-        // Determine preferred direction from facts
-        let preferredDirection = if preferLeft > 0.0 {
-          Left
-        } else if preferRight > 0.0 {
-          Right
-        } // Fallback: pick based on space (shouldn't happen if threats computed correctly)
-        else if leftSpace > rightSpace {
-          Left
-        } else {
-          Right
-        }
-
-        // Check if we have space in the preferred direction
-        let hasSpaceInPreferred = switch preferredDirection {
-        | Left => leftSpace > 0.0
-        | Right => rightSpace > 0.0
-        }
-
-        // Determine final direction considering space availability
-        let finalDirection = if hasSpaceInPreferred {
-          preferredDirection
-        } else {
-          // No space in preferred direction, try the other side
-          switch preferredDirection {
-          | Left => rightSpace > 0.0 ? Right : Left
-          | Right => leftSpace > 0.0 ? Left : Right
-          }
-        }
-
-        // Handle oscillation prevention for equal threats
-        // If threats are equal and we already have a direction, keep it to avoid oscillation
-        let RuleSystem.Grade(leftThreat) = RuleSystem.gradeForFact(rs, DerivedFacts.leftThreat)
-        let RuleSystem.Grade(rightThreat) = RuleSystem.gradeForFact(rs, DerivedFacts.rightThreat)
-        let threatsAreEqual = leftThreat == rightThreat && leftThreat > 0.0
-
-        switch rs.state.horizontalMovement {
-        | None =>
-          // Pick initial direction
-          rs.state.horizontalMovement = Some(finalDirection)
-        | Some(currentDirection) =>
-          if threatsAreEqual {
-            // Keep current direction to avoid oscillation when threats are equal
-            ()
-          } else if currentDirection != finalDirection {
-            // Update direction when threats are different
-            rs.state.horizontalMovement = Some(finalDirection)
-          } else {
-            // Direction unchanged
-            ()
-          }
-        }
-      },
-      ~salience,
-    )
-
-    // Rule: Reset horizontal movement when center attack is gone
-    // We stop dodging once we've successfully dodged the center attack,
-    // even if there are still attacks on the sides
-    rs->RuleSystem.addRuleExecutingAction(
-      rs => {
-        let RuleSystem.Grade(c) = RuleSystem.gradeForFact(rs, BaseFacts.attackInCenterOfEnemy)
-        c == 0.0
-      },
-      rs => {
-        rs.state.horizontalMovement = None
-      },
-      ~salience,
-    )
-
-    // Decision: Position in front of player when there are no attacks
-    rs->RuleSystem.addRuleExecutingAction(
-      rs => {
-        // Only position when there are no player attacks
-        rs.state.playerAttacks->Array.length == 0
-      },
-      rs => {
-        // Read player position facts (computed at salience 0.0)
-        let RuleSystem.Grade(playerLeft) = RuleSystem.gradeForFact(rs, BaseFacts.isPlayerLeft)
-        let RuleSystem.Grade(playerRight) = RuleSystem.gradeForFact(rs, BaseFacts.isPlayerRight)
-        let RuleSystem.Grade(leftSpace) = RuleSystem.gradeForFact(rs, BaseFacts.hasSpaceOnTheLeft)
-        let RuleSystem.Grade(rightSpace) = RuleSystem.gradeForFact(rs, BaseFacts.hasSpaceOnTheRight)
-
-        if playerLeft > 0.0 {
-          // Player is left, move left if we have space
-          rs.state.horizontalMovement = leftSpace > 0.0 ? Some(Left) : None
-        } else if playerRight > 0.0 {
-          // Player is right, move right if we have space
-          rs.state.horizontalMovement = rightSpace > 0.0 ? Some(Right) : None
-        } else {
-          // Neither fact is true - we're aligned (horizontalDistance == 0.0), stop moving
-          rs.state.horizontalMovement = None
-        }
-      },
-      ~salience,
-    )
-  }
-}
-
-/** Attack facts module for enemy AI.
-  *
-  * This module computes attack decisions based on facts from DefensiveFacts module.
-  * It determines when the enemy should attack based on defensive state (whether
-  * the enemy is under threat) and attack readiness.
-  */
 module AttackFacts = {
-  open RuleSystem
-  let salience = Salience(30.0)
-
-  // Attack decision
-  let shouldAttack = Fact("shouldAttack")
-
-  let addRules = (rs: RuleSystem.t<ruleSystemState>) => {
-    // Decision: Attack when not under threat and can attack
-    rs->RuleSystem.addRuleExecutingAction(
-      rs => {
-        // Check if enemy can attack
-        rs.state.enemy.attackStatus ==
-          Pokemon.CanAttack && // Check if not under threat (both preferred dodge facts should be 0.0)
-          // Uses facts from DefensiveFacts module (computed at salience 20.0)
-
-          {
-            let RuleSystem.Grade(preferLeft) = RuleSystem.gradeForFact(
-              rs,
-              DefensiveFacts.preferredDodgeLeft,
-            )
-            let RuleSystem.Grade(preferRight) = RuleSystem.gradeForFact(
-              rs,
-              DefensiveFacts.preferredDodgeRight,
-            )
-            preferLeft == 0.0 && preferRight == 0.0
-          }
-      },
-      rs => {
-        rs->RuleSystem.assertFact(shouldAttack, ~grade=RuleSystem.Grade(1.0))
-      },
-      ~salience,
-    )
-  }
+  let shouldAttack = AIFacts.shouldAttack
 }
 
 /** Creates a rule system for enemy AI behavior.
@@ -441,11 +18,11 @@ module AttackFacts = {
   * to compute facts fresh each frame based on current game state.
   */
 let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): RuleSystem.t<
-  ruleSystemState,
+  RuleSystemState.t,
 > => {
   let rs = RuleSystem.make(k)
   rs.state = {
-    enemy,
+    RuleSystemState.enemy,
     player,
     playerAttacks: [],
     horizontalMovement: None,
@@ -455,7 +32,7 @@ let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): Rule
   BaseFacts.addRules(k, rs)
   DerivedFacts.addRules(rs)
   DefensiveFacts.addRules(rs)
-  AttackFacts.addRules(rs)
+  MoveFacts.addRules(k, rs)
 
   rs
 }
@@ -469,7 +46,7 @@ let getPlayerAttacks = (k: Context.t): array<Attack.Unit.t> => {
   ->Array.filterMap(Attack.Unit.fromGameObj)
 }
 
-let update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
+let update = (k: Context.t, rs: RuleSystem.t<RuleSystemState.t>, ()) => {
   rs->RuleSystem.reset
   rs.state.playerAttacks = getPlayerAttacks(k)
   rs->RuleSystem.execute
@@ -481,15 +58,18 @@ let update = (k: Context.t, rs: RuleSystem.t<ruleSystemState>, ()) => {
   | Some(Right) => Pokemon.moveRight(k, rs.state.enemy)
   }
 
-  // Check if should attack and execute
+  // Check if should attack and select a move to execute
   switch rs->RuleSystem.gradeForFact(AttackFacts.shouldAttack) {
-  | RuleSystem.Grade(g) if g > 0.0 => Ember.cast(k, rs.state.enemy)
+  | RuleSystem.Grade(g) if g > 0.0 =>
+    switch MoveFacts.selectMove(rs) {
+    | None => ()
+    | Some(moveIndex) => Pokemon.tryCastMove(k, rs.state.enemy, moveIndex)
+    }
   | _ => ()
   }
 }
 
-let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Pokemon.t => {
-  let enemy: Pokemon.t = Pokemon.make(k, ~pokemonId, ~level, Opponent)
+let make = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): unit => {
   let rs = makeRuleSystem(k, ~enemy, ~player)
 
   enemy->Pokemon.onUpdate(update(k, rs, ...))
@@ -497,6 +77,4 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, player: Pokemon.t): Poke
   if k.debug.inspect {
     DebugRuleSystem.make(k, rs)
   }
-
-  enemy
 }

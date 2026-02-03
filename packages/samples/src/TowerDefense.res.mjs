@@ -10,14 +10,14 @@ import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Move$Kaplay from "@nojaf/rescript-kaplay/src/Components/Move.res.mjs";
 import * as Rect$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rect.res.mjs";
 import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.mjs";
-import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.js";
+import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.mjs";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
 import * as Circle$Kaplay from "@nojaf/rescript-kaplay/src/Components/Circle.res.mjs";
 import * as Health$Kaplay from "@nojaf/rescript-kaplay/src/Components/Health.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as OffScreen$Kaplay from "@nojaf/rescript-kaplay/src/Components/OffScreen.res.mjs";
-import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
+import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 
 let k = Kaplay({

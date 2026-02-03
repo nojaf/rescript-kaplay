@@ -6,17 +6,17 @@
   "scripts": {
     "res:build": "rescript",
     "res:clean": "rescript clean",
-    "res:dev": "rescript -w",
+    "res:dev": "rescript watch",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "fmt": "rescript format -all",
+    "fmt": "rescript format",
     "test": "vitest run --coverage"
   },
   "dependencies": {
     "kaplay": "catalog:",
     "@nojaf/rescript-kaplay": "workspace:^",
-    "rescript": "catalog:"
+    "@rescript/runtime": "catalog:"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "^4.0.15",
@@ -24,7 +24,9 @@
     "rescript-bun": "^2.1.0",
     "sharp": "^0.34.5",
     "vite": "catalog:",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.15",
+    "@nojaf/vite-plugin-rescript": "catalog:",
+    "rescript": "catalog:"
   },
   "trustedDependencies": [
     "esbuild",

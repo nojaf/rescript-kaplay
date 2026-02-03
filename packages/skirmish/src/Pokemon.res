@@ -6,8 +6,13 @@ type facing = | @as(true) FacingUp | @as(false) FacingDown
 @unboxed
 type mobility = | @as(true) CanMove | @as(false) CannotMove
 
+/** Track if we can attack and which moves are available */
 @unboxed
-type attackStatus = | @as(true) CanAttack | @as(false) Attacking
+type attackStatus =
+  /** Currently executing a move */
+  | CannotAttack
+  /* Array of move indices (0-3) that are available */
+  | CanAttack(array<int>)
 
 type t = {
   mutable direction: Vec2.Unit.t,
@@ -23,6 +28,11 @@ type t = {
       This is used to determine how close a potential attack is to the pokemon's personal space.
    */
   squaredPersonalSpace: float,
+  // Moves
+  moveSlot1: PkmnMove.moveSlot,
+  moveSlot2: PkmnMove.moveSlot,
+  moveSlot3: PkmnMove.moveSlot,
+  moveSlot4: PkmnMove.moveSlot,
 }
 
 include GameObjRaw.Comp({type t = t})
@@ -69,7 +79,110 @@ let moveRight = (k: Context.t, pokemon: t) => {
   pokemon->move(k->Context.vec2World(100., 0.))
 }
 
-let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
+/** Compute which move indices (0-3) are available based on PP and cooldown */
+let getAvailableMoveIndices = (
+  slot1: PkmnMove.moveSlot,
+  slot2: PkmnMove.moveSlot,
+  slot3: PkmnMove.moveSlot,
+  slot4: PkmnMove.moveSlot,
+  currentTime: float,
+): array<int> => {
+  let moves = []
+  if PkmnMove.canCast(slot1, currentTime) {
+    moves->Array.push(0)
+  }
+  if PkmnMove.canCast(slot2, currentTime) {
+    moves->Array.push(1)
+  }
+  if PkmnMove.canCast(slot3, currentTime) {
+    moves->Array.push(2)
+  }
+  if PkmnMove.canCast(slot4, currentTime) {
+    moves->Array.push(3)
+  }
+  moves
+}
+
+/** Recalculate which moves are available and restore attack status.
+    Call this after a move's cooldown finishes. */
+let finishAttack = (k: Kaplay.Context.t, pokemon: t): unit => {
+  let currentTime = k->Kaplay.Context.time
+  let availableMoves = getAvailableMoveIndices(
+    pokemon.moveSlot1,
+    pokemon.moveSlot2,
+    pokemon.moveSlot3,
+    pokemon.moveSlot4,
+    currentTime,
+  )
+  pokemon.attackStatus = CanAttack(availableMoves)
+}
+
+/** Schedule finishAttack to be called after a cooldown duration.
+    Common pattern used by moves after their animation/effect completes. */
+let scheduleFinishAttack = (k: Kaplay.Context.t, pokemon: t, cooldown: float): unit => {
+  k->Kaplay.Context.wait(cooldown, () => {
+    finishAttack(k, pokemon)
+  })
+}
+
+/** Check if the pokemon can attack */
+let canAttack = (pokemon: t): bool => {
+  switch pokemon.attackStatus {
+  | CannotAttack => false
+  | CanAttack(_) => true
+  }
+}
+
+/** Get move slot by index (0-3) */
+let getMoveSlot = (pokemon: t, index: int): option<PkmnMove.moveSlot> => {
+  switch index {
+  | 0 => Some(pokemon.moveSlot1)
+  | 1 => Some(pokemon.moveSlot2)
+  | 2 => Some(pokemon.moveSlot3)
+  | 3 => Some(pokemon.moveSlot4)
+  | _ => None
+  }
+}
+
+external toAbstractPkmn: t => PkmnMove.pkmn = "%identity"
+external fromAbstractPkmn: PkmnMove.pkmn => t = "%identity"
+
+/** Try to cast a move by index (0-3).
+    Handles setting attackStatus to CannotAttack before invoking the move's cast function.
+    Automatically schedules finishAttack after the move's cooldown duration. */
+let tryCastMove = (k: Context.t, pokemon: t, moveIndex: int): unit => {
+  switch pokemon.attackStatus {
+  | CannotAttack => ()
+  | CanAttack(availableMoves) if availableMoves->Array.includes(moveIndex) =>
+    switch getMoveSlot(pokemon, moveIndex) {
+    | None => ()
+    | Some(slot) =>
+      // Decrement PP and record usage time
+      slot.currentPP = slot.currentPP - 1
+      slot.lastUsedAt = k->Context.time
+      pokemon.attackStatus = CannotAttack
+      slot.move.cast(k, pokemon->toAbstractPkmn)
+      // Automatically restore attack status after cooldown
+      scheduleFinishAttack(k, pokemon, slot.move.coolDownDuration)
+    }
+  | CanAttack(_) => ()
+  }
+}
+
+let make = (
+  k: Context.t,
+  ~pokemonId: int,
+  ~level: int,
+  ~move1: PkmnMove.t=ZeroMove.move,
+  ~move2: PkmnMove.t=ZeroMove.move,
+  ~move3: PkmnMove.t=ZeroMove.move,
+  ~move4: PkmnMove.t=ZeroMove.move,
+  team: Team.t,
+): t => {
+  let moveSlot1 = PkmnMove.makeMoveSlot(move1)
+  let moveSlot2 = PkmnMove.makeMoveSlot(move2)
+  let moveSlot3 = PkmnMove.makeMoveSlot(move3)
+  let moveSlot4 = PkmnMove.makeMoveSlot(move4)
   let (spriteName, direction, posY) = if team == Player {
     (backSpriteName(pokemonId), k->Context.vec2Up, k->Context.height * 0.75)
   } else {
@@ -85,6 +198,15 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
     }
   }
 
+  let currentTime = k->Context.time
+  let initialAvailableMoves = getAvailableMoveIndices(
+    moveSlot1,
+    moveSlot2,
+    moveSlot3,
+    moveSlot4,
+    currentTime,
+  )
+
   let gameObj: t = k->Context.add([
     // initialState
     internalState({
@@ -94,12 +216,16 @@ let make = (k: Context.t, ~pokemonId: int, ~level: int, team: Team.t): t => {
       team,
       facing: FacingUp,
       mobility: CanMove,
-      attackStatus: CanAttack,
+      attackStatus: CanAttack(initialAvailableMoves),
       halfSize,
       squaredPersonalSpace,
+      moveSlot1,
+      moveSlot2,
+      moveSlot3,
+      moveSlot4,
     }),
     k->addPos(k->Context.center->Vec2.World.x, posY),
-    k->addSprite(frontSpriteName(pokemonId)),
+    k->addSprite(spriteName),
     team == Player ? Team.playerTagComponent : Team.opponentTagComponent,
     k->addArea,
     k->addBody,

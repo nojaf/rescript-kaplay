@@ -2,44 +2,75 @@
 
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
 import * as GameContext$Skirmish from "./GameContext.res.mjs";
-import * as Thundershock$Skirmish from "./Moves/Thundershock.res.mjs";
 
-function make(pokemonId, level) {
-  let gameObj = Pokemon$Skirmish.make(GameContext$Skirmish.k, pokemonId, level, true);
-  let spaceWasDown = {
-    contents: false
+function make() {
+  return {
+    wasDown: false
+  };
+}
+
+function isNewPress(state, isDown) {
+  let isNew = isDown && !state.wasDown;
+  state.wasDown = isDown;
+  return isNew;
+}
+
+let KeyEdge = {
+  make: make,
+  isNewPress: isNewPress
+};
+
+function make$1(pokemon) {
+  let jKey = {
+    wasDown: false
+  };
+  let kKey = {
+    wasDown: false
+  };
+  let lKey = {
+    wasDown: false
+  };
+  let semicolonKey = {
+    wasDown: false
   };
   GameContext$Skirmish.k.onUpdate(() => {
-    let isSpacePressed = GameContext$Skirmish.k.isKeyDown("space");
-    let isNewSpacePress = isSpacePressed && !spaceWasDown.contents;
-    spaceWasDown.contents = isSpacePressed;
+    let isNewJPress = isNewPress(jKey, GameContext$Skirmish.k.isKeyDown("j"));
+    let isNewKPress = isNewPress(kKey, GameContext$Skirmish.k.isKeyDown("k"));
+    let isNewLPress = isNewPress(lKey, GameContext$Skirmish.k.isKeyDown("l"));
+    let isNewSemicolonPress = isNewPress(semicolonKey, GameContext$Skirmish.k.isKeyDown(";"));
     let isUpPressed = GameContext$Skirmish.k.isKeyDown("up") || GameContext$Skirmish.k.isKeyDown("w");
     let isDownPressed = GameContext$Skirmish.k.isKeyDown("down") || GameContext$Skirmish.k.isKeyDown("s");
     let isLeftPressed = GameContext$Skirmish.k.isKeyDown("left") || GameContext$Skirmish.k.isKeyDown("a");
     let isRightPressed = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
     let movementPressed = isUpPressed || isDownPressed || isLeftPressed || isRightPressed;
-    if (isNewSpacePress && gameObj.attackStatus === true) {
-      Thundershock$Skirmish.cast(gameObj);
+    if (isNewJPress) {
+      Pokemon$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 0);
+    } else if (isNewKPress) {
+      Pokemon$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 1);
+    } else if (isNewLPress) {
+      Pokemon$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 2);
+    } else if (isNewSemicolonPress) {
+      Pokemon$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 3);
     } else if (isUpPressed) {
-      gameObj.direction = GameContext$Skirmish.k.Vec2.UP;
-      gameObj.sprite = Pokemon$Skirmish.backSpriteName(pokemonId);
+      pokemon.direction = GameContext$Skirmish.k.Vec2.UP;
+      pokemon.sprite = Pokemon$Skirmish.backSpriteName(pokemon.pokemonId);
     } else if (isDownPressed) {
-      gameObj.direction = GameContext$Skirmish.k.Vec2.DOWN;
-      gameObj.sprite = Pokemon$Skirmish.frontSpriteName(pokemonId);
+      pokemon.direction = GameContext$Skirmish.k.Vec2.DOWN;
+      pokemon.sprite = Pokemon$Skirmish.frontSpriteName(pokemon.pokemonId);
     } else if (isLeftPressed) {
-      gameObj.direction = GameContext$Skirmish.k.Vec2.LEFT;
+      pokemon.direction = GameContext$Skirmish.k.Vec2.LEFT;
     } else if (isRightPressed) {
-      gameObj.direction = GameContext$Skirmish.k.Vec2.RIGHT;
+      pokemon.direction = GameContext$Skirmish.k.Vec2.RIGHT;
     }
-    if (gameObj.mobility === true && movementPressed) {
-      gameObj.move(gameObj.direction.scale(Pokemon$Skirmish.movementSpeed));
+    if (pokemon.mobility === true && movementPressed) {
+      pokemon.move(pokemon.direction.scale(Pokemon$Skirmish.movementSpeed));
       return;
     }
   });
-  return gameObj;
 }
 
 export {
-  make,
+  KeyEdge,
+  make$1 as make,
 }
 /* Pokemon-Skirmish Not a pure module */

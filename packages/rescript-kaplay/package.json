@@ -1,20 +1,22 @@
 {
   "name": "@nojaf/rescript-kaplay",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "private": false,
   "type": "module",
   "license": "MIT",
   "scripts": {
     "res:build": "rescript",
     "res:clean": "rescript clean",
-    "res:dev": "rescript -w"
+    "res:dev": "rescript watch"
   },
   "peerDependencies": {
     "kaplay": "^4000.0.0-alpha.23",
-    "rescript": ">=12.0.0 <13.0.0"
+    "rescript": ">=12.0.0 <14.0.0",
+    "@rescript/runtime": ">=12.0.0 <14.0.0"
   },
   "devDependencies": {
-    "rescript": "catalog:"
+    "rescript": "catalog:",
+    "@rescript/runtime": "catalog:"
   },
   "files": [
     "src/**/*.res",

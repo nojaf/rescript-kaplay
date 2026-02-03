@@ -16,7 +16,7 @@ import * as Rotate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Rotate.res
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as Outline$Kaplay from "@nojaf/rescript-kaplay/src/Components/Outline.res.mjs";
 import * as OffScreen$Kaplay from "@nojaf/rescript-kaplay/src/Components/OffScreen.res.mjs";
-import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
+import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 
 let k = Kaplay({

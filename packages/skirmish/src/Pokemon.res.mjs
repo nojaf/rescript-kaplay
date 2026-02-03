@@ -12,6 +12,8 @@ import * as Animate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Animate.r
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameOver$Skirmish from "./GameOver.res.mjs";
+import * as PkmnMove$Skirmish from "./PkmnMove.res.mjs";
+import * as ZeroMove$Skirmish from "./Moves/ZeroMove.res.mjs";
 
 GameObjRaw$Kaplay.Comp({});
 
@@ -74,7 +76,80 @@ function moveRight(k, pokemon) {
   pokemon.move(k.vec2(100, 0));
 }
 
-function make(k, pokemonId, level, team) {
+function getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime) {
+  let moves = [];
+  if (PkmnMove$Skirmish.canCast(slot1, currentTime)) {
+    moves.push(0);
+  }
+  if (PkmnMove$Skirmish.canCast(slot2, currentTime)) {
+    moves.push(1);
+  }
+  if (PkmnMove$Skirmish.canCast(slot3, currentTime)) {
+    moves.push(2);
+  }
+  if (PkmnMove$Skirmish.canCast(slot4, currentTime)) {
+    moves.push(3);
+  }
+  return moves;
+}
+
+function finishAttack(k, pokemon) {
+  let currentTime = k.time();
+  let availableMoves = getAvailableMoveIndices(pokemon.moveSlot1, pokemon.moveSlot2, pokemon.moveSlot3, pokemon.moveSlot4, currentTime);
+  pokemon.attackStatus = availableMoves;
+}
+
+function scheduleFinishAttack(k, pokemon, cooldown) {
+  k.wait(cooldown, () => finishAttack(k, pokemon));
+}
+
+function canAttack(pokemon) {
+  let match = pokemon.attackStatus;
+  return match !== "CannotAttack";
+}
+
+function getMoveSlot(pokemon, index) {
+  switch (index) {
+    case 0 :
+      return pokemon.moveSlot1;
+    case 1 :
+      return pokemon.moveSlot2;
+    case 2 :
+      return pokemon.moveSlot3;
+    case 3 :
+      return pokemon.moveSlot4;
+    default:
+      return;
+  }
+}
+
+function tryCastMove(k, pokemon, moveIndex) {
+  let availableMoves = pokemon.attackStatus;
+  if (availableMoves === "CannotAttack") {
+    return;
+  }
+  if (!availableMoves.includes(moveIndex)) {
+    return;
+  }
+  let slot = getMoveSlot(pokemon, moveIndex);
+  if (slot !== undefined) {
+    slot.currentPP = slot.currentPP - 1 | 0;
+    slot.lastUsedAt = k.time();
+    pokemon.attackStatus = "CannotAttack";
+    slot.move.cast(k, pokemon);
+    return scheduleFinishAttack(k, pokemon, slot.move.coolDownDuration);
+  }
+}
+
+function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, team) {
+  let move1 = move1Opt !== undefined ? move1Opt : ZeroMove$Skirmish.move;
+  let move2 = move2Opt !== undefined ? move2Opt : ZeroMove$Skirmish.move;
+  let move3 = move3Opt !== undefined ? move3Opt : ZeroMove$Skirmish.move;
+  let move4 = move4Opt !== undefined ? move4Opt : ZeroMove$Skirmish.move;
+  let moveSlot1 = PkmnMove$Skirmish.makeMoveSlot(move1);
+  let moveSlot2 = PkmnMove$Skirmish.makeMoveSlot(move2);
+  let moveSlot3 = PkmnMove$Skirmish.makeMoveSlot(move3);
+  let moveSlot4 = PkmnMove$Skirmish.makeMoveSlot(move4);
   let match = team === true ? [
       backSpriteName(pokemonId),
       k.Vec2.UP,
@@ -84,7 +159,8 @@ function make(k, pokemonId, level, team) {
       k.Vec2.DOWN,
       k.height() * 0.25
     ];
-  let sprite = k.getSprite(match[0]).data;
+  let spriteName = match[0];
+  let sprite = k.getSprite(spriteName).data;
   let match$1;
   if (sprite === null) {
     match$1 = [
@@ -99,20 +175,26 @@ function make(k, pokemonId, level, team) {
       squaredPersonalSpace
     ];
   }
+  let currentTime = k.time();
+  let initialAvailableMoves = getAvailableMoveIndices(moveSlot1, moveSlot2, moveSlot3, moveSlot4, currentTime);
   let gameObj = k.add([
     {
       direction: match[1],
       facing: true,
       mobility: true,
-      attackStatus: true,
+      attackStatus: initialAvailableMoves,
       level: level,
       pokemonId: pokemonId,
       team: team,
       halfSize: match$1[0],
-      squaredPersonalSpace: match$1[1]
+      squaredPersonalSpace: match$1[1],
+      moveSlot1: moveSlot1,
+      moveSlot2: moveSlot2,
+      moveSlot3: moveSlot3,
+      moveSlot4: moveSlot4
     },
     k.pos(k.center().x, match[2]),
-    k.sprite(frontSpriteName(pokemonId)),
+    k.sprite(spriteName),
     team === true ? Team$Skirmish.playerTagComponent : Team$Skirmish.opponentTagComponent,
     k.area(),
     k.body(),
@@ -171,6 +253,12 @@ export {
   getHealthPercentage,
   moveLeft,
   moveRight,
+  getAvailableMoveIndices,
+  finishAttack,
+  scheduleFinishAttack,
+  canAttack,
+  getMoveSlot,
+  tryCastMove,
   make,
 }
 /*  Not a pure module */

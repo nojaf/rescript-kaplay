@@ -5,7 +5,7 @@ import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs
 import * as Text$Kaplay from "@nojaf/rescript-kaplay/src/Components/Text.res.mjs";
 import * as Color$Kaplay from "@nojaf/rescript-kaplay/src/Components/Color.res.mjs";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
-import * as Stdlib_Option from "@rescript/runtime/lib/es6/Stdlib_Option.js";
+import * as Stdlib_Option from "@rescript/runtime/lib/es6/Stdlib_Option.mjs";
 
 Pos$Kaplay.Comp({});
 

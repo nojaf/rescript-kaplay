@@ -1,35 +1,44 @@
 {
   "name": "rescript-kaplay",
-  "devDependencies": {
-    "@astrojs/starlight": "^0.37.1",
-    "@types/bun": "^1.3.4",
-    "astro": "^5.16.5",
-    "keep-a-changelog": "^2.7.1",
-    "micromark": "^4.0.2",
-    "prettier-plugin-astro": "^0.14.1",
-    "semver": "^7.7.3",
-    "starlight-theme-flexoki": "^0.2.1"
-  },
-  "packageManager": "bun@1.2.15",
+  "packageManager": "bun@1.3.8",
   "private": true,
   "scripts": {
+    "res:build": "rescript build",
     "docs": "bunx --bun astro dev",
     "docs:build": "bun run scripts/build-docs.js",
     "watch": "rescript watch",
     "fmt": "rescript format && prettier --log-level warn --write ./docs package.json astro.config.mjs scripts",
     "set-version": "bun run scripts/set-version.js",
     "dry-release": "bun run scripts/publish.js --dry-run",
-    "release": "bun run scripts/publish.js"
+    "release": "bun run scripts/publish.js",
+    "sync": "uv run ./.claude/skills/rescript/scripts/rescript-db.py sync"
   },
   "workspaces": [
     "packages/*"
   ],
   "catalog": {
-    "rescript": "12.0.1",
-    "vite": "8.0.0-beta.1",
-    "kaplay": "4000.0.0-alpha.23"
+    "rescript": "https://pkg.pr.new/rescript-lang/rescript@9369ddc",
+    "@rescript/runtime": "https://pkg.pr.new/rescript-lang/rescript/@rescript/runtime@9369ddc",
+    "vite": "8.0.0-beta.11",
+    "kaplay": "4000.0.0-alpha.25",
+    "@nojaf/vite-plugin-rescript": "0.6.0"
   },
   "dependencies": {
-    "rescript": "catalog:"
+    "@nojaf/rescript-kaplay": "workspace:*",
+    "@nojaf/skirmish": "workspace:*",
+    "@nojaf/samples": "workspace:*"
+  },
+  "devDependencies": {
+    "@astrojs/starlight": "^0.37.1",
+    "@rescript/runtime": "catalog:",
+    "@types/bun": "^1.3.5",
+    "astro": "^5.16.6",
+    "keep-a-changelog": "^2.7.1",
+    "micromark": "^4.0.2",
+    "oxfmt": "^0.28.0",
+    "prettier-plugin-astro": "^0.14.1",
+    "rescript": "catalog:",
+    "semver": "^7.7.3",
+    "starlight-theme-flexoki": "^0.2.2"
   }
 }

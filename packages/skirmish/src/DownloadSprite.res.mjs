@@ -3,7 +3,7 @@
 import Sharp from "sharp";
 import * as Process from "process";
 import * as Nodepath from "node:path";
-import * as Primitive_exceptions from "@rescript/runtime/lib/es6/Primitive_exceptions.js";
+import * as Primitive_exceptions from "@rescript/runtime/lib/es6/Primitive_exceptions.mjs";
 
 function decodePokemonSprite(json) {
   if (typeof json !== "object" || json === null || Array.isArray(json)) {
