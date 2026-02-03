@@ -52,7 +52,7 @@ let cellCooldownBg = "#94a3b8";
 
 let playerHeight = 3 * 2 + cellHeight * 2;
 
-let Layout = {
+let PlayerLayout = {
   moveGridPaddingX: 3,
   moveGridPaddingY: 3,
   moveGridGap: 3,
@@ -76,6 +76,7 @@ let Layout = {
   sectionSpacing: 4,
   nameHpPaddingX: 5,
   separatorWidth: 2,
+  namePadding: 4,
   playerHeight: playerHeight
 };
 
@@ -242,17 +243,22 @@ function draw() {
       width: 2,
       color: GameContext$Skirmish.k.BLACK
     });
-    let totalContentHeight = 12 + 10 + 8 + 4 * 2;
+    let nameText = healthbar.name.toUpperCase();
+    let availableWidth = nameHpWidth - 5 * 2 - 4;
+    let nameLength = nameText.length;
+    let fittingFontSize = availableWidth / (nameLength * 1.0);
+    let nameFontSize = Math.min(12, Math.max(8, fittingFontSize));
+    let totalContentHeight = nameFontSize + 10 + 8 + 4 * 2;
     let contentStartY = (playerHeight - totalContentHeight) / 2;
-    let nameY = contentStartY + 12 / 2;
-    let levelY = nameY + 12 / 2 + 4 + 10 / 2;
+    let nameY = contentStartY + nameFontSize / 2;
+    let levelY = nameY + nameFontSize / 2 + 4 + 10 / 2;
     let hpY = levelY + 10 / 2 + 4;
     GameContext$Skirmish.k.drawText({
       pos: GameContext$Skirmish.k.vec2(nameHpCenterX, nameY),
       color: GameContext$Skirmish.k.BLACK,
-      text: healthbar.name.toUpperCase(),
+      text: nameText,
       font: Primitive_option.some(PkmnFont$Skirmish.font),
-      size: 12,
+      size: nameFontSize,
       letterSpacing: 0.5,
       anchor: "center"
     });
@@ -403,7 +409,7 @@ export {
   middleLowerLimit,
   getHealthColor,
   setHealth,
-  Layout,
+  PlayerLayout,
   OpponentLayout,
   keyLabels,
   drawMove,

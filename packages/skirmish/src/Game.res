@@ -9,12 +9,13 @@ let sceneLoaded = () => {
     ~level=12,
     ~move1=Thundershock.move,
     ~move2=QuickAttack.move,
-    ~facing=FacingUp,
+    ~facing=FacingDown,
   )
-  let charmander = Pokemon.make(k, ~pokemonId=4, ~level=5, ~move1=Ember.move, ~facing=FacingDown)
-  Player.make(pikachu)
+  let charmander = Pokemon.make(k, ~pokemonId=4, ~level=5, ~move1=Ember.move, ~facing=FacingUp)
 
-  EnemyAI.make(k, ~enemy=charmander, ~player=pikachu)
+  Player.make(charmander)
+  EnemyAI.make(k, ~enemy=pikachu, ~player=charmander)
+
   let _pikachuHealthbar = Healthbar.make(pikachu)
   let _charmanderHealthbar = Healthbar.make(charmander)
 }

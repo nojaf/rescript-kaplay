@@ -23,7 +23,7 @@ let tag = "wall";
 
 let wallColor = GameContext$Skirmish.k.Color.fromHex("#27272a");
 
-let worldRect = Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, GameContext$Skirmish.k.vec2(0, Healthbar$Skirmish.OpponentLayout.height), GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height() - Healthbar$Skirmish.OpponentLayout.height - Healthbar$Skirmish.Layout.playerHeight);
+let worldRect = Math$Kaplay.Rect.makeWorld(GameContext$Skirmish.k, GameContext$Skirmish.k.vec2(0, Healthbar$Skirmish.OpponentLayout.height), GameContext$Skirmish.k.width(), GameContext$Skirmish.k.height() - Healthbar$Skirmish.OpponentLayout.height - Healthbar$Skirmish.PlayerLayout.playerHeight);
 
 function make(pos, width, height) {
   GameContext$Skirmish.k.add([

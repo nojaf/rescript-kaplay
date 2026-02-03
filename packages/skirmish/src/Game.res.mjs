@@ -13,10 +13,10 @@ import * as Thundershock$Skirmish from "./Moves/Thundershock.res.mjs";
 
 function sceneLoaded() {
   Wall$Skirmish.makeAll();
-  let pikachu = Pokemon$Skirmish.make(GameContext$Skirmish.k, 25, 12, Thundershock$Skirmish.move, QuickAttack$Skirmish.move, undefined, undefined, true);
-  let charmander = Pokemon$Skirmish.make(GameContext$Skirmish.k, 4, 5, Ember$Skirmish.move, undefined, undefined, undefined, false);
-  Player$Skirmish.make(pikachu);
-  EnemyAI$Skirmish.make(GameContext$Skirmish.k, charmander, pikachu);
+  let pikachu = Pokemon$Skirmish.make(GameContext$Skirmish.k, 25, 12, Thundershock$Skirmish.move, QuickAttack$Skirmish.move, undefined, undefined, false);
+  let charmander = Pokemon$Skirmish.make(GameContext$Skirmish.k, 4, 5, Ember$Skirmish.move, undefined, undefined, undefined, true);
+  Player$Skirmish.make(charmander);
+  EnemyAI$Skirmish.make(GameContext$Skirmish.k, pikachu, charmander);
   Healthbar$Skirmish.make(pikachu);
   Healthbar$Skirmish.make(charmander);
 }

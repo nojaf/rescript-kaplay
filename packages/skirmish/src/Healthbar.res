@@ -69,7 +69,7 @@ let setHealth = (healthbar: t, targetPercent: float) => {
 }
 
 // Layout constants for player healthbar
-module Layout = {
+module PlayerLayout = {
   // Padding around the moves grid
   let moveGridPaddingX = 3.
   let moveGridPaddingY = 3.
@@ -102,6 +102,9 @@ module Layout = {
   let sectionSpacing = 4.
   let nameHpPaddingX = 5.
   let separatorWidth = 2.
+
+  // Name section padding
+  let namePadding = 4. // 2px padding on each side
 
   // Total height = padding top + 2 rows + padding bottom
   let playerHeight = moveGridPaddingY * 2. + cellHeight * numRows
@@ -146,9 +149,10 @@ let drawMove = (
   let centerY = y + cellHeight / 2.
 
   // Calculate vertical offsets based on font sizes
-  let totalContentHeight = Layout.ppFontSize + Layout.moveNameFontSize + Layout.moveLineSpacing
-  let ppY = centerY - totalContentHeight / 2. + Layout.ppFontSize / 2.
-  let nameY = centerY + totalContentHeight / 2. - Layout.moveNameFontSize / 2.
+  let totalContentHeight =
+    PlayerLayout.ppFontSize + PlayerLayout.moveNameFontSize + PlayerLayout.moveLineSpacing
+  let ppY = centerY - totalContentHeight / 2. + PlayerLayout.ppFontSize / 2.
+  let nameY = centerY + totalContentHeight / 2. - PlayerLayout.moveNameFontSize / 2.
 
   if slot.move.id == -1 {
     // Empty slot: (key) ---
@@ -156,7 +160,7 @@ let drawMove = (
       pos: k->Context.vec2Local(centerX, centerY),
       anchor: Context.makeDrawAnchorFromString("center"),
       text: "(" ++ keyLabel ++ ") ---",
-      size: Layout.emptySlotFontSize,
+      size: PlayerLayout.emptySlotFontSize,
       color: k->Color.fromHex("#9ca3af"),
       font: PkmnFont.font,
     })
@@ -167,20 +171,20 @@ let drawMove = (
 
     // Hotkey near left edge
     k->Context.drawText({
-      pos: k->Context.vec2Local(x +. Layout.cellPaddingX, ppY),
+      pos: k->Context.vec2Local(x +. PlayerLayout.cellPaddingX, ppY),
       anchor: Context.makeDrawAnchorFromString("left"),
       text: hotkeyText,
-      size: Layout.ppFontSize,
+      size: PlayerLayout.ppFontSize,
       color: k->Color.black,
       font: PkmnFont.font,
     })
 
     // PP fraction near right edge
     k->Context.drawText({
-      pos: k->Context.vec2Local(x +. cellWidth -. Layout.cellPaddingX, ppY),
+      pos: k->Context.vec2Local(x +. cellWidth -. PlayerLayout.cellPaddingX, ppY),
       anchor: Context.makeDrawAnchorFromString("right"),
       text: ppFractionText,
-      size: Layout.ppFontSize,
+      size: PlayerLayout.ppFontSize,
       color: slot.currentPP > 0 ? k->Color.black : bad,
       font: PkmnFont.font,
     })
@@ -190,7 +194,7 @@ let drawMove = (
       pos: k->Context.vec2Local(centerX, nameY),
       anchor: Context.makeDrawAnchorFromString("center"),
       text: slot.move.name,
-      size: Layout.moveNameFontSize,
+      size: PlayerLayout.moveNameFontSize,
       color: k->Color.black,
       font: PkmnFont.font,
     })
@@ -202,22 +206,25 @@ let drawMoves = (healthbar: t, movesWidth: float) => {
   let moveSlots = [pokemon.moveSlot1, pokemon.moveSlot2, pokemon.moveSlot3, pokemon.moveSlot4]
 
   // 2x2 grid layout with gap between cells
-  let cellWidth = (movesWidth -. Layout.moveGridPaddingX *. 2. -. Layout.moveGridGap) /. 2.
-  let cellHeight = (Layout.cellHeight *. 2. -. Layout.moveGridGap) /. 2.
+  let cellWidth =
+    (movesWidth -. PlayerLayout.moveGridPaddingX *. 2. -. PlayerLayout.moveGridGap) /. 2.
+  let cellHeight = (PlayerLayout.cellHeight *. 2. -. PlayerLayout.moveGridGap) /. 2.
 
   let debugColors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00"]
 
   // Alternating background colors for move cells
-  let bgLight = k->Color.fromHex(Layout.cellBgLight)
-  let bgDark = k->Color.fromHex(Layout.cellBgDark)
-  let cooldownBg = k->Color.fromHex(Layout.cellCooldownBg)
+  let bgLight = k->Color.fromHex(PlayerLayout.cellBgLight)
+  let bgDark = k->Color.fromHex(PlayerLayout.cellBgDark)
+  let cooldownBg = k->Color.fromHex(PlayerLayout.cellCooldownBg)
   let currentTime = k->Context.time
 
   moveSlots->Array.forEachWithIndex((slot, index) => {
     let col = mod(index, 2)
     let row = index / 2
-    let x = Layout.moveGridPaddingX +. Int.toFloat(col) *. (cellWidth +. Layout.moveGridGap)
-    let y = Layout.moveGridPaddingY +. Int.toFloat(row) *. (cellHeight +. Layout.moveGridGap)
+    let x =
+      PlayerLayout.moveGridPaddingX +. Int.toFloat(col) *. (cellWidth +. PlayerLayout.moveGridGap)
+    let y =
+      PlayerLayout.moveGridPaddingY +. Int.toFloat(row) *. (cellHeight +. PlayerLayout.moveGridGap)
 
     // Cell background - alternating colors (0 and 2 are darker)
     let bgColor = index == 0 || index == 3 ? bgDark : bgLight
@@ -268,9 +275,9 @@ let draw =
     if healthbar.team == Team.Player {
       // Player layout: moves on left, name/HP on right
       let totalWidth = k->Context.width
-      let totalHeight = Layout.playerHeight
-      let movesWidth = totalWidth * Layout.movesSectionRatio
-      let nameHpWidth = totalWidth * Layout.nameHpSectionRatio
+      let totalHeight = PlayerLayout.playerHeight
+      let movesWidth = totalWidth * PlayerLayout.movesSectionRatio
+      let nameHpWidth = totalWidth * PlayerLayout.nameHpSectionRatio
       let nameHpX = movesWidth
       let nameHpCenterX = nameHpX + nameHpWidth / 2.
 
@@ -299,26 +306,41 @@ let draw =
         p1: k->Context.vec2Local(nameHpX, 0.),
         p2: k->Context.vec2Local(nameHpX, totalHeight),
         color: k->Color.black,
-        width: Layout.separatorWidth,
+        width: PlayerLayout.separatorWidth,
       })
+
+      // Calculate dynamic font size for name based on available width
+      let nameText = healthbar.name->String.toUpperCase
+      let availableWidth = nameHpWidth - PlayerLayout.nameHpPaddingX * 2. - PlayerLayout.namePadding
+      // Approximate character width as 1.0 * font size for this pixel font
+      let charWidthRatio = 1.0
+      let nameLength = nameText->String.length->Int.toFloat
+      let maxFontSize = PlayerLayout.nameFontSize
+      let minFontSize = 8.
+      // Calculate font size that would fit: availableWidth = nameLength * charWidthRatio * fontSize
+      let fittingFontSize = availableWidth / (nameLength * charWidthRatio)
+      let nameFontSize = Stdlib_Math.min(maxFontSize, Stdlib_Math.max(minFontSize, fittingFontSize))
 
       // Calculate vertical positions dynamically based on content
       let totalContentHeight =
-        Layout.nameFontSize + Layout.levelFontSize + Layout.hpBarHeight + Layout.sectionSpacing * 2.
+        nameFontSize +
+        PlayerLayout.levelFontSize +
+        PlayerLayout.hpBarHeight +
+        PlayerLayout.sectionSpacing * 2.
       let contentStartY = (totalHeight - totalContentHeight) / 2.
 
-      let nameY = contentStartY + Layout.nameFontSize / 2.
+      let nameY = contentStartY + nameFontSize / 2.
       let levelY =
-        nameY + Layout.nameFontSize / 2. + Layout.sectionSpacing + Layout.levelFontSize / 2.
-      let hpY = levelY + Layout.levelFontSize / 2. + Layout.sectionSpacing
+        nameY + nameFontSize / 2. + PlayerLayout.sectionSpacing + PlayerLayout.levelFontSize / 2.
+      let hpY = levelY + PlayerLayout.levelFontSize / 2. + PlayerLayout.sectionSpacing
 
       // Pokemon name (centered)
       k->Context.drawText({
         pos: k->Context.vec2Local(nameHpCenterX, nameY),
         anchor: Context.makeDrawAnchorFromString("center"),
-        text: healthbar.name->String.toUpperCase,
+        text: nameText,
         letterSpacing: 0.5,
-        size: Layout.nameFontSize,
+        size: nameFontSize,
         color: k->Color.black,
         font: PkmnFont.font,
       })
@@ -328,29 +350,29 @@ let draw =
         pos: k->Context.vec2Local(nameHpCenterX, levelY),
         anchor: Context.makeDrawAnchorFromString("center"),
         text: ":L" ++ Int.toString(healthbar.level),
-        size: Layout.levelFontSize,
+        size: PlayerLayout.levelFontSize,
         color: k->Color.black,
         font: PkmnFont.font,
       })
 
       // HP bar (full width of section with padding)
-      let hpBarWidth = nameHpWidth - Layout.nameHpPaddingX * 2. - Layout.hpLabelWidth
-      let hpStartX = nameHpX + Layout.nameHpPaddingX
+      let hpBarWidth = nameHpWidth - PlayerLayout.nameHpPaddingX * 2. - PlayerLayout.hpLabelWidth
+      let hpStartX = nameHpX + PlayerLayout.nameHpPaddingX
 
       // HP: label
       k->Context.drawText({
         pos: k->Context.vec2Local(hpStartX, hpY),
         text: "HP:",
-        size: Layout.hpLabelFontSize,
+        size: PlayerLayout.hpLabelFontSize,
         color: k->Color.black,
         font: PkmnFont.font,
       })
 
       // Healthbar background
       k->Context.drawRect({
-        pos: k->Context.vec2Local(hpStartX + Layout.hpLabelWidth, hpY + 2.),
+        pos: k->Context.vec2Local(hpStartX + PlayerLayout.hpLabelWidth, hpY + 2.),
         width: hpBarWidth,
-        height: Layout.hpBarHeight,
+        height: PlayerLayout.hpBarHeight,
         radius: [3., 3., 3., 3.],
         color: k->Color.fromHex("#e5e7eb"),
         outline: {
@@ -364,9 +386,9 @@ let draw =
       let healthWidth = healthbar.healthPercentage / 100. * hpBarWidth
 
       k->Context.drawRect({
-        pos: k->Context.vec2Local(hpStartX + Layout.hpLabelWidth, hpY + 2.),
+        pos: k->Context.vec2Local(hpStartX + PlayerLayout.hpLabelWidth, hpY + 2.),
         width: healthWidth,
-        height: Layout.hpBarHeight,
+        height: PlayerLayout.hpBarHeight,
         radius: [3., 0., 0., 3.],
         color: healthColor,
       })
@@ -451,7 +473,7 @@ let make = (pokemon: Pokemon.t) => {
     CustomComponent.make({id: "healthbar", draw}),
     pokemon->Pokemon.getTeam == Team.Opponent
       ? addPos(k, 10., 10.)
-      : addPos(k, 0., k->Context.height - Layout.playerHeight),
+      : addPos(k, 0., k->Context.height - PlayerLayout.playerHeight),
   ])
 
   pokemon
