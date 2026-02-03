@@ -14,7 +14,7 @@ rescript.json:
 
 ```json
 {
-  "bs-dependencies": [
+  "dependencies": [
     "@nojaf/rescript-kaplay",
   ]
 }
