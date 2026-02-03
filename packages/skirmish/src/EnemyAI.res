@@ -70,6 +70,8 @@ let update = (k: Context.t, rs: RuleSystem.t<RuleSystemState.t>, ()) => {
 }
 
 let make = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): unit => {
+  Pokemon.assignOpponent(enemy)
+
   let rs = makeRuleSystem(k, ~enemy, ~player)
 
   enemy->Pokemon.onUpdate(update(k, rs, ...))

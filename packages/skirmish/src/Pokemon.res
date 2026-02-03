@@ -21,7 +21,7 @@ type t = {
   mutable attackStatus: attackStatus,
   level: int,
   pokemonId: int,
-  team: Team.t,
+  mutable team: option<Team.t>,
   /** Half size of the pokemon in world units */
   halfSize: float,
   /** Squared distance between the pokemon and what we consider its personal space
@@ -177,13 +177,13 @@ let make = (
   ~move2: PkmnMove.t=ZeroMove.move,
   ~move3: PkmnMove.t=ZeroMove.move,
   ~move4: PkmnMove.t=ZeroMove.move,
-  team: Team.t,
+  ~facing: facing,
 ): t => {
   let moveSlot1 = PkmnMove.makeMoveSlot(move1)
   let moveSlot2 = PkmnMove.makeMoveSlot(move2)
   let moveSlot3 = PkmnMove.makeMoveSlot(move3)
   let moveSlot4 = PkmnMove.makeMoveSlot(move4)
-  let (spriteName, direction, posY) = if team == Player {
+  let (spriteName, direction, posY) = if facing == FacingUp {
     (backSpriteName(pokemonId), k->Context.vec2Up, k->Context.height * 0.75)
   } else {
     (frontSpriteName(pokemonId), k->Context.vec2Down, k->Context.height * 0.25)
@@ -213,8 +213,8 @@ let make = (
       direction,
       level,
       pokemonId,
-      team,
-      facing: FacingUp,
+      team: None,
+      facing,
       mobility: CanMove,
       attackStatus: CanAttack(initialAvailableMoves),
       halfSize,
@@ -226,7 +226,6 @@ let make = (
     }),
     k->addPos(k->Context.center->Vec2.World.x, posY),
     k->addSprite(spriteName),
-    team == Player ? Team.playerTagComponent : Team.opponentTagComponent,
     k->addArea,
     k->addBody,
     k->addHealth(20, ~maxHP=20),
@@ -267,8 +266,29 @@ let make = (
   })
 
   gameObj->onDeath(() => {
-    k->Context.go(GameOver.sceneName, ~data=gameObj.team)
+    // Team is guaranteed to be assigned before death can occur
+    k->Context.go(GameOver.sceneName, ~data=gameObj.team->Option.getOrThrow)
   })
 
   gameObj
+}
+
+/** Assign the player team to the pokemon and add the corresponding tag component. */
+let assignPlayer = (pokemon: t): unit => {
+  pokemon.team = Some(Team.Player)
+  pokemon->addTag(Team.player)
+}
+
+/** Assign the opponent team to the pokemon and add the corresponding tag component. */
+let assignOpponent = (pokemon: t): unit => {
+  pokemon.team = Some(Team.Opponent)
+  pokemon->addTag(Team.opponent)
+}
+
+/** Get the team, panicking if not assigned. Only call after assignTeam. */
+let getTeam = (pokemon: t): Team.t => {
+  switch pokemon.team {
+  | Some(team) => team
+  | None => JsError.throwWithMessage("Pokemon team not assigned")
+  }
 }

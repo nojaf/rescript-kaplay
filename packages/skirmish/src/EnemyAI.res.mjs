@@ -65,6 +65,7 @@ function update(k, rs, param) {
 }
 
 function make(k, enemy, player) {
+  Pokemon$Skirmish.assignOpponent(enemy);
   let rs = makeRuleSystem(k, enemy, player);
   enemy.onUpdate(extra => update(k, rs, extra));
   if (k.debug.inspect) {

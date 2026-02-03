@@ -49,7 +49,7 @@ function cast(k, pokemon) {
       k.z(-1),
       k.area(),
       pokemon.direction.y < 0 ? k.anchor("bot") : k.anchor("top"),
-      Team$Skirmish.getTagComponent(pokemon.team)
+      Team$Skirmish.getTagComponent(Pokemon$Skirmish.getTeam(pokemon))
     ],
     addAttackWithTag(function () {
       let flame = this ;

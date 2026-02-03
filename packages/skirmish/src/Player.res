@@ -15,6 +15,8 @@ module KeyEdge = {
 }
 
 let make = (pokemon: Pokemon.t): unit => {
+  Pokemon.assignPlayer(pokemon)
+
   let jKey = KeyEdge.make()
   let kKey = KeyEdge.make()
   let lKey = KeyEdge.make()

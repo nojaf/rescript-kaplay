@@ -33,7 +33,7 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
       addZ(k, -1),
       addArea(k),
       pokemon.direction.y < 0. ? addAnchorBottom(k) : addAnchorTop(k),
-      Team.getTagComponent(pokemon.team),
+      Team.getTagComponent(pokemon->Pokemon.getTeam),
       ...addAttackWithTag(@this (flame: t) => {
         Kaplay.Math.Rect.makeWorld(k, flame->worldPos, flame->getWidth, flame->getHeight)
       }),

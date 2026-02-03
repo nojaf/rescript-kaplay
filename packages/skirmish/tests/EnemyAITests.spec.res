@@ -63,13 +63,21 @@ let withKaplayContext = (
           | "P" => {
               let x = x * tileSize + halfTile
               let y = y * tileSize + halfTile
-              let player = Pokemon.make(k, ~pokemonId=25, ~level=12, Player)
+              let player = Pokemon.make(k, ~pokemonId=25, ~level=12, ~facing=FacingUp)
+              Pokemon.assignPlayer(player)
               player->Pokemon.setPos(k->Context.vec2Local(x, y))
             }
           | "E" => {
               let x = x * tileSize + halfTile
               let y = y * tileSize + halfTile
-              let enemy = Pokemon.make(k, ~pokemonId=4, ~level=5, ~move1=enemyMove1, Opponent)
+              let enemy = Pokemon.make(
+                k,
+                ~pokemonId=4,
+                ~level=5,
+                ~move1=enemyMove1,
+                ~facing=FacingDown,
+              )
+              Pokemon.assignOpponent(enemy)
               enemy->Pokemon.setPos(k->Context.vec2Local(x, y))
             }
           | "A" => {

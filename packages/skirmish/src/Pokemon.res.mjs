@@ -7,9 +7,11 @@ import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res
 import * as Health$Kaplay from "@nojaf/rescript-kaplay/src/Components/Health.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
+import * as Stdlib_Option from "@rescript/runtime/lib/es6/Stdlib_Option.mjs";
 import * as Team$Skirmish from "./Team.res.mjs";
 import * as Animate$Kaplay from "@nojaf/rescript-kaplay/src/Components/Animate.res.mjs";
 import * as Opacity$Kaplay from "@nojaf/rescript-kaplay/src/Components/Opacity.res.mjs";
+import * as Stdlib_JsError from "@rescript/runtime/lib/es6/Stdlib_JsError.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameOver$Skirmish from "./GameOver.res.mjs";
 import * as PkmnMove$Skirmish from "./PkmnMove.res.mjs";
@@ -141,7 +143,7 @@ function tryCastMove(k, pokemon, moveIndex) {
   }
 }
 
-function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, team) {
+function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, facing) {
   let move1 = move1Opt !== undefined ? move1Opt : ZeroMove$Skirmish.move;
   let move2 = move2Opt !== undefined ? move2Opt : ZeroMove$Skirmish.move;
   let move3 = move3Opt !== undefined ? move3Opt : ZeroMove$Skirmish.move;
@@ -150,7 +152,7 @@ function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, team)
   let moveSlot2 = PkmnMove$Skirmish.makeMoveSlot(move2);
   let moveSlot3 = PkmnMove$Skirmish.makeMoveSlot(move3);
   let moveSlot4 = PkmnMove$Skirmish.makeMoveSlot(move4);
-  let match = team === true ? [
+  let match = facing === true ? [
       backSpriteName(pokemonId),
       k.Vec2.UP,
       k.height() * 0.75
@@ -180,12 +182,12 @@ function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, team)
   let gameObj = k.add([
     {
       direction: match[1],
-      facing: true,
+      facing: facing,
       mobility: true,
       attackStatus: initialAvailableMoves,
       level: level,
       pokemonId: pokemonId,
-      team: team,
+      team: undefined,
       halfSize: match$1[0],
       squaredPersonalSpace: match$1[1],
       moveSlot1: moveSlot1,
@@ -195,7 +197,6 @@ function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, team)
     },
     k.pos(k.center().x, match[2]),
     k.sprite(spriteName),
-    team === true ? Team$Skirmish.playerTagComponent : Team$Skirmish.opponentTagComponent,
     k.area(),
     k.body(),
     k.health(20, 20),
@@ -235,9 +236,28 @@ function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, team)
     });
   });
   gameObj.onDeath(() => {
-    k.go(GameOver$Skirmish.sceneName, gameObj.team);
+    k.go(GameOver$Skirmish.sceneName, Stdlib_Option.getOrThrow(gameObj.team, undefined));
   });
   return gameObj;
+}
+
+function assignPlayer(pokemon) {
+  pokemon.team = true;
+  pokemon.tag(Team$Skirmish.player);
+}
+
+function assignOpponent(pokemon) {
+  pokemon.team = false;
+  pokemon.tag(Team$Skirmish.opponent);
+}
+
+function getTeam(pokemon) {
+  let team = pokemon.team;
+  if (team !== undefined) {
+    return team;
+  } else {
+    return Stdlib_JsError.throwWithMessage("Pokemon team not assigned");
+  }
 }
 
 let movementSpeed = 200;
@@ -260,5 +280,8 @@ export {
   getMoveSlot,
   tryCastMove,
   make,
+  assignPlayer,
+  assignOpponent,
+  getTeam,
 }
 /*  Not a pure module */

@@ -375,14 +375,14 @@ function make(pokemon) {
       healthPercentage: Pokemon$Skirmish.getHealthPercentage(pokemon),
       name: Stdlib_Option.getOr(MetaData$Skirmish.names.get(pokemon.pokemonId), "???"),
       level: pokemon.level,
-      team: pokemon.team,
+      team: Pokemon$Skirmish.getTeam(pokemon),
       pokemon: pokemon
     },
     {
       id: "healthbar",
       draw: draw
     },
-    pokemon.team === false ? GameContext$Skirmish.k.pos(10, 10) : GameContext$Skirmish.k.pos(0, GameContext$Skirmish.k.height() - playerHeight)
+    Pokemon$Skirmish.getTeam(pokemon) === false ? GameContext$Skirmish.k.pos(10, 10) : GameContext$Skirmish.k.pos(0, GameContext$Skirmish.k.height() - playerHeight)
   ]);
   pokemon.onHurt(_deltaHP => {
     let newHealthPercent = Pokemon$Skirmish.getHealthPercentage(pokemon);

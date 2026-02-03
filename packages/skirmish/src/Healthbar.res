@@ -445,11 +445,11 @@ let make = (pokemon: Pokemon.t) => {
       healthPercentage: pokemon->Pokemon.getHealthPercentage,
       name: MetaData.names->Map.get(pokemon.pokemonId)->Option.getOr("???"),
       level: pokemon.level,
-      team: pokemon.team,
+      team: pokemon->Pokemon.getTeam,
       pokemon,
     }),
     CustomComponent.make({id: "healthbar", draw}),
-    pokemon.team == Team.Opponent
+    pokemon->Pokemon.getTeam == Team.Opponent
       ? addPos(k, 10., 10.)
       : addPos(k, 0., k->Context.height - Layout.playerHeight),
   ])

@@ -176,7 +176,7 @@ let cast = (pokemon: Pokemon.t) => {
     [
       k->addPos(0., 0.),
       k->addZ(-1),
-      Team.getTagComponent(pokemon.team),
+      Team.getTagComponent(pokemon->Pokemon.getTeam),
       CustomComponent.make({
         id: "thundershock",
         draw,

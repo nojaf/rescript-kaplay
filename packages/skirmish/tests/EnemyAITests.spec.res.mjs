@@ -58,12 +58,14 @@ function withKaplayContext(playingField, enemyMove1Opt, testFn) {
               let x$2 = x * 32 + halfTile;
               let y$2 = y * 32 + halfTile;
               let enemy = Pokemon$Skirmish.make(k, 4, 5, enemyMove1, undefined, undefined, undefined, false);
+              Pokemon$Skirmish.assignOpponent(enemy);
               enemy.pos = k.vec2(x$2, y$2);
               break;
             case "P" :
               let x$3 = x * 32 + halfTile;
               let y$3 = y * 32 + halfTile;
               let player = Pokemon$Skirmish.make(k, 25, 12, undefined, undefined, undefined, undefined, true);
+              Pokemon$Skirmish.assignPlayer(player);
               player.pos = k.vec2(x$3, y$3);
               break;
             default:

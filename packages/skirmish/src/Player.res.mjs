@@ -21,6 +21,7 @@ let KeyEdge = {
 };
 
 function make$1(pokemon) {
+  Pokemon$Skirmish.assignPlayer(pokemon);
   let jKey = {
     wasDown: false
   };
