@@ -31,13 +31,14 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
     collisionCtrl.contents->KEventController.cancel
     tweenCtrl.contents->TweenController.cancel
     pokemon.mobility = CanMove
-    pokemon->Pokemon.unuse("shader")
+    pokemon->Pokemon.unuse(Shader.id)
+    pokemon->Pokemon.unuse(Attack.id)
+    pokemon->Pokemon.untag(Attack.tag)
   }
 
   collisionCtrl :=
     pokemon->Pokemon.onCollideWithController(Team.opponent, (other: Pokemon.t, _) => {
       if other->Pokemon.is(Pokemon.tag) {
-        Console.log("Collided with opponent")
         other->Pokemon.setHp(other->Pokemon.getHp - 3)
 
         // Calculate bounce direction (from other to pokemon)
@@ -72,7 +73,12 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
     Attack.Unit.addAttack(@this _ => {
       let pokemonWorldPos =
         pokemon->Pokemon.worldPos->Vec2.World.addWithXY(-pokemon.halfSize, -pokemon.halfSize)
-      let rect = Kaplay.Math.Rect.makeWorld(k, pokemonWorldPos, pokemon->Pokemon.getWidth, 100.)
+      let rect = Kaplay.Math.Rect.makeWorld(
+        k,
+        pokemonWorldPos,
+        pokemon->Pokemon.getWidth,
+        pokemon->Pokemon.getHeight,
+      )
       rect
     }),
   )

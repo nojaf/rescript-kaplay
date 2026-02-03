@@ -505,6 +505,7 @@ def find_monorepo_root(package_dir: str) -> str | None:
             if pkg_name in deps:
                 return d
         except (OSError, json.JSONDecodeError):
+            # Config file missing or invalid; continue searching parent directories
             pass
         parent_d = os.path.dirname(d)
         if parent_d == d:
