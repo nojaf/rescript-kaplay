@@ -68,8 +68,6 @@ function cast(k, pokemon) {
   tweenCtrl.contents.onEnd(endAttack);
 }
 
-let move_cast = cast;
-
 function move_addRulesForAI(_k, _rs, _slot, _facts) {
   
 }
@@ -80,7 +78,7 @@ let move = {
   maxPP: 30,
   baseDamage: 40,
   coolDownDuration: 0.4,
-  cast: move_cast,
+  cast: cast,
   addRulesForAI: move_addRulesForAI
 };
 

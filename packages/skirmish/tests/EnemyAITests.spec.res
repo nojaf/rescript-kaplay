@@ -12,8 +12,8 @@ external finally: (promise<'data>, unit => unit) => unit = "finally"
 
 let withKaplayContext = (
   playingField: array<string>,
-  ~enemyMove1: PkmnMove.t=ZeroMove.move,
-  testFn: (Context.t, RuleSystem.t<RuleSystemState.t>) => promise<unit>,
+  ~enemyMove1: Pokemon.move=ZeroMove.move,
+  testFn: (Context.t, RuleSystem.t<Pokemon.ruleSystemState>) => promise<unit>,
 ): promise<unit> => {
   let k = Context.kaplay(
     ~initOptions={
@@ -27,8 +27,8 @@ let withKaplayContext = (
   )
 
   // Load assets
-  Pokemon.load(k, 4)
-  Pokemon.load(k, 25)
+  Pkmn.load(k, 4)
+  Pkmn.load(k, 25)
   Thundershock.load()
   Ember.load(k)
 
@@ -63,21 +63,21 @@ let withKaplayContext = (
           | "P" => {
               let x = x * tileSize + halfTile
               let y = y * tileSize + halfTile
-              let player = Pokemon.make(k, ~pokemonId=25, ~level=12, ~facing=FacingUp)
-              Pokemon.assignPlayer(player)
+              let player = Pkmn.make(k, ~pokemonId=25, ~level=12, ~facing=FacingUp)
+              Pkmn.assignPlayer(player)
               player->Pokemon.setPos(k->Context.vec2Local(x, y))
             }
           | "E" => {
               let x = x * tileSize + halfTile
               let y = y * tileSize + halfTile
-              let enemy = Pokemon.make(
+              let enemy = Pkmn.make(
                 k,
                 ~pokemonId=4,
                 ~level=5,
                 ~move1=enemyMove1,
                 ~facing=FacingDown,
               )
-              Pokemon.assignOpponent(enemy)
+              Pkmn.assignOpponent(enemy)
               enemy->Pokemon.setPos(k->Context.vec2Local(x, y))
             }
           | "A" => {
@@ -140,7 +140,7 @@ test("player attack right in center of enemy", () => {
 
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.horizontalMovement)->Expect.toBe(RuleSystemState.Right)
+      expect(rs.state.horizontalMovement)->Expect.toBe(Pokemon.MoveRight)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
@@ -196,7 +196,7 @@ test("enemy should move to the right to be in front of player", () => {
       let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.horizontalMovement)->Expect.toBe(RuleSystemState.Right)
+      expect(rs.state.horizontalMovement)->Expect.toBe(Pokemon.MoveRight)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )
@@ -214,7 +214,7 @@ test("enemy should move to the left to be in front of player", () => {
       let enemyMoveSpy = vi->Vi.spyOn(rs.state.enemy, "move")
       EnemyAI.update(k, rs, ())
 
-      expect(rs.state.horizontalMovement)->Expect.toBe(RuleSystemState.Left)
+      expect(rs.state.horizontalMovement)->Expect.toBe(Pokemon.MoveLeft)
       expect(enemyMoveSpy)->Expect.toHaveBeenCalled
     },
   )

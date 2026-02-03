@@ -3,6 +3,7 @@
 import Kaplay from "kaplay";
 import * as Vitest from "vitest";
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.mjs";
+import * as Pkmn$Skirmish from "../src/Pkmn.res.mjs";
 import * as Team$Skirmish from "../src/Team.res.mjs";
 import * as Ember$Skirmish from "../src/Moves/Ember.res.mjs";
 import * as Attack$Skirmish from "../src/Moves/Attack.res.mjs";
@@ -23,8 +24,8 @@ function withKaplayContext(playingField, enemyMove1Opt, testFn) {
     scale: 1,
     crisp: true
   });
-  Pokemon$Skirmish.load(k, 4);
-  Pokemon$Skirmish.load(k, 25);
+  Pkmn$Skirmish.load(k, 4);
+  Pkmn$Skirmish.load(k, 25);
   Thundershock$Skirmish.load();
   Ember$Skirmish.load(k);
   return new Promise((resolve, reject) => {
@@ -57,15 +58,15 @@ function withKaplayContext(playingField, enemyMove1Opt, testFn) {
             case "E" :
               let x$2 = x * 32 + halfTile;
               let y$2 = y * 32 + halfTile;
-              let enemy = Pokemon$Skirmish.make(k, 4, 5, enemyMove1, undefined, undefined, undefined, false);
-              Pokemon$Skirmish.assignOpponent(enemy);
+              let enemy = Pkmn$Skirmish.make(k, 4, 5, enemyMove1, undefined, undefined, undefined, false);
+              Pkmn$Skirmish.assignOpponent(enemy);
               enemy.pos = k.vec2(x$2, y$2);
               break;
             case "P" :
               let x$3 = x * 32 + halfTile;
               let y$3 = y * 32 + halfTile;
-              let player = Pokemon$Skirmish.make(k, 25, 12, undefined, undefined, undefined, undefined, true);
-              Pokemon$Skirmish.assignPlayer(player);
+              let player = Pkmn$Skirmish.make(k, 25, 12, undefined, undefined, undefined, undefined, true);
+              Pkmn$Skirmish.assignPlayer(player);
               player.pos = k.vec2(x$3, y$3);
               break;
             default:

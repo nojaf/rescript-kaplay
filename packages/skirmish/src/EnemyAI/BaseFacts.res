@@ -13,7 +13,7 @@ let overlapX = ((ax1, ax2), (bx1, bx2)) => {
   Stdlib_Math.max(ax1, bx1) <= Stdlib_Math.min(ax2, bx2)
 }
 
-let addRules = (k: Context.t, rs: RuleSystem.t<RuleSystemState.t>) => {
+let addRules = (k: Context.t, rs: RuleSystem.t<Pokemon.ruleSystemState>) => {
   // Base fact: Attack positions
   rs->RuleSystem.addRuleExecutingAction(
     rs => rs.state.playerAttacks->Array.length > 0,

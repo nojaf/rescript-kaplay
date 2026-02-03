@@ -33,7 +33,7 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
       addZ(k, -1),
       addArea(k),
       pokemon.direction.y < 0. ? addAnchorBottom(k) : addAnchorTop(k),
-      Team.getTagComponent(pokemon->Pokemon.getTeam),
+      Team.getTagComponent(pokemon->Pkmn.getTeam),
       ...addAttackWithTag(@this (flame: t) => {
         Kaplay.Math.Rect.makeWorld(k, flame->worldPos, flame->getWidth, flame->getHeight)
       }),
@@ -55,9 +55,9 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
 
 let addRulesForAI = (
   _k: Context.t,
-  rs: RuleSystem.t<PkmnMove.enemyAIRuleSystemState>,
-  _moveSlot: PkmnMove.moveSlot,
-  factNames: PkmnMove.moveFactNames,
+  rs: RuleSystem.t<Pokemon.ruleSystemState>,
+  _moveSlot: Pokemon.moveSlot,
+  factNames: Pokemon.moveFactNames,
 ) => {
   // Ember attacks when safe: not under threat and move is available
   rs->RuleSystem.addRuleExecutingAction(
@@ -80,12 +80,12 @@ let addRulesForAI = (
   )
 }
 
-let move: PkmnMove.t = {
+let move: Pokemon.move = {
   id: 1,
   name: "Ember",
   maxPP: 25,
   baseDamage: 40,
   coolDownDuration: coolDown,
-  cast: (k, pkmn) => cast(k, pkmn->Pokemon.fromAbstractPkmn),
+  cast,
   addRulesForAI,
 }

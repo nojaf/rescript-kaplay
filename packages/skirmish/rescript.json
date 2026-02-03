@@ -15,5 +15,10 @@
   "compiler-flags": [],
   "js-post-build": {
     "cmd": "uv run ../../.claude/skills/rescript/scripts/rescript-db.py update"
+  },
+  "editor": {
+    "autocomplete": {
+      "Pokemon.t": ["Pkmn"]
+    }
   }
 }

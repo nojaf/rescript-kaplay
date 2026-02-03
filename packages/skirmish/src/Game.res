@@ -3,7 +3,7 @@ open GameContext
 
 let sceneLoaded = () => {
   Wall.makeAll()
-  let pikachu = Pokemon.make(
+  let pikachu = Pkmn.make(
     k,
     ~pokemonId=25,
     ~level=12,
@@ -11,7 +11,7 @@ let sceneLoaded = () => {
     ~move2=QuickAttack.move,
     ~facing=FacingDown,
   )
-  let charmander = Pokemon.make(k, ~pokemonId=4, ~level=5, ~move1=Ember.move, ~facing=FacingUp)
+  let charmander = Pkmn.make(k, ~pokemonId=4, ~level=5, ~move1=Ember.move, ~facing=FacingUp)
 
   Player.make(charmander)
   EnemyAI.make(k, ~enemy=pikachu, ~player=charmander)
@@ -22,8 +22,8 @@ let sceneLoaded = () => {
 
 let scene = () => {
   PkmnFont.load(k)
-  Pokemon.load(k, 4)
-  Pokemon.load(k, 25)
+  Pkmn.load(k, 4)
+  Pkmn.load(k, 25)
   Thundershock.load()
   Ember.load(k)
   QuickAttack.load(k)

@@ -176,7 +176,7 @@ let cast = (pokemon: Pokemon.t) => {
     [
       k->addPos(0., 0.),
       k->addZ(-1),
-      Team.getTagComponent(pokemon->Pokemon.getTeam),
+      Team.getTagComponent(pokemon->Pkmn.getTeam),
       CustomComponent.make({
         id: "thundershock",
         draw,
@@ -211,12 +211,12 @@ let cast = (pokemon: Pokemon.t) => {
   )
 }
 
-let move: PkmnMove.t = {
+let move: Pokemon.move = {
   id: 2,
   name: "Thundershock",
   maxPP: 25,
   baseDamage: 40,
   coolDownDuration: coolDown,
-  cast: (_k, pkmn) => cast(pkmn->Pokemon.fromAbstractPkmn),
+  cast: (_k, pkmn) => cast(pkmn),
   addRulesForAI: (_k, _rs, _slot, _facts) => (),
 }

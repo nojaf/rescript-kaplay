@@ -138,7 +138,7 @@ module OpponentLayout = {
 let keyLabels = ["j", "k", "l", ";"]
 
 let drawMove = (
-  slot: PkmnMove.moveSlot,
+  slot: Pokemon.moveSlot,
   keyLabel: string,
   x: float,
   y: float,
@@ -464,21 +464,21 @@ let draw =
 let make = (pokemon: Pokemon.t) => {
   let healthbar: t = k->Context.add([
     initialState({
-      healthPercentage: pokemon->Pokemon.getHealthPercentage,
+      healthPercentage: pokemon->Pkmn.getHealthPercentage,
       name: MetaData.names->Map.get(pokemon.pokemonId)->Option.getOr("???"),
       level: pokemon.level,
-      team: pokemon->Pokemon.getTeam,
+      team: pokemon->Pkmn.getTeam,
       pokemon,
     }),
     CustomComponent.make({id: "healthbar", draw}),
-    pokemon->Pokemon.getTeam == Team.Opponent
+    pokemon->Pkmn.getTeam == Team.Opponent
       ? addPos(k, 10., 10.)
       : addPos(k, 0., k->Context.height - PlayerLayout.playerHeight),
   ])
 
   pokemon
   ->Pokemon.onHurt(_deltaHP => {
-    let newHealthPercent = pokemon->Pokemon.getHealthPercentage
+    let newHealthPercent = pokemon->Pkmn.getHealthPercentage
     setHealth(healthbar, newHealthPercent)
   })
   ->ignore

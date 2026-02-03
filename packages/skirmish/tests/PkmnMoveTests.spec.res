@@ -1,7 +1,7 @@
 open Vitest
 
 // Helper to create a test move with configurable properties
-let makeTestMove = (~id=1, ~coolDownDuration=1.0, ~maxPP=10): PkmnMove.t => {
+let makeTestMove = (~id=1, ~coolDownDuration=1.0, ~maxPP=10): Pokemon.move => {
   id,
   name: "Test Move",
   maxPP,
@@ -13,10 +13,10 @@ let makeTestMove = (~id=1, ~coolDownDuration=1.0, ~maxPP=10): PkmnMove.t => {
 
 // Helper to create a move slot with configurable state
 let makeTestSlot = (
-  ~move: PkmnMove.t,
+  ~move: Pokemon.move,
   ~currentPP: int,
   ~lastUsedAt=neg_infinity,
-): PkmnMove.moveSlot => {
+): Pokemon.moveSlot => {
   move,
   currentPP,
   lastUsedAt,
@@ -91,7 +91,7 @@ test("getAvailableMoveIndices returns all indices when all moves available", () 
   let slot4 = makeTestSlot(~move, ~currentPP=10)
   let currentTime = 0.0
 
-  let result = Pokemon.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
+  let result = Pkmn.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
 
   expect(result)->Expect.toHaveLength(4)
   expect(result->Array.includes(0))->Expect.toBeTruthy
@@ -109,7 +109,7 @@ test("getAvailableMoveIndices returns only available move indices", () => {
   let slot4 = makeTestSlot(~move, ~currentPP=5, ~lastUsedAt=0.5) // on cooldown
   let currentTime = 1.0
 
-  let result = Pokemon.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
+  let result = Pkmn.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
 
   expect(result)->Expect.toHaveLength(2)
   expect(result->Array.includes(0))->Expect.toBeTruthy
@@ -125,7 +125,7 @@ test("getAvailableMoveIndices returns empty array when no moves available", () =
   let slot4 = makeTestSlot(~move, ~currentPP=0)
   let currentTime = 0.0
 
-  let result = Pokemon.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
+  let result = Pkmn.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
 
   expect(result)->Expect.toHaveLength(0)
   Promise.resolve()
@@ -139,7 +139,7 @@ test("getAvailableMoveIndices excludes ZeroMove slots", () => {
   let slot4 = makeTestSlot(~move=ZeroMove.move, ~currentPP=0) // ZeroMove
   let currentTime = 0.0
 
-  let result = Pokemon.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
+  let result = Pkmn.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
 
   expect(result)->Expect.toHaveLength(1)
   expect(result->Array.includes(0))->Expect.toBeTruthy
@@ -156,7 +156,7 @@ test("getAvailableMoveIndices with mixed move states", () => {
   let slot4 = makeTestSlot(~move=move1, ~currentPP=1) // available (never used)
   let currentTime = 1.0
 
-  let result = Pokemon.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
+  let result = Pkmn.getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime)
 
   expect(result)->Expect.toHaveLength(2)
   expect(result->Array.includes(0))->Expect.toBeTruthy

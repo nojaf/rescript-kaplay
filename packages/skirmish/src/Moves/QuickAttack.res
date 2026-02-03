@@ -100,12 +100,12 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
   tweenCtrl.contents->TweenController.onEnd(endAttack)
 }
 
-let move: PkmnMove.t = {
+let move: Pokemon.move = {
   id: 3,
   name: "Quick Attack",
   maxPP: 30,
   baseDamage: 40,
   coolDownDuration: cooldown,
-  cast: (k, pkmn) => cast(k, pkmn->Pokemon.fromAbstractPkmn),
+  cast,
   addRulesForAI: (_k, _rs, _slot, _facts) => (),
 }

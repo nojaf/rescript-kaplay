@@ -18,11 +18,11 @@ module AttackFacts = {
   * to compute facts fresh each frame based on current game state.
   */
 let makeRuleSystem = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): RuleSystem.t<
-  RuleSystemState.t,
+  Pokemon.ruleSystemState,
 > => {
   let rs = RuleSystem.make(k)
   rs.state = {
-    RuleSystemState.enemy,
+    Pokemon.enemy,
     player,
     playerAttacks: [],
     horizontalMovement: None,
@@ -46,7 +46,7 @@ let getPlayerAttacks = (k: Context.t): array<Attack.Unit.t> => {
   ->Array.filterMap(Attack.Unit.fromGameObj)
 }
 
-let update = (k: Context.t, rs: RuleSystem.t<RuleSystemState.t>, ()) => {
+let update = (k: Context.t, rs: RuleSystem.t<Pokemon.ruleSystemState>, ()) => {
   rs->RuleSystem.reset
   rs.state.playerAttacks = getPlayerAttacks(k)
   rs->RuleSystem.execute
@@ -54,8 +54,8 @@ let update = (k: Context.t, rs: RuleSystem.t<RuleSystemState.t>, ()) => {
   // Move in the horizontal movement direction if set
   switch rs.state.horizontalMovement {
   | None => ()
-  | Some(Left) => Pokemon.moveLeft(k, rs.state.enemy)
-  | Some(Right) => Pokemon.moveRight(k, rs.state.enemy)
+  | Some(MoveLeft) => Pkmn.moveLeft(k, rs.state.enemy)
+  | Some(MoveRight) => Pkmn.moveRight(k, rs.state.enemy)
   }
 
   // Check if should attack and select a move to execute
@@ -63,14 +63,14 @@ let update = (k: Context.t, rs: RuleSystem.t<RuleSystemState.t>, ()) => {
   | RuleSystem.Grade(g) if g > 0.0 =>
     switch MoveFacts.selectMove(rs) {
     | None => ()
-    | Some(moveIndex) => Pokemon.tryCastMove(k, rs.state.enemy, moveIndex)
+    | Some(moveIndex) => Pkmn.tryCastMove(k, rs.state.enemy, moveIndex)
     }
   | _ => ()
   }
 }
 
 let make = (k: Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t): unit => {
-  Pokemon.assignOpponent(enemy)
+  Pkmn.assignOpponent(enemy)
 
   let rs = makeRuleSystem(k, ~enemy, ~player)
 

@@ -21,13 +21,15 @@ bunx vite
 
 ```
 src/
-├── Pokemon.res          # Pokemon entity with move slots, health, position
-├── PkmnMove.res         # Move type definition and canCast logic
+├── Pokemon.res          # Core types: Pokemon.t, move, moveSlot, ruleSystemState (type rec chain)
+├── Pkmn.res             # Helper functions: make, load, tryCastMove, etc.
+├── PkmnMove.res         # Move helpers: canCast, makeMoveSlot, defaultAddRulesForAI
 ├── Player.res           # Player input handling (j/k/l/; keys for moves 0-3)
 ├── Healthbar.res        # UI for displaying moves, PP, cooldowns
 ├── EnemyAI/             # Rule-based AI system
 │   ├── AIFacts.res      # Central registry of fact names
 │   ├── MoveFacts.res    # Move availability and selection
+│   ├── RuleSystemState.res  # Re-exports Pokemon.ruleSystemState
 │   └── ...
 └── Moves/
     ├── ZeroMove.res     # Empty slot placeholder (id = -1)
@@ -37,35 +39,45 @@ src/
     └── Attack.res       # Attack component for spatial queries
 ```
 
+## Type Architecture
+
+All core types are defined in `Pokemon.res` using a `type rec` chain to avoid circular dependencies:
+
+- `Pokemon.t` - The pokemon game object type
+- `Pokemon.move` - Move definition (id, name, cast function, AI rules)
+- `Pokemon.moveSlot` - Runtime state for a move (current PP, last used time)
+- `Pokemon.moveFactNames` - AI fact names for move availability
+- `Pokemon.ruleSystemState` - State for the enemy AI rule system
+
+Helper functions live in separate modules:
+- `Pkmn.res` - Pokemon operations (make, load, tryCastMove, etc.)
+- `PkmnMove.res` - Move operations (canCast, makeMoveSlot, defaultAddRulesForAI)
+
 ## Creating a New Move
 
 ### Step 1: Create the Move File
 
-Create a new file in `src/Moves/YourMove.res`. Every move must export a `move: PkmnMove.t` record.
+Create a new file in `src/Moves/YourMove.res`. Every move must export a `move: Pokemon.move` record.
 
 ### Step 2: Define the Move Record
 
-The `PkmnMove.t` type requires these fields:
+The `Pokemon.move` type requires these fields:
 
 ```rescript
-let move: PkmnMove.t = {
+let move: Pokemon.move = {
   id: int,              // Unique ID (avoid -1, reserved for ZeroMove)
   name: string,         // Display name shown in healthbar
   maxPP: int,           // Maximum PP (typically 25-30)
   baseDamage: int,      // Base damage value
   coolDownDuration: float,  // Seconds before move can be used again
-  cast: (Context.t, PkmnMove.pkmn) => unit,  // Execute the move
-  addRulesForAI: (Context.t, RuleSystem.t<PkmnMove.enemyAIRuleSystemState>, PkmnMove.moveSlot, PkmnMove.moveFactNames) => unit,
+  cast: (Context.t, Pokemon.t) => unit,  // Execute the move
+  addRulesForAI: (Context.t, RuleSystem.t<Pokemon.ruleSystemState>, Pokemon.moveSlot, Pokemon.moveFactNames) => unit,
 }
 ```
 
 ### Step 3: Implement the `cast` Function
 
-The cast function receives:
-- `k: Context.t` - Kaplay context for creating game objects, timing, etc.
-- `pkmn: PkmnMove.pkmn` - Abstract pokemon type (convert with `Pokemon.fromAbstractPkmn`)
-
-Common patterns:
+The cast function receives the pokemon directly (no type conversion needed):
 
 ```rescript
 let cast = (k: Context.t, pokemon: Pokemon.t) => {
@@ -87,7 +99,7 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
 }
 
 // In the move record:
-cast: (k, pkmn) => cast(k, pkmn->Pokemon.fromAbstractPkmn),
+cast: (k, pkmn) => cast(k, pkmn),
 ```
 
 ### Step 4: Implement AI Rules
@@ -103,9 +115,9 @@ addRulesForAI: PkmnMove.defaultAddRulesForAI,
 ```rescript
 let addRulesForAI = (
   _k: Context.t,
-  rs: RuleSystem.t<PkmnMove.enemyAIRuleSystemState>,
-  _moveSlot: PkmnMove.moveSlot,
-  factNames: PkmnMove.moveFactNames,
+  rs: RuleSystem.t<Pokemon.ruleSystemState>,
+  _moveSlot: Pokemon.moveSlot,
+  factNames: Pokemon.moveFactNames,
 ) => {
   rs->RuleSystem.addRuleExecutingAction(
     rs => {
@@ -150,13 +162,13 @@ let load = (k: Context.t) => {
 
 2. **Assign to a Pokemon:**
    ```rescript
-   let charmander = Pokemon.make(
+   let charmander = Pkmn.make(
      k,
      ~pokemonId=4,
      ~level=5,
      ~move1=Ember.move,
      ~move2=YourMove.move,  // Add your move here
-     Team.Opponent,
+     ~facing=FacingUp,
    )
    ```
 
@@ -185,7 +197,7 @@ Some moves block movement (Thundershock), others don't (Ember).
 
 ### Cooldown Handling
 
-Cooldowns are handled automatically by `Pokemon.tryCastMove`. You only need to set `coolDownDuration` in the move record. After casting:
+Cooldowns are handled automatically by `Pkmn.tryCastMove`. You only need to set `coolDownDuration` in the move record. After casting:
 1. PP decrements
 2. `lastUsedAt` is recorded
 3. `attackStatus` becomes `CannotAttack`
@@ -195,7 +207,7 @@ Cooldowns are handled automatically by `Pokemon.tryCastMove`. You only need to s
 
 Use team tags for collision filtering:
 ```rescript
-Team.getTagComponent(pokemon.team)  // Adds appropriate tag
+Team.getTagComponent(pokemon->Pkmn.getTeam)  // Adds appropriate tag
 Team.player  // "team-player" tag
 Team.opponent  // "team-opponent" tag
 ```
@@ -212,3 +224,7 @@ Team.opponent  // "team-opponent" tag
 ## Testing Moves
 
 Add tests to `tests/PkmnMoveTests.spec.res` for pure logic, or `tests/EnemyAITests.spec.res` for integration tests using `withKaplayContext`.
+
+## General Guidelines
+
+- We don't care about backwards compatibility - refactor code directly instead of creating re-exports or compatibility shims

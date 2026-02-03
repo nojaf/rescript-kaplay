@@ -6,11 +6,11 @@ import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.mjs";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
+import * as Pkmn$Skirmish from "../Pkmn.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
 import * as Team$Skirmish from "../Team.res.mjs";
 import * as Wall$Skirmish from "../Wall.res.mjs";
 import * as Attack$Skirmish from "./Attack.res.mjs";
-import * as Pokemon$Skirmish from "../Pokemon.res.mjs";
 import * as GameObjRaw$Kaplay from "@nojaf/rescript-kaplay/src/Components/GameObjRaw.res.mjs";
 import * as GameContext$Skirmish from "../GameContext.res.mjs";
 import GlowFragraw from "../../shaders/glow.frag?raw";
@@ -108,7 +108,7 @@ function cast(pokemon) {
     [
       GameContext$Skirmish.k.pos(0, 0),
       GameContext$Skirmish.k.z(-1),
-      Team$Skirmish.getTagComponent(Pokemon$Skirmish.getTeam(pokemon)),
+      Team$Skirmish.getTagComponent(Pkmn$Skirmish.getTeam(pokemon)),
       {
         id: "thundershock",
         draw: draw,
