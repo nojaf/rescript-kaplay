@@ -30,14 +30,15 @@
   },
   "devDependencies": {
     "@astrojs/starlight": "^0.37.1",
+    "@rescript/runtime": "catalog:",
     "@types/bun": "^1.3.5",
     "astro": "^5.16.6",
     "keep-a-changelog": "^2.7.1",
     "micromark": "^4.0.2",
+    "oxfmt": "^0.28.0",
     "prettier-plugin-astro": "^0.14.1",
-    "semver": "^7.7.3",
-    "starlight-theme-flexoki": "^0.2.2",
     "rescript": "catalog:",
-    "@rescript/runtime": "catalog:"
+    "semver": "^7.7.3",
+    "starlight-theme-flexoki": "^0.2.2"
   }
 }

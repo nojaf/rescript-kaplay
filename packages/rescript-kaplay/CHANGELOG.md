@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
@@ -7,19 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+
 - `GameObjRaw.is`
 - `GameObjRaw.tags`
 - `Body.applyImpulse`
 - `Body.vel`
 - `Body.gravityScale`
 - `Body.isStatic`
+- `Shader.id`
+
+### Changed
+
+- `Collision.t` is now a record type with `normal` and `distance` fields
 
 ## [0.12.0] - 2025-12-10
 
 ### Changed
+
 - Split `Vec2.t` into `Vec2.World.t`, `Vec2.Local.t`, `Vec2.Screen.t`, `Vec2.Unit.t` & `Vec2.Tile.t`
 
 ### Added
+
 - `Context.onError`
 - `Context.quit`
 - `RuleSystem`, `Rule`
@@ -29,33 +38,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `Pos.Unit`
 
 ### Fixed
+
 - `SpriteData.height` as `@get`
 - `SpriteData.width` as `@get`
 
 ## [0.11.0] - 2025-11-26
 
 ### Changed
+
 - `Context.loop` is now `Context.loopWithController`
 
 ### Added
+
 - `Context.wait`
 - `Context.query`
 
 ### Fixed
+
 - Correct `maxHP` for `Health` component
 
 ## [0.10.1] - 2025-11-23
+
 ### Changed
+
 - Update to ReScript 12 RC
 - Update to Kaplay 4000 alpha 23
 
 ## [0.10.0] - 2025-07-21
+
 ### Added
+
 - More bindings for `Debug`
 - `State` component
 
 ## [0.9.0] - 2025-06-27
+
 ### Added
+
 - More easing functions to `Types.easingMap`
 - `Fixed` component
 - `Layer` component
@@ -63,7 +82,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `fromHSL` to `Color`
 
 ## [0.8.0] - 2025-06-23
+
 ### Added
+
 - Add `onDraw` and `drawXYZ` to `Context`
 - `Rect`, `Circle` and `Polygon` to `Math`
 - More `keys` in `Types`
@@ -74,13 +95,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `loadSprite` to `Context`
 
 ### Removed
+
 - `Context.mathRect`, use `Math.Rect.make` instead
 - `Context.mathCircle`, use `Math.Circle.make` instead
 - `Context.mathPolygon`, use `Math.Polygon.make` instead
 - `Context.colorFromHex`, use `Color.fromHex` instead
 
 ## [0.7.0] - 2025-06-16
+
 ### Added
+
 - `addAnchorFromVec2` to `Anchor`
 - `colorFromRGB` to `Context`
 - `getSprite` to `Context`
@@ -88,10 +112,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `loadFont` to `Context`
 
 ### Changed
+
 - `width` to float for `Outline`
 
 ## [0.6.0] - 2025-06-10
+
 ### Added
+
 - `deg2rad` and `rad2deg` to `Context`
 - `tweenWithController` to `Context`
 - `toWorld` and `toScreen` to `Context`
@@ -100,10 +127,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `animation` to `Animate`
 
 ### Removed
+
 - `Types.component`, use `CustomComponent.t`
 
 ## [0.5.0] - 2025-06-06
+
 ### Added
+
 - `Animate` component
 - `Polygon` component
 - `CustomComponent` module for [https://v4000.kaplayjs.com/guides/custom_components/](custom components)
@@ -114,32 +144,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `loadShader` and `time` to `Context`
 
 ### Changed
+
 - Moved `easeFunc` & `easeMap` to `Types`
 
 ## [0.4.0] - 2025-06-05
+
 ### Added
+
 - `Ellipse` component
 
 ### Changed
+
 - Rename `GameObjRaw.add` to `addChild`
 
 ## [0.3.0] - 2025-06-04
+
 ### Added
+
 - `mousePos`, `onMousePress`, `onMouseMove` & `onMouseRelease` in `Context`
 - `PatrolComp`
 
 ## [0.2.0] - 2025-06-03
+
 ### Added
+
 - `use` binding for `GameObjRaw`
 - getters and setters for `width` and `height` in `Rect`
 - `crisp` to `Context.kaplayOptions`
 - `paused` and `stop` to `AudioPlay`
 
 ### Changed
+
 - correct `onHover` bindings for `Area`
 
 ### Fixed
+
 - correct `clampFloat` import
 
 ## [0.1.0] - 2025-05-31
+
 Initial version
