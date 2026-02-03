@@ -11,7 +11,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "fmt": "rescript format",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "setup-vitest": "playwright install --with-deps chromium"
   },
   "dependencies": {
     "kaplay": "catalog:",
@@ -19,12 +20,13 @@
     "@rescript/runtime": "catalog:"
   },
   "devDependencies": {
-    "@vitest/browser-playwright": "^4.0.15",
-    "@vitest/coverage-istanbul": "^4.0.15",
+    "@vitest/browser-playwright": "^4.0.18",
+    "playwright": "^1.57.0",
+    "@vitest/coverage-istanbul": "^4.0.18",
     "rescript-bun": "^2.1.0",
     "sharp": "^0.34.5",
     "vite": "catalog:",
-    "vitest": "^4.0.15",
+    "vitest": "^4.0.18",
     "@nojaf/vite-plugin-rescript": "catalog:",
     "rescript": "catalog:"
   },

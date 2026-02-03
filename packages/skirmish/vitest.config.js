@@ -9,9 +9,10 @@ export default defineConfig({
       enabled: true,
       // at least one instance is required
       instances: [{ browser: "chromium" }],
+      headless: true,
     },
     coverage: {
       provider: "istanbul",
-    }
+    },
   },
 });
