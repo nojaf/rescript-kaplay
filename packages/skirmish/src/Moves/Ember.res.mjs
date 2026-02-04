@@ -42,14 +42,15 @@ function load(k) {
 
 function cast(k, pokemon) {
   let pokemonWorldPos = pokemon.worldPos();
+  let direction = pokemon.facing === true ? k.Vec2.UP : k.Vec2.DOWN;
   let flame = k.add(Belt_Array.concatMany([
     [
       k.sprite(spriteName),
       k.pos(pokemonWorldPos),
-      k.move(pokemon.direction, 120),
+      k.move(direction, 120),
       k.z(-1),
       k.area(),
-      pokemon.direction.y < 0 ? k.anchor("bot") : k.anchor("top"),
+      pokemon.facing === true ? k.anchor("bot") : k.anchor("top"),
       Team$Skirmish.getTagComponent(Pkmn$Skirmish.getTeam(pokemon))
     ],
     addAttackWithTag(function () {
