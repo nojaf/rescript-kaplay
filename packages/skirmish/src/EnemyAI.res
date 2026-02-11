@@ -63,7 +63,7 @@ let update = (k: Context.t, rs: RuleSystem.t<Pokemon.ruleSystemState>, ()) => {
   | RuleSystem.Grade(g) if g > 0.0 =>
     switch MoveFacts.selectMove(rs) {
     | None => ()
-    | Some(moveIndex) => Pkmn.tryCastMove(k, rs.state.enemy, moveIndex)
+    | Some(moveIndex) => Pkmn.tryCastMove(rs.state.enemy, moveIndex)
     }
   | _ => ()
   }

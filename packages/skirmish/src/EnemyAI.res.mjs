@@ -60,7 +60,7 @@ function update(k, rs, param) {
   }
   let moveIndex = MoveFacts$Skirmish.selectMove(rs);
   if (moveIndex !== undefined) {
-    return Pkmn$Skirmish.tryCastMove(k, rs.state.enemy, moveIndex);
+    return Pkmn$Skirmish.tryCastMove(rs.state.enemy, moveIndex);
   }
 }
 

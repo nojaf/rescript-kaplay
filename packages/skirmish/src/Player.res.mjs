@@ -45,13 +45,13 @@ function make$1(pokemon) {
     let isRightPressed = GameContext$Skirmish.k.isKeyDown("right") || GameContext$Skirmish.k.isKeyDown("d");
     let movementPressed = isUpPressed || isDownPressed || isLeftPressed || isRightPressed;
     if (isNewJPress) {
-      Pkmn$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 0);
+      Pkmn$Skirmish.tryCastMove(pokemon, 0);
     } else if (isNewKPress) {
-      Pkmn$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 1);
+      Pkmn$Skirmish.tryCastMove(pokemon, 1);
     } else if (isNewLPress) {
-      Pkmn$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 2);
+      Pkmn$Skirmish.tryCastMove(pokemon, 2);
     } else if (isNewSemicolonPress) {
-      Pkmn$Skirmish.tryCastMove(GameContext$Skirmish.k, pokemon, 3);
+      Pkmn$Skirmish.tryCastMove(pokemon, 3);
     } else if (isUpPressed) {
       pokemon.direction = GameContext$Skirmish.k.Vec2.UP;
       pokemon.sprite = Pkmn$Skirmish.backSpriteName(pokemon.pokemonId);

@@ -14,6 +14,11 @@ type attackStatus =
   /* Array of move indices (0-3) that are available */
   | CanAttack(array<int>)
 
+type event =
+  | MoveCast(int)
+  | CooldownFinished(int)
+  | MobilityChanged(mobility)
+
 @unboxed
 type horizontalMovement = | @as(true) MoveLeft | @as(false) MoveRight
 
@@ -27,6 +32,7 @@ type rec t = {
   mutable facing: facing,
   mutable mobility: mobility,
   mutable attackStatus: attackStatus,
+  eventQueue: Belt.MutableQueue.t<event>,
   level: int,
   pokemonId: int,
   mutable team: option<Team.t>,

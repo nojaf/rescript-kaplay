@@ -37,13 +37,13 @@ let make = (pokemon: Pokemon.t): unit => {
 
     // Handle move key presses (j/k/l/; for slots 0-3)
     if isNewJPress {
-      Pkmn.tryCastMove(k, pokemon, 0)
+      Pkmn.tryCastMove(pokemon, 0)
     } else if isNewKPress {
-      Pkmn.tryCastMove(k, pokemon, 1)
+      Pkmn.tryCastMove(pokemon, 1)
     } else if isNewLPress {
-      Pkmn.tryCastMove(k, pokemon, 2)
+      Pkmn.tryCastMove(pokemon, 2)
     } else if isNewSemicolonPress {
-      Pkmn.tryCastMove(k, pokemon, 3)
+      Pkmn.tryCastMove(pokemon, 3)
     } else if isUpPressed {
       pokemon.direction = k->Context.vec2Up
       pokemon->Pokemon.setSprite(Pkmn.backSpriteName(pokemon.pokemonId))

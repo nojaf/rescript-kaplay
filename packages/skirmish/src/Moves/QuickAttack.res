@@ -15,7 +15,7 @@ let cooldown = 0.4
 
 let cast = (k: Context.t, pokemon: Pokemon.t) => {
   Console.log("QuickAttack cast")
-  pokemon.mobility = CannotMove
+  pokemon->Pkmn.dispatch(MobilityChanged(CannotMove))
 
   let pokemonWorldPos = pokemon->Pokemon.worldPos
   let startY = pokemonWorldPos->Vec2.World.y
@@ -30,7 +30,7 @@ let cast = (k: Context.t, pokemon: Pokemon.t) => {
   let endAttack = () => {
     collisionCtrl.contents->KEventController.cancel
     tweenCtrl.contents->TweenController.cancel
-    pokemon.mobility = CanMove
+    pokemon->Pkmn.dispatch(MobilityChanged(CanMove))
     pokemon->Pokemon.unuse(Shader.id)
     pokemon->Pokemon.unuse(Attack.id)
     pokemon->Pokemon.untag(Attack.tag)

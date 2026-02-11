@@ -56,34 +56,19 @@ let getAvailableMoveIndices = (
   moves
 }
 
-/** Recalculate which moves are available and restore attack status.
-    Call this after a move's cooldown finishes. */
-let finishAttack = (k: Kaplay.Context.t, pokemon: t): unit => {
-  let currentTime = k->Kaplay.Context.time
-  let availableMoves = getAvailableMoveIndices(
-    pokemon.moveSlot1,
-    pokemon.moveSlot2,
-    pokemon.moveSlot3,
-    pokemon.moveSlot4,
-    currentTime,
-  )
-  pokemon.attackStatus = CanAttack(availableMoves)
+let dispatch = (pokemon: t, event: Pokemon.event): unit => {
+  pokemon.eventQueue->Belt.MutableQueue.add(event)
 }
 
-/** Schedule finishAttack to be called after a cooldown duration.
-    Common pattern used by moves after their animation/effect completes. */
-let scheduleFinishAttack = (k: Kaplay.Context.t, pokemon: t, cooldown: float): unit => {
-  k->Kaplay.Context.wait(cooldown, () => {
-    finishAttack(k, pokemon)
+let delayedDispatch = (
+  k: Kaplay.Context.t,
+  pokemon: t,
+  event: Pokemon.event,
+  delay: float,
+): unit => {
+  k->Kaplay.Context.wait(delay, () => {
+    pokemon->dispatch(event)
   })
-}
-
-/** Check if the pokemon can attack */
-let canAttack = (pokemon: t): bool => {
-  switch pokemon.attackStatus {
-  | CannotAttack => false
-  | CanAttack(_) => true
-  }
 }
 
 /** Get move slot by index (0-3) */
@@ -97,24 +82,45 @@ let getMoveSlot = (pokemon: t, index: int): option<Pokemon.moveSlot> => {
   }
 }
 
+/** Process all pending events in the pokemon's event queue.
+    Uses pop loop so events enqueued during processing (e.g. cast enqueues MobilityChanged) are handled immediately. */
+let processEvents = (k: Kaplay.Context.t, pokemon: t): unit => {
+  let break = ref(false)
+  while !break.contents {
+    switch pokemon.eventQueue->Belt.MutableQueue.pop {
+    | None => break := true
+    | Some(MoveCast(moveIndex)) =>
+      switch getMoveSlot(pokemon, moveIndex) {
+      | None => ()
+      | Some(slot) =>
+        slot.currentPP = slot.currentPP - 1
+        slot.lastUsedAt = k->Kaplay.Context.time
+        pokemon.attackStatus = CannotAttack
+        slot.move.cast(k, pokemon)
+        delayedDispatch(k, pokemon, CooldownFinished(moveIndex), slot.move.coolDownDuration)
+      }
+    | Some(CooldownFinished(_moveIndex)) =>
+      let currentTime = k->Kaplay.Context.time
+      let availableMoves = getAvailableMoveIndices(
+        pokemon.moveSlot1,
+        pokemon.moveSlot2,
+        pokemon.moveSlot3,
+        pokemon.moveSlot4,
+        currentTime,
+      )
+      pokemon.attackStatus = CanAttack(availableMoves)
+    | Some(MobilityChanged(mobility)) => pokemon.mobility = mobility
+    }
+  }
+}
+
 /** Try to cast a move by index (0-3).
-    Handles setting attackStatus to CannotAttack before invoking the move's cast function.
-    Automatically schedules finishAttack after the move's cooldown duration. */
-let tryCastMove = (k: Context.t, pokemon: t, moveIndex: int): unit => {
+    Validates the move is available and enqueues a MoveCast event. */
+let tryCastMove = (pokemon: t, moveIndex: int): unit => {
   switch pokemon.attackStatus {
   | CannotAttack => ()
   | CanAttack(availableMoves) if availableMoves->Array.includes(moveIndex) =>
-    switch getMoveSlot(pokemon, moveIndex) {
-    | None => ()
-    | Some(slot) =>
-      // Decrement PP and record usage time
-      slot.currentPP = slot.currentPP - 1
-      slot.lastUsedAt = k->Context.time
-      pokemon.attackStatus = CannotAttack
-      slot.move.cast(k, pokemon)
-      // Automatically restore attack status after cooldown
-      scheduleFinishAttack(k, pokemon, slot.move.coolDownDuration)
-    }
+    pokemon->dispatch(MoveCast(moveIndex))
   | CanAttack(_) => ()
   }
 }
@@ -167,6 +173,7 @@ let make = (
       facing,
       mobility: CanMove,
       attackStatus: CanAttack(initialAvailableMoves),
+      eventQueue: Belt.MutableQueue.make(),
       halfSize,
       squaredPersonalSpace,
       moveSlot1,
@@ -219,6 +226,8 @@ let make = (
     // Team is guaranteed to be assigned before death can occur
     k->Context.go(GameOver.sceneName, ~data=gameObj.team->Option.getOrThrow)
   })
+
+  gameObj->onUpdate(() => processEvents(k, gameObj))
 
   gameObj
 }

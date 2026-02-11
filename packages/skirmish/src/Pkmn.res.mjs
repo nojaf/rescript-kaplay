@@ -4,6 +4,7 @@ import * as Stdlib_Option from "@rescript/runtime/lib/es6/Stdlib_Option.mjs";
 import * as Team$Skirmish from "./Team.res.mjs";
 import * as Stdlib_JsError from "@rescript/runtime/lib/es6/Stdlib_JsError.mjs";
 import * as Pokemon$Skirmish from "./Pokemon.res.mjs";
+import * as Belt_MutableQueue from "@rescript/runtime/lib/es6/Belt_MutableQueue.mjs";
 import * as GameOver$Skirmish from "./GameOver.res.mjs";
 import * as PkmnMove$Skirmish from "./PkmnMove.res.mjs";
 import * as ZeroMove$Skirmish from "./Moves/ZeroMove.res.mjs";
@@ -64,19 +65,12 @@ function getAvailableMoveIndices(slot1, slot2, slot3, slot4, currentTime) {
   return moves;
 }
 
-function finishAttack(k, pokemon) {
-  let currentTime = k.time();
-  let availableMoves = getAvailableMoveIndices(pokemon.moveSlot1, pokemon.moveSlot2, pokemon.moveSlot3, pokemon.moveSlot4, currentTime);
-  pokemon.attackStatus = availableMoves;
+function dispatch(pokemon, event) {
+  Belt_MutableQueue.add(pokemon.eventQueue, event);
 }
 
-function scheduleFinishAttack(k, pokemon, cooldown) {
-  k.wait(cooldown, () => finishAttack(k, pokemon));
-}
-
-function canAttack(pokemon) {
-  let match = pokemon.attackStatus;
-  return match !== "CannotAttack";
+function delayedDispatch(k, pokemon, event, delay) {
+  k.wait(delay, () => Belt_MutableQueue.add(pokemon.eventQueue, event));
 }
 
 function getMoveSlot(pokemon, index) {
@@ -94,21 +88,50 @@ function getMoveSlot(pokemon, index) {
   }
 }
 
-function tryCastMove(k, pokemon, moveIndex) {
+function processEvents(k, pokemon) {
+  let $$break = false;
+  while (!$$break) {
+    let match = Belt_MutableQueue.pop(pokemon.eventQueue);
+    if (match !== undefined) {
+      switch (match.TAG) {
+        case "MoveCast" :
+          let moveIndex = match._0;
+          let slot = getMoveSlot(pokemon, moveIndex);
+          if (slot !== undefined) {
+            slot.currentPP = slot.currentPP - 1 | 0;
+            slot.lastUsedAt = k.time();
+            pokemon.attackStatus = "CannotAttack";
+            slot.move.cast(k, pokemon);
+            delayedDispatch(k, pokemon, {
+              TAG: "CooldownFinished",
+              _0: moveIndex
+            }, slot.move.coolDownDuration);
+          }
+          break;
+        case "CooldownFinished" :
+          let currentTime = k.time();
+          let availableMoves = getAvailableMoveIndices(pokemon.moveSlot1, pokemon.moveSlot2, pokemon.moveSlot3, pokemon.moveSlot4, currentTime);
+          pokemon.attackStatus = availableMoves;
+          break;
+        case "MobilityChanged" :
+          pokemon.mobility = match._0;
+          break;
+      }
+    } else {
+      $$break = true;
+    }
+  };
+}
+
+function tryCastMove(pokemon, moveIndex) {
   let availableMoves = pokemon.attackStatus;
-  if (availableMoves === "CannotAttack") {
+  if (availableMoves === "CannotAttack" || !availableMoves.includes(moveIndex)) {
     return;
-  }
-  if (!availableMoves.includes(moveIndex)) {
-    return;
-  }
-  let slot = getMoveSlot(pokemon, moveIndex);
-  if (slot !== undefined) {
-    slot.currentPP = slot.currentPP - 1 | 0;
-    slot.lastUsedAt = k.time();
-    pokemon.attackStatus = "CannotAttack";
-    slot.move.cast(k, pokemon);
-    return scheduleFinishAttack(k, pokemon, slot.move.coolDownDuration);
+  } else {
+    return Belt_MutableQueue.add(pokemon.eventQueue, {
+      TAG: "MoveCast",
+      _0: moveIndex
+    });
   }
 }
 
@@ -154,6 +177,7 @@ function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, facin
       facing: facing,
       mobility: true,
       attackStatus: initialAvailableMoves,
+      eventQueue: Belt_MutableQueue.make(),
       level: level,
       pokemonId: pokemonId,
       team: undefined,
@@ -207,6 +231,7 @@ function make(k, pokemonId, level, move1Opt, move2Opt, move3Opt, move4Opt, facin
   gameObj.onDeath(() => {
     k.go(GameOver$Skirmish.sceneName, Stdlib_Option.getOrThrow(gameObj.team, undefined));
   });
+  gameObj.onUpdate(() => processEvents(k, gameObj));
   return gameObj;
 }
 
@@ -242,10 +267,10 @@ export {
   moveLeft,
   moveRight,
   getAvailableMoveIndices,
-  finishAttack,
-  scheduleFinishAttack,
-  canAttack,
+  dispatch,
+  delayedDispatch,
   getMoveSlot,
+  processEvents,
   tryCastMove,
   make,
   assignPlayer,

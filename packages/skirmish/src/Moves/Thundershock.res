@@ -100,7 +100,7 @@ let destroy = (pokemon: Pokemon.t, thundershock: t) => {
     pokemon->Pokemon.unuse(Shader.id)
 
     // Allow the Pokemon to move again
-    pokemon.mobility = CanMove
+    pokemon->Pkmn.dispatch(MobilityChanged(CanMove))
     // Destroy the Thundershock game object
     thundershock->destroy
   })
@@ -159,7 +159,7 @@ let nextPartOfBolt = (
 
 let cast = (pokemon: Pokemon.t) => {
   // Prevent the Pokemon from moving while the Thundershock is active
-  pokemon.mobility = CannotMove
+  pokemon->Pkmn.dispatch(MobilityChanged(CannotMove))
 
   // Thundershock is either up or down, so we need to get the direction
   // We used cached vectors with the distance already applied to them

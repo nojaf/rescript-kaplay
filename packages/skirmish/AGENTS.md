@@ -228,3 +228,4 @@ Add tests to `tests/PkmnMoveTests.spec.res` for pure logic, or `tests/EnemyAITes
 ## General Guidelines
 
 - We don't care about backwards compatibility - refactor code directly instead of creating re-exports or compatibility shims
+- Use dynamic calculations for layout values instead of hardcoded magic numbers. Derive values from constants or computed properties.

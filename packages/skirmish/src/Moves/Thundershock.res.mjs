@@ -93,13 +93,19 @@ function destroy(pokemon, thundershock) {
   thundershock.timerRef.cancel();
   GameContext$Skirmish.k.wait(5 * 0.050, () => {
     pokemon.unuse(Shader$Kaplay.id);
-    pokemon.mobility = true;
+    Pkmn$Skirmish.dispatch(pokemon, {
+      TAG: "MobilityChanged",
+      _0: true
+    });
     thundershock.destroy();
   });
 }
 
 function cast(pokemon) {
-  pokemon.mobility = false;
+  Pkmn$Skirmish.dispatch(pokemon, {
+    TAG: "MobilityChanged",
+    _0: false
+  });
   let direction = pokemon.facing === true ? up : down;
   let otherPokemon = GameContext$Skirmish.k.query({
     include: ["pokemon"]

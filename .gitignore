@@ -25,7 +25,9 @@ dist-ssr
 
 # ReScript
 **/lib/bs/
+**/lib/lsp
 **/lib/ocaml/
+**/lib/lsp-ocaml/
 .bsb.lock
 .merlin
 rescript.lock
