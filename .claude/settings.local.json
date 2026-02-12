@@ -8,5 +8,39 @@
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:rescript-lang.org)"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s http://127.0.0.1:12303/diagnostics"
+          }
+        ]
+      }
+    ],
+    "Edit": [
+      {
+        "matcher": "\\.res$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s http://127.0.0.1:12303/diagnostics"
+          }
+        ]
+      }
+    ],
+    "Write": [
+      {
+        "matcher": "\\.res$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s http://127.0.0.1:12303/diagnostics"
+          }
+        ]
+      }
+    ]
   }
 }

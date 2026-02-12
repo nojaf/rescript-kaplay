@@ -14,12 +14,13 @@
 
 ## LSP Diagnostics Verification
 
-The user may have an experimental ReScript LSP server running that exposes compiler diagnostics over HTTP. Ask the user if this feature is available and on which port. When active, the workflow has two distinct phases:
+The user may have an experimental ReScript LSP server running that exposes compiler diagnostics over HTTP. When active, the workflow has two distinct phases:
 
 - **Editing a file** (buffer change) triggers type checking. The LSP server will update its diagnostics based on the new file contents. Query the diagnostics endpoint to see any errors or warnings.
 - **Saving a file** triggers compilation and produces the output `.res.mjs` JavaScript file. Read the compiled `.res.mjs` file to confirm the generated JavaScript matches expectations.
 
-To query the diagnostics endpoint, run: `curl -s http://127.0.0.1:<port>/diagnostics | jq .`
+To query the diagnostics endpoint, run: `curl -s http://127.0.0.1:12303/diagnostics | jq .`.
+If the server is not running, you won't get a OK response.
 
 The endpoint blocks while a build is in progress and only responds once it's complete, so there is no need to add a sleep delay before querying — the response always reflects the latest state.
 
