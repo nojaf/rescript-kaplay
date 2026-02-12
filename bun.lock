@@ -61,6 +61,7 @@
         "@nojaf/vite-plugin-rescript": "catalog:",
         "@vitest/browser-playwright": "^4.0.18",
         "@vitest/coverage-istanbul": "^4.0.18",
+        "playwright": "^1.57.0",
         "rescript": "catalog:",
         "rescript-bun": "^2.1.0",
         "sharp": "^0.34.5",
@@ -74,7 +75,7 @@
     "rescript",
   ],
   "catalog": {
-    "@nojaf/vite-plugin-rescript": "0.6.1",
+    "@nojaf/vite-plugin-rescript": "0.6.2",
     "@rescript/runtime": "https://pkg.pr.new/rescript-lang/rescript/@rescript/runtime@9369ddc",
     "kaplay": "4000.0.0-alpha.25",
     "rescript": "https://pkg.pr.new/rescript-lang/rescript@9369ddc",
@@ -277,7 +278,7 @@
 
     "@nojaf/skirmish": ["@nojaf/skirmish@workspace:packages/skirmish"],
 
-    "@nojaf/vite-plugin-rescript": ["@nojaf/vite-plugin-rescript@0.6.1", "", { "dependencies": { "dax-sh": "^0.43.2", "semver": "^7.7.2" }, "peerDependencies": { "rescript": "^12.0.0 || ^13.0.0-0", "vite": "^7.0.0" } }, "sha512-1mMMREUBvLpX2a1LVNxslG0IQvB4n32DM4/iDSJHjfUrkYX22kl6PepjnS+pUxr4pWepypmpgNQXYzqq69QVEw=="],
+    "@nojaf/vite-plugin-rescript": ["@nojaf/vite-plugin-rescript@0.6.2", "", { "dependencies": { "dax-sh": "^0.43.2", "semver": "^7.7.2" }, "peerDependencies": { "rescript": "^12.0.0 || ^13.0.0-0", "vite": "^7.0.0" } }, "sha512-2d8Grz5tSDifvSPaJyegeRv0jlhlJGxayl30PwVDF4UunuqI4lab42IUlHG9VDUmgnmiN0tOxUZ0Z71BPnrwzQ=="],
 
     "@oslojs/encoding": ["@oslojs/encoding@1.1.0", "", {}, "sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ=="],
 

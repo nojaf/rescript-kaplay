@@ -21,7 +21,7 @@
     "@rescript/runtime": "https://pkg.pr.new/rescript-lang/rescript/@rescript/runtime@9369ddc",
     "vite": "8.0.0-beta.11",
     "kaplay": "4000.0.0-alpha.25",
-    "@nojaf/vite-plugin-rescript": "0.6.1"
+    "@nojaf/vite-plugin-rescript": "0.6.2"
   },
   "dependencies": {
     "@nojaf/rescript-kaplay": "workspace:*",
@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "@astrojs/starlight": "^0.37.1",
-    "@rescript/runtime": "catalog:",
     "@types/bun": "^1.3.5",
     "astro": "^5.16.6",
     "keep-a-changelog": "^2.7.1",
