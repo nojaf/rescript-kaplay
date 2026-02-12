@@ -53,11 +53,19 @@ function make$1(pokemon) {
     } else if (isNewSemicolonPress) {
       Pkmn$Skirmish.tryCastMove(pokemon, 3);
     } else if (isUpPressed) {
-      pokemon.direction = GameContext$Skirmish.k.Vec2.UP;
-      pokemon.sprite = Pkmn$Skirmish.backSpriteName(pokemon.pokemonId);
+      if (pokemon.facing !== true) {
+        Pkmn$Skirmish.dispatch(pokemon, {
+          TAG: "FacingChanged",
+          _0: true
+        });
+      }
     } else if (isDownPressed) {
-      pokemon.direction = GameContext$Skirmish.k.Vec2.DOWN;
-      pokemon.sprite = Pkmn$Skirmish.frontSpriteName(pokemon.pokemonId);
+      if (pokemon.facing !== false) {
+        Pkmn$Skirmish.dispatch(pokemon, {
+          TAG: "FacingChanged",
+          _0: false
+        });
+      }
     } else if (isLeftPressed) {
       pokemon.direction = GameContext$Skirmish.k.Vec2.LEFT;
     } else if (isRightPressed) {

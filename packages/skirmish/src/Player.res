@@ -45,11 +45,13 @@ let make = (pokemon: Pokemon.t): unit => {
     } else if isNewSemicolonPress {
       Pkmn.tryCastMove(pokemon, 3)
     } else if isUpPressed {
-      pokemon.direction = k->Context.vec2Up
-      pokemon->Pokemon.setSprite(Pkmn.backSpriteName(pokemon.pokemonId))
+      if pokemon.facing != FacingUp {
+        Pkmn.dispatch(pokemon, FacingChanged(FacingUp))
+      }
     } else if isDownPressed {
-      pokemon.direction = k->Context.vec2Down
-      pokemon->Pokemon.setSprite(Pkmn.frontSpriteName(pokemon.pokemonId))
+      if pokemon.facing != FacingDown {
+        Pkmn.dispatch(pokemon, FacingChanged(FacingDown))
+      }
     } else if isLeftPressed {
       pokemon.direction = k->Context.vec2Left
     } else if isRightPressed {

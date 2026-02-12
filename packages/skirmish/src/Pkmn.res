@@ -110,6 +110,16 @@ let processEvents = (k: Kaplay.Context.t, pokemon: t): unit => {
       )
       pokemon.attackStatus = CanAttack(availableMoves)
     | Some(MobilityChanged(mobility)) => pokemon.mobility = mobility
+    | Some(FacingChanged(newFacing)) =>
+      pokemon.facing = newFacing
+      switch newFacing {
+      | FacingUp =>
+        pokemon->Pokemon.setSprite(backSpriteName(pokemon.pokemonId))
+        pokemon.direction = k->Kaplay.Context.vec2Up
+      | FacingDown =>
+        pokemon->Pokemon.setSprite(frontSpriteName(pokemon.pokemonId))
+        pokemon.direction = k->Kaplay.Context.vec2Down
+      }
     }
   }
 }

@@ -18,6 +18,7 @@ type event =
   | MoveCast(int)
   | CooldownFinished(int)
   | MobilityChanged(mobility)
+  | FacingChanged(facing)
 
 @unboxed
 type horizontalMovement = | @as(true) MoveLeft | @as(false) MoveRight

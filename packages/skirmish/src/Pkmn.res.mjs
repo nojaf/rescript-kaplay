@@ -116,6 +116,17 @@ function processEvents(k, pokemon) {
         case "MobilityChanged" :
           pokemon.mobility = match._0;
           break;
+        case "FacingChanged" :
+          let newFacing = match._0;
+          pokemon.facing = newFacing;
+          if (newFacing === true) {
+            pokemon.sprite = backSpriteName(pokemon.pokemonId);
+            pokemon.direction = k.Vec2.UP;
+          } else {
+            pokemon.sprite = frontSpriteName(pokemon.pokemonId);
+            pokemon.direction = k.Vec2.DOWN;
+          }
+          break;
       }
     } else {
       $$break = true;
