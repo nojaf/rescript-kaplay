@@ -17,7 +17,4 @@ const lastVersion = await $`bunx changelog --latest-release`
 // Update version in package.json
 const packageJson = await Bun.file(`${libraryDir}/package.json`).json();
 packageJson.version = lastVersion;
-await Bun.write(
-  `${libraryDir}/package.json`,
-  JSON.stringify(packageJson, null, 2),
-);
+await Bun.write(`${libraryDir}/package.json`, JSON.stringify(packageJson, null, 2));

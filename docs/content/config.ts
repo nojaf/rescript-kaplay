@@ -35,8 +35,7 @@ function processModule(doc: any) {
     .filter((d) => d.kind === "type")
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((type) => {
-      const documentation =
-        type.docstrings && micromark(type.docstrings.join("\n"));
+      const documentation = type.docstrings && micromark(type.docstrings.join("\n"));
       return {
         name: type.name,
         documentation,
@@ -49,8 +48,7 @@ function processModule(doc: any) {
     .filter((item) => item.kind === "value")
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((value) => {
-      const documentation =
-        value.docstrings && micromark(value.docstrings.join("\n"));
+      const documentation = value.docstrings && micromark(value.docstrings.join("\n"));
       return {
         name: value.name,
         documentation,
@@ -182,10 +180,7 @@ const samples = defineCollection({
     source: z.string(),
   }),
   loader: async () => {
-    const inputDir = path.join(
-      import.meta.dirname,
-      "../../packages/samples/src",
-    );
+    const inputDir = path.join(import.meta.dirname, "../../packages/samples/src");
     const glob = new Glob(`*.res`);
 
     const collectionEntries: any[] = [];

@@ -77,8 +77,8 @@ hero->play("walk")
 ```
 
 <Aside type="caution">
-  Note that both the `include XYZComp` and `addXYZ` call in the `make` function
-  will be required to make this work at runtime!
+  Note that both the `include XYZComp` and `addXYZ` call in the `make` function will be required to
+  make this work at runtime!
 </Aside>
 
 ## Adding custom state
@@ -106,9 +106,8 @@ module Hero = {
 The `initialState` function is a special function that is used to create the initial state of the object.
 
 <Aside type="caution">
-  As with all component functions, this big pitfall is that you need to make
-  sure they are called inside an `add` function. If you do not call
-  `initialState`, the `name` field will be undefined.
+  As with all component functions, this big pitfall is that you need to make sure they are called
+  inside an `add` function. If you do not call `initialState`, the `name` field will be undefined.
 </Aside>
 
 ## Nested game objects

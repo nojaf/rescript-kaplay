@@ -6,7 +6,8 @@
       "mcp__acp__Write",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:www.npmjs.com)",
-      "WebFetch(domain:rescript-lang.org)"
+      "WebFetch(domain:rescript-lang.org)",
+      "WebFetch(domain:zed.dev)"
     ]
   },
   "hooks": {

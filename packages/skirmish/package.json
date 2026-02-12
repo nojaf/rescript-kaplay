@@ -27,7 +27,6 @@
     "sharp": "^0.34.5",
     "vite": "catalog:",
     "vitest": "^4.0.18",
-    "@nojaf/vite-plugin-rescript": "catalog:",
     "rescript": "catalog:"
   },
   "trustedDependencies": [
