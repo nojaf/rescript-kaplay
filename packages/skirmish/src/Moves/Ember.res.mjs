@@ -7,6 +7,7 @@ import * as Area$Kaplay from "@nojaf/rescript-kaplay/src/Components/Area.res.mjs
 import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Move$Kaplay from "@nojaf/rescript-kaplay/src/Components/Move.res.mjs";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
+import * as Pkmn$Skirmish from "../Pkmn.res.mjs";
 import * as Sprite$Kaplay from "@nojaf/rescript-kaplay/src/Components/Sprite.res.mjs";
 import * as Team$Skirmish from "../Team.res.mjs";
 import * as Wall$Skirmish from "../Wall.res.mjs";
@@ -41,15 +42,16 @@ function load(k) {
 
 function cast(k, pokemon) {
   let pokemonWorldPos = pokemon.worldPos();
+  let direction = pokemon.facing === true ? k.Vec2.UP : k.Vec2.DOWN;
   let flame = k.add(Belt_Array.concatMany([
     [
       k.sprite(spriteName),
       k.pos(pokemonWorldPos),
-      k.move(pokemon.direction, 120),
+      k.move(direction, 120),
       k.z(-1),
       k.area(),
-      pokemon.direction.y < 0 ? k.anchor("bot") : k.anchor("top"),
-      Team$Skirmish.getTagComponent(pokemon.team)
+      pokemon.facing === true ? k.anchor("bot") : k.anchor("top"),
+      Team$Skirmish.getTagComponent(Pkmn$Skirmish.getTeam(pokemon))
     ],
     addAttackWithTag(function () {
       let flame = this ;
@@ -86,15 +88,13 @@ function addRulesForAI(_k, rs, _moveSlot, factNames) {
   }, 30.0);
 }
 
-let move_cast = cast;
-
 let move = {
   id: 1,
   name: "Ember",
   maxPP: 25,
   baseDamage: 40,
   coolDownDuration: 1,
-  cast: move_cast,
+  cast: cast,
   addRulesForAI: addRulesForAI
 };
 

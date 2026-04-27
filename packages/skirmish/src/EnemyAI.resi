@@ -1,15 +1,15 @@
 open Kaplay
 
 module BaseFacts: {
-  let addRules: (Context.t, RuleSystem.t<RuleSystemState.t>) => unit
+  let addRules: (Context.t, RuleSystem.t<Pokemon.ruleSystemState>) => unit
 }
 
 module DerivedFacts: {
-  let addRules: RuleSystem.t<RuleSystemState.t> => unit
+  let addRules: RuleSystem.t<Pokemon.ruleSystemState> => unit
 }
 
 module DefensiveFacts: {
-  let addRules: RuleSystem.t<RuleSystemState.t> => unit
+  let addRules: RuleSystem.t<Pokemon.ruleSystemState> => unit
 }
 
 module AttackFacts: {
@@ -17,7 +17,7 @@ module AttackFacts: {
 }
 
 module MoveFacts: {
-  let selectMove: RuleSystem.t<RuleSystemState.t> => option<int>
+  let selectMove: RuleSystem.t<Pokemon.ruleSystemState> => option<int>
 }
 
 let make: (Context.t, ~enemy: Pokemon.t, ~player: Pokemon.t) => unit
@@ -25,5 +25,5 @@ let makeRuleSystem: (
   Context.t,
   ~enemy: Pokemon.t,
   ~player: Pokemon.t,
-) => RuleSystem.t<RuleSystemState.t>
-let update: (Context.t, RuleSystem.t<RuleSystemState.t>, unit) => unit
+) => RuleSystem.t<Pokemon.ruleSystemState>
+let update: (Context.t, RuleSystem.t<Pokemon.ruleSystemState>, unit) => unit

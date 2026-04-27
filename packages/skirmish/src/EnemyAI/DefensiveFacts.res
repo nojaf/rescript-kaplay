@@ -8,7 +8,7 @@ open Kaplay
 
 let salience = RuleSystem.Salience(20.0)
 
-let addRules = (rs: RuleSystem.t<RuleSystemState.t>) => {
+let addRules = (rs: RuleSystem.t<Pokemon.ruleSystemState>) => {
   // Decision fact: Preferred dodge direction based on threats
   rs->RuleSystem.addRuleExecutingAction(
     rs => {
@@ -56,20 +56,20 @@ let addRules = (rs: RuleSystem.t<RuleSystemState.t>) => {
 
       // Determine preferred direction from facts
       let preferredDirection = if preferLeft > 0.0 {
-        RuleSystemState.Left
+        Pokemon.MoveLeft
       } else if preferRight > 0.0 {
-        RuleSystemState.Right
+        Pokemon.MoveRight
       } // Fallback: pick based on space (shouldn't happen if threats computed correctly)
       else if leftSpace > rightSpace {
-        RuleSystemState.Left
+        Pokemon.MoveLeft
       } else {
-        RuleSystemState.Right
+        Pokemon.MoveRight
       }
 
       // Check if we have space in the preferred direction
       let hasSpaceInPreferred = switch preferredDirection {
-      | Left => leftSpace > 0.0
-      | Right => rightSpace > 0.0
+      | MoveLeft => leftSpace > 0.0
+      | MoveRight => rightSpace > 0.0
       }
 
       // Determine final direction considering space availability
@@ -78,8 +78,8 @@ let addRules = (rs: RuleSystem.t<RuleSystemState.t>) => {
       } else {
         // No space in preferred direction, try the other side
         switch preferredDirection {
-        | Left => rightSpace > 0.0 ? RuleSystemState.Right : RuleSystemState.Left
-        | Right => leftSpace > 0.0 ? RuleSystemState.Left : RuleSystemState.Right
+        | MoveLeft => rightSpace > 0.0 ? Pokemon.MoveRight : Pokemon.MoveLeft
+        | MoveRight => leftSpace > 0.0 ? Pokemon.MoveLeft : Pokemon.MoveRight
         }
       }
 
@@ -138,10 +138,10 @@ let addRules = (rs: RuleSystem.t<RuleSystemState.t>) => {
 
       if playerLeft > 0.0 {
         // Player is left, move left if we have space
-        rs.state.horizontalMovement = leftSpace > 0.0 ? Some(RuleSystemState.Left) : None
+        rs.state.horizontalMovement = leftSpace > 0.0 ? Some(Pokemon.MoveLeft) : None
       } else if playerRight > 0.0 {
         // Player is right, move right if we have space
-        rs.state.horizontalMovement = rightSpace > 0.0 ? Some(RuleSystemState.Right) : None
+        rs.state.horizontalMovement = rightSpace > 0.0 ? Some(Pokemon.MoveRight) : None
       } else {
         // Neither fact is true - we're aligned (horizontalDistance == 0.0), stop moving
         rs.state.horizontalMovement = None

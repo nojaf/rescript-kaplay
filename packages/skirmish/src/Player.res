@@ -15,6 +15,8 @@ module KeyEdge = {
 }
 
 let make = (pokemon: Pokemon.t): unit => {
+  Pkmn.assignPlayer(pokemon)
+
   let jKey = KeyEdge.make()
   let kKey = KeyEdge.make()
   let lKey = KeyEdge.make()
@@ -35,19 +37,21 @@ let make = (pokemon: Pokemon.t): unit => {
 
     // Handle move key presses (j/k/l/; for slots 0-3)
     if isNewJPress {
-      Pokemon.tryCastMove(k, pokemon, 0)
+      Pkmn.tryCastMove(pokemon, 0)
     } else if isNewKPress {
-      Pokemon.tryCastMove(k, pokemon, 1)
+      Pkmn.tryCastMove(pokemon, 1)
     } else if isNewLPress {
-      Pokemon.tryCastMove(k, pokemon, 2)
+      Pkmn.tryCastMove(pokemon, 2)
     } else if isNewSemicolonPress {
-      Pokemon.tryCastMove(k, pokemon, 3)
+      Pkmn.tryCastMove(pokemon, 3)
     } else if isUpPressed {
-      pokemon.direction = k->Context.vec2Up
-      pokemon->Pokemon.setSprite(Pokemon.backSpriteName(pokemon.pokemonId))
+      if pokemon.facing != FacingUp {
+        Pkmn.dispatch(pokemon, FacingChanged(FacingUp))
+      }
     } else if isDownPressed {
-      pokemon.direction = k->Context.vec2Down
-      pokemon->Pokemon.setSprite(Pokemon.frontSpriteName(pokemon.pokemonId))
+      if pokemon.facing != FacingDown {
+        Pkmn.dispatch(pokemon, FacingChanged(FacingDown))
+      }
     } else if isLeftPressed {
       pokemon.direction = k->Context.vec2Left
     } else if isRightPressed {
@@ -56,7 +60,7 @@ let make = (pokemon: Pokemon.t): unit => {
 
     if pokemon.mobility == Pokemon.CanMove && movementPressed {
       pokemon->Pokemon.move(
-        pokemon.direction->Vec2.Unit.asWorld->Vec2.World.scaleWith(Pokemon.movementSpeed),
+        pokemon.direction->Vec2.Unit.asWorld->Vec2.World.scaleWith(Pkmn.movementSpeed),
       )
     }
   })

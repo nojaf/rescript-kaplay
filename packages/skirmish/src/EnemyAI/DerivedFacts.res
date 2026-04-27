@@ -9,7 +9,7 @@ open Kaplay
 
 let salience = RuleSystem.Salience(10.0)
 
-let addRules = (rs: RuleSystem.t<RuleSystemState.t>) => {
+let addRules = (rs: RuleSystem.t<Pokemon.ruleSystemState>) => {
   // Derived fact: Threat levels (depends on attack facts)
   rs->RuleSystem.addRuleExecutingAction(
     rs => {

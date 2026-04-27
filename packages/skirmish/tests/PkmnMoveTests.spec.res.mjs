@@ -2,7 +2,7 @@
 
 import * as Vitest from "vitest";
 import * as Pervasives from "@rescript/runtime/lib/es6/Pervasives.mjs";
-import * as Pokemon$Skirmish from "../src/Pokemon.res.mjs";
+import * as Pkmn$Skirmish from "../src/Pkmn.res.mjs";
 import * as PkmnMove$Skirmish from "../src/PkmnMove.res.mjs";
 import * as ZeroMove$Skirmish from "../src/Moves/ZeroMove.res.mjs";
 
@@ -77,7 +77,7 @@ Vitest.test("getAvailableMoveIndices returns all indices when all moves availabl
   let slot2 = makeTestSlot(move, 10, undefined);
   let slot3 = makeTestSlot(move, 10, undefined);
   let slot4 = makeTestSlot(move, 10, undefined);
-  let result = Pokemon$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 0.0);
+  let result = Pkmn$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 0.0);
   Vitest.expect(result).toHaveLength(4);
   Vitest.expect(result.includes(0)).toBeTruthy();
   Vitest.expect(result.includes(1)).toBeTruthy();
@@ -92,7 +92,7 @@ Vitest.test("getAvailableMoveIndices returns only available move indices", () =>
   let slot2 = makeTestSlot(move, 0, undefined);
   let slot3 = makeTestSlot(move, 5, undefined);
   let slot4 = makeTestSlot(move, 5, 0.5);
-  let result = Pokemon$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 1.0);
+  let result = Pkmn$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 1.0);
   Vitest.expect(result).toHaveLength(2);
   Vitest.expect(result.includes(0)).toBeTruthy();
   Vitest.expect(result.includes(2)).toBeTruthy();
@@ -105,7 +105,7 @@ Vitest.test("getAvailableMoveIndices returns empty array when no moves available
   let slot2 = makeTestSlot(move, 0, undefined);
   let slot3 = makeTestSlot(move, 0, undefined);
   let slot4 = makeTestSlot(move, 0, undefined);
-  let result = Pokemon$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 0.0);
+  let result = Pkmn$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 0.0);
   Vitest.expect(result).toHaveLength(0);
   return Promise.resolve();
 });
@@ -116,7 +116,7 @@ Vitest.test("getAvailableMoveIndices excludes ZeroMove slots", () => {
   let slot2 = makeTestSlot(ZeroMove$Skirmish.move, 0, undefined);
   let slot3 = makeTestSlot(ZeroMove$Skirmish.move, 0, undefined);
   let slot4 = makeTestSlot(ZeroMove$Skirmish.move, 0, undefined);
-  let result = Pokemon$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 0.0);
+  let result = Pkmn$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 0.0);
   Vitest.expect(result).toHaveLength(1);
   Vitest.expect(result.includes(0)).toBeTruthy();
   return Promise.resolve();
@@ -129,7 +129,7 @@ Vitest.test("getAvailableMoveIndices with mixed move states", () => {
   let slot2 = makeTestSlot(move2, 5, 0.5);
   let slot3 = makeTestSlot(ZeroMove$Skirmish.move, 0, undefined);
   let slot4 = makeTestSlot(move1, 1, undefined);
-  let result = Pokemon$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 1.0);
+  let result = Pkmn$Skirmish.getAvailableMoveIndices(slot1, slot2, slot3, slot4, 1.0);
   Vitest.expect(result).toHaveLength(2);
   Vitest.expect(result.includes(0)).toBeTruthy();
   Vitest.expect(result.includes(3)).toBeTruthy();

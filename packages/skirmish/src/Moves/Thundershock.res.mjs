@@ -6,6 +6,7 @@ import * as Pos$Kaplay from "@nojaf/rescript-kaplay/src/Components/Pos.res.mjs";
 import * as Math$Kaplay from "@nojaf/rescript-kaplay/src/Math.res.mjs";
 import * as Stdlib_Array from "@rescript/runtime/lib/es6/Stdlib_Array.mjs";
 import * as Anchor$Kaplay from "@nojaf/rescript-kaplay/src/Components/Anchor.res.mjs";
+import * as Pkmn$Skirmish from "../Pkmn.res.mjs";
 import * as Shader$Kaplay from "@nojaf/rescript-kaplay/src/Components/Shader.res.mjs";
 import * as Team$Skirmish from "../Team.res.mjs";
 import * as Wall$Skirmish from "../Wall.res.mjs";
@@ -92,13 +93,19 @@ function destroy(pokemon, thundershock) {
   thundershock.timerRef.cancel();
   GameContext$Skirmish.k.wait(5 * 0.050, () => {
     pokemon.unuse(Shader$Kaplay.id);
-    pokemon.mobility = true;
+    Pkmn$Skirmish.dispatch(pokemon, {
+      TAG: "MobilityChanged",
+      _0: true
+    });
     thundershock.destroy();
   });
 }
 
 function cast(pokemon) {
-  pokemon.mobility = false;
+  Pkmn$Skirmish.dispatch(pokemon, {
+    TAG: "MobilityChanged",
+    _0: false
+  });
   let direction = pokemon.facing === true ? up : down;
   let otherPokemon = GameContext$Skirmish.k.query({
     include: ["pokemon"]
@@ -107,7 +114,7 @@ function cast(pokemon) {
     [
       GameContext$Skirmish.k.pos(0, 0),
       GameContext$Skirmish.k.z(-1),
-      Team$Skirmish.getTagComponent(pokemon.team),
+      Team$Skirmish.getTagComponent(Pkmn$Skirmish.getTeam(pokemon)),
       {
         id: "thundershock",
         draw: draw,

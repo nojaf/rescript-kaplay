@@ -6,12 +6,7 @@ if (lastArg.endsWith(".js")) {
   process.exit(1);
 } else {
   const name = lastArg;
-  const response = await fetch(
-    `https://img.pokemondb.net/sprites/red-blue/normal/${name}.png`,
-  );
-  await Bun.write(
-    `packages/samples/public/sprites/${name}-rb.png`,
-    await response.arrayBuffer(),
-  );
+  const response = await fetch(`https://img.pokemondb.net/sprites/red-blue/normal/${name}.png`);
+  await Bun.write(`packages/samples/public/sprites/${name}-rb.png`, await response.arrayBuffer());
   console.log(`Sprite downloaded for ${name}`);
 }

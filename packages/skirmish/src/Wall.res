@@ -18,7 +18,7 @@ let worldRect = Kaplay.Math.Rect.makeWorld(
   k,
   k->Context.vec2World(0., Healthbar.OpponentLayout.height),
   k->Context.width,
-  k->Context.height - Healthbar.OpponentLayout.height - Healthbar.Layout.playerHeight,
+  k->Context.height - Healthbar.OpponentLayout.height - Healthbar.PlayerLayout.playerHeight,
 )
 
 let make = (~pos: Vec2.World.t, ~width: float, ~height: float) => {

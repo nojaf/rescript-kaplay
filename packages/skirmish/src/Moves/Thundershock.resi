@@ -1,3 +1,3 @@
 let load: unit => unit
 let cast: Pokemon.t => unit
-let move: PkmnMove.t
+let move: Pokemon.move
