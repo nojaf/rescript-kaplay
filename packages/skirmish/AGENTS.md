@@ -225,6 +225,25 @@ Team.opponent  // "team-opponent" tag
 
 Add tests to `tests/PkmnMoveTests.spec.res` for pure logic, or `tests/EnemyAITests.spec.res` for integration tests using `withKaplayContext`.
 
+### Event Queue
+
+Pokemon state mutations are routed through an event queue (`Belt.MutableQueue.t<event>`) defined in `Pokemon.res` and processed each frame in `Pkmn.processEvents`. Events are dispatched via `Pkmn.dispatch` (immediate) or `Pkmn.delayedDispatch` (after a delay).
+
+**Current events:** `MoveCast`, `CooldownFinished`, `MobilityChanged`, `FacingChanged`.
+
+**When to use the event queue:**
+- The state change triggers side effects (e.g., `FacingChanged` swaps the sprite and updates the direction vector)
+- Multiple systems need to react to the change
+- The change needs to be sequenced relative to other state changes
+- You want to decouple the trigger from the effect (e.g., Thundershock dispatches `MobilityChanged` without knowing how mobility works)
+
+**When to mutate directly:**
+- Pure physics/engine calls (`applyImpulse`, `setVel`) — Kaplay handles these
+- One-time initialization (team assignment in `Pkmn.make`)
+- High-frequency per-frame input (direction from held keys)
+- Internal UI state (healthbar tween interpolation)
+- HP damage (`setHp`) — Kaplay's Health component already provides `onHurt`/`onDeath` callbacks as a reactive system. Once damage needs metadata (e.g., elemental type for effectiveness calculations), introduce a `TakeDamage` event.
+
 ## General Guidelines
 
 - We don't care about backwards compatibility - refactor code directly instead of creating re-exports or compatibility shims
